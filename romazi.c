@@ -1,3 +1,9 @@
+#include "romazi.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
 struct romazi_entry {
 	const char *orig;
 	const char *conv;
@@ -231,4 +237,76 @@ struct romazi_entry ROMAZI[] = {
 	{"whe",	"うぇ",	1},
 	{"who",	"うぉ",	1},
 	{"-",	"ー",	0},
+	{NULL,	NULL,	0},
 };
+
+const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT] = {
+	'1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+	'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
+	'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/',
+	'-',
+
+	'!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
+	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
+	'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
+	'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?',
+	'_',
+};
+
+static unsigned char char_to_key_index_map[128];
+
+size_t char_to_key_index(char ch)
+{
+	size_t key_index;
+
+	assert(ch < sizeof(char_to_key_index_map));
+	assert(ch > 0);
+
+	if (char_to_key_index_map[0])
+		return char_to_key_index_map[ch];
+
+	for (key_index = 0; key_index < MAPPABLE_CHAR_COUNT; key_index++)
+		char_to_key_index_map[KEY_INDEX_TO_CHAR_MAP[key_index]] =
+				key_index;
+
+	return char_to_key_index_map[ch];
+}
+
+void print_free_kanji_keys()
+{
+	char used[MAPPABLE_CHAR_COUNT * MAPPABLE_CHAR_COUNT];
+	struct romazi_entry *i;
+	size_t key1;
+
+	memset(used, 0, sizeof(used));
+	for (i = ROMAZI; i->orig; i++) {
+		size_t char_i;
+		size_t first_key_off;
+
+		if (i->katakana_only)
+			continue;
+		first_key_off = char_to_key_index(i->orig[0])
+				* MAPPABLE_CHAR_COUNT;
+		if (strlen(i->orig) >= 2)
+			used[first_key_off + char_to_key_index(i->orig[1])] = 1;
+		else
+			memset(used + first_key_off, 1, MAPPABLE_CHAR_COUNT);
+	}
+
+	for (key1 = 0; key1 < 40; key1++) {
+		size_t key2;
+		for (key2 = 0; key2 < 40; key2++) {
+			if (used[key1 * MAPPABLE_CHAR_COUNT + key2])
+				continue;
+			printf("%c%c\n",
+			       KEY_INDEX_TO_CHAR_MAP[key1],
+			       KEY_INDEX_TO_CHAR_MAP[key2]);
+		}
+	}
+}
+
+int main(int argc, char **argv)
+{
+	print_free_kanji_keys();
+}
