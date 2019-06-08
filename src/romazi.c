@@ -306,8 +306,3 @@ void print_free_kanji_keys()
 		}
 	}
 }
-
-int main(int argc, char **argv)
-{
-	print_free_kanji_keys();
-}
