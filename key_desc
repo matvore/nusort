@@ -62,3 +62,15 @@
 ./nusort last_rank_contained \
 	人 侵 八 力 口 囗 夂 宀 尸 幺 心 手 提 日 木 棄 \
 	水 液 爪 疋 石 穴 糸 缶 舌 衣 言 赤 辵 金 隹 領
+
+./nusort last_rank_contained \
+	人 侵 八 力 口 囗 夂 宀 尸 幺 心 手 提 日 木 棄 \
+	水 液 爪 疋 石 穴 糸 缶 舌 衣 言 赤 辵 金 隹 風
+
+./nusort last_rank_contained \
+	人 侵 八 力 口 囗 夂 宀 尸 幺 心 手 提 日 木 棄 \
+	水 液 爪 疋 石 穴 糸 缶 舌 衣 言 赤 途 金 隹 風
+
+./nusort last_rank_contained \
+	人 侵 八 力 口 囗 夂 宀 尸 幺 心 手 提 日 木 棄 \
+	水 液 爪 疋 石 穴 糸 缶 舌 衣 言 足 途 金 隹 風
