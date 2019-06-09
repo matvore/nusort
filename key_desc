@@ -25,7 +25,7 @@ src/nusort last_rank_contained -s \
 	穴 \
 	糸 \
 	缶 \
-	舌 \
+	艸 \
 	言 \
 	谷 \
 	足 \
@@ -33,6 +33,6 @@ src/nusort last_rank_contained -s \
 	金 \
 	隹 \
 	風 \
-	>| key_desc_out
+	| tee key_desc_out
 
 exit 0
