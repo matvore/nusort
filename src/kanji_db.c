@@ -1,6 +1,12 @@
 #include "kanji_db.h"
 
+#include "romazi.h"
+#include "util.h"
+
+#include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
  * 主な漢字データベース
@@ -4026,6 +4032,10 @@ static struct kanji_entry KANJI[] = {
 	{"﨑", 3364,  928000},
 };
 
+struct cutoff_kanji {
+	struct kanji_entry *k[KANJI_KEY_COUNT - 1];
+};
+
 int rad_so_cmp(const char* a, const char* b)
 {
 	struct kanji_entry *e = KANJI;
@@ -4033,5 +4043,83 @@ int rad_so_cmp(const char* a, const char* b)
 		printf("%s\n", e->c);
 		e++;
 	}
+	return 0;
+}
+
+static int first_key(
+	const struct kanji_entry *kanji,
+	const struct cutoff_kanji *cutoff_kanji)
+{
+	size_t min = 0;
+	size_t max = KANJI_KEY_COUNT - 1;
+
+	do {
+		size_t mid = (min + max) / 2;
+		if (cutoff_kanji->k[mid]->rad_so_sort_key <=
+				kanji->rad_so_sort_key)
+			min = mid + 1;
+		else
+			max = mid;
+	} while (min < max);
+
+	return min;
+}
+
+static int first_key_then_rank_cmp(void *thunk_, const void* a_, const void* b_)
+{
+	const struct cutoff_kanji *cutoff_kanji = thunk_;
+	const struct kanji_entry *a = a_;
+	const struct kanji_entry *b = b_;
+	int a_first_key = first_key(a, cutoff_kanji);
+	int b_first_key = first_key(b, cutoff_kanji);
+
+	if (a_first_key != b_first_key)
+		return a_first_key > b_first_key ? 1 : -1;
+	else if (a->ranking != b->ranking)
+		return a->ranking < b->ranking ? 1 : -1;
+	else
+		return 0;
+}
+
+static int kanji_db_compar(const void *key, const void *entry_)
+{
+	const struct kanji_entry *entry = entry_;
+	return strcmp(key, entry->c);
+}
+
+int print_last_rank_contained(
+	const char **cutoff_kanji_raw,
+	size_t cutoff_kanji_count)
+{
+	struct kanji_entry *resorted;
+	size_t kanji_count = sizeof(KANJI) / sizeof(*KANJI);
+	struct cutoff_kanji cutoff_kanji;
+	size_t i;
+	size_t curr_key;
+	size_t unused_keys_left[40];
+
+	if (cutoff_kanji_count != KANJI_KEY_COUNT - 1) {
+		fprintf(stderr,
+			"%d 区切り漢字を必するけれど、%ld が渡された。\n",
+			KANJI_KEY_COUNT - 1, cutoff_kanji_count);
+		return 1;
+	}
+
+	for (i = 0; i < cutoff_kanji_count; i++) {
+		cutoff_kanji.k[i] = bsearch(
+			cutoff_kanji_raw[i], KANJI, kanji_count,
+			sizeof(*KANJI), kanji_db_compar);
+		assert(cutoff_kanji.k[i]);
+	}
+
+	resorted = xcalloc(kanji_count, sizeof(*resorted));
+	memcpy(resorted, KANJI, sizeof(KANJI));
+	qsort_r(resorted, kanji_count, sizeof(*resorted), &cutoff_kanji,
+		first_key_then_rank_cmp);
+
+	curr_key = 0;
+	for (i = 0; i < kanji_count; i++) {
+	}
+
 	return 0;
 }

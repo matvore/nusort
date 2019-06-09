@@ -274,13 +274,15 @@ size_t char_to_key_index(char ch)
 	return char_to_key_index_map[ch];
 }
 
-void print_free_kanji_keys()
-{
-	char used[MAPPABLE_CHAR_COUNT * MAPPABLE_CHAR_COUNT];
-	struct romazi_entry *i;
-	size_t key1;
+struct used_bit_map {
+	char m[MAPPABLE_CHAR_COUNT * MAPPABLE_CHAR_COUNT];
+};
 
-	memset(used, 0, sizeof(used));
+static void get_free_kanji_keys(struct used_bit_map *used)
+{
+	struct romazi_entry *i;
+	memset(used, 0, sizeof(*used));
+
 	for (i = ROMAZI; i->orig; i++) {
 		size_t char_i;
 		size_t first_key_off;
@@ -290,15 +292,41 @@ void print_free_kanji_keys()
 		first_key_off = char_to_key_index(i->orig[0])
 				* MAPPABLE_CHAR_COUNT;
 		if (strlen(i->orig) >= 2)
-			used[first_key_off + char_to_key_index(i->orig[1])] = 1;
+			used->m[first_key_off + char_to_key_index(i->orig[1])] =
+				1;
 		else
-			memset(used + first_key_off, 1, MAPPABLE_CHAR_COUNT);
+			memset(used->m + first_key_off, 1, MAPPABLE_CHAR_COUNT);
 	}
+}
 
-	for (key1 = 0; key1 < 40; key1++) {
+void get_free_kanji_keys_count(int unused[KANJI_KEY_COUNT])
+{
+	struct used_bit_map used;
+	size_t key1;
+
+	get_free_kanji_keys(&used);
+
+	memset(unused, 0, sizeof(*unused * KANJI_KEY_COUNT));
+	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
 		size_t key2;
-		for (key2 = 0; key2 < 40; key2++) {
-			if (used[key1 * MAPPABLE_CHAR_COUNT + key2])
+		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
+			if (!used.m[key1 * MAPPABLE_CHAR_COUNT + key2])
+				unused[key1]++;
+		}
+	}
+}
+
+void print_free_kanji_keys()
+{
+	struct used_bit_map used;
+	size_t key1;
+
+	get_free_kanji_keys(&used);
+
+	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
+		size_t key2;
+		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
+			if (used.m[key1 * MAPPABLE_CHAR_COUNT + key2])
 				continue;
 			printf("%c%c\n",
 			       KEY_INDEX_TO_CHAR_MAP[key1],
