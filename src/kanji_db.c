@@ -4123,6 +4123,7 @@ struct line_stats {
 
 	unsigned char e_nr;
 	const struct kanji_entry *e[KANJI_KEY_COUNT];
+	unsigned sort_each_line_by_rad_so : 1;
 };
 
 static void output_char(struct line_stats *s, struct kanji_entry *k)
@@ -4150,8 +4151,9 @@ static void end_line(struct line_stats *s)
 	if (!s->last_char_rank)
 		return;
 
-	/* 部首＋画数で並べ替える */
-	qsort(s->e, s->e_nr, sizeof(*s->e), rad_so_cmp);
+	if (s->sort_each_line_by_rad_so)
+		/* 部首＋画数で並べ替える */
+		qsort(s->e, s->e_nr, sizeof(*s->e), rad_so_cmp);
 
 	for (i = 0; i < s->e_nr; i++)
 		printf("%s", s->e[i]->c);
@@ -4169,9 +4171,10 @@ static void print_stats_summary(struct line_stats *s, struct top_keys *top_keys)
 	printf("total chars:  %d\n", s->total_chars);
 }
 
-int print_last_rank_contained(
+static int print_last_rank_contained_parsed_args(
+	size_t cutoff_kanji_count,
 	const char **cutoff_kanji_raw,
-	size_t cutoff_kanji_count)
+	int sort_each_line_by_rad_so)
 {
 	struct kanji_entry *resorted;
 	size_t kanji_count = sizeof(KANJI) / sizeof(*KANJI);
@@ -4182,6 +4185,7 @@ int print_last_rank_contained(
 	struct line_stats line_stats;
 
 	memset(&line_stats, 0, sizeof(line_stats));
+	line_stats.sort_each_line_by_rad_so = sort_each_line_by_rad_so;
 
 	get_top_keys(&top_keys);
 	if (cutoff_kanji_count != top_keys.count - 1) {
@@ -4238,4 +4242,20 @@ int print_last_rank_contained(
 	end_line(&line_stats);
 	print_stats_summary(&line_stats, &top_keys);
 	return 0;
+}
+
+int print_last_rank_contained(const char **argv, int argc)
+{
+	int sort_each_line_by_rad_so = 0;
+	while (argc > 0 && argv[0][0] == '-') {
+		const char *arg = argv[0];
+		argc--;
+		argv++;
+		if (!strcmp(arg, "-s"))
+			sort_each_line_by_rad_so = 1;
+		else if (!strcmp(arg, "--"))
+			break;
+	}
+	return print_last_rank_contained_parsed_args(
+			argc, argv, sort_each_line_by_rad_so);
 }
