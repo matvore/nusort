@@ -4156,6 +4156,7 @@ int print_last_rank_contained(
 			exit(2);
 		}
 	}
+	cutoff_kanji.key_count = cutoff_kanji_count + 1;
 
 	resorted = xcalloc(kanji_count, sizeof(*resorted));
 	memcpy(resorted, KANJI, sizeof(KANJI));
