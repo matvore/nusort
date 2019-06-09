@@ -4044,16 +4044,6 @@ struct cutoff_kanji {
 	struct kanji_entry *k[KANJI_KEY_COUNT - 1];
 };
 
-int rad_so_cmp(const char* a, const char* b)
-{
-	struct kanji_entry *e = KANJI;
-	while (e) {
-		printf("%s\n", e->c);
-		e++;
-	}
-	return 0;
-}
-
 static int first_key(
 	const struct kanji_entry *kanji,
 	const struct cutoff_kanji *cutoff_kanji)
@@ -4130,23 +4120,47 @@ struct line_stats {
 	unsigned short last_char_rank;
 	unsigned short total_rank;
 	unsigned short total_chars;
+
+	unsigned char e_nr;
+	const struct kanji_entry *e[KANJI_KEY_COUNT];
 };
 
 static void output_char(struct line_stats *s, struct kanji_entry *k)
 {
 	s->total_chars++;
 	s->last_char_rank = k->ranking;
-	printf("%s", k->c);
+	s->e[s->e_nr++] = k;
+}
+
+static int rad_so_cmp(const void *a_, const void *b_)
+{
+	struct kanji_entry *a = *(struct kanji_entry **)a_;
+	struct kanji_entry *b = *(struct kanji_entry **)b_;
+
+	if (a->rad_so_sort_key != b->rad_so_sort_key)
+		return a->rad_so_sort_key > b->rad_so_sort_key ? 1 : -1;
+	else
+		return 0;
 }
 
 static void end_line(struct line_stats *s)
 {
+	size_t i;
+
 	if (!s->last_char_rank)
 		return;
 
+	/* 部首＋画数で並べ替える */
+	qsort(s->e, s->e_nr, sizeof(*s->e), rad_so_cmp);
+
+	for (i = 0; i < s->e_nr; i++)
+		printf("%s", s->e[i]->c);
+
 	printf(" (%d)\n", s->last_char_rank);
+
 	s->total_rank += s->last_char_rank;
 	s->last_char_rank = 0;
+	s->e_nr = 0;
 }
 
 static void print_stats_summary(struct line_stats *s, struct top_keys *top_keys)
