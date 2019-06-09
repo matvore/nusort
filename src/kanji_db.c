@@ -4083,7 +4083,7 @@ static int first_key_then_rank_cmp(void *thunk_, const void* a_, const void* b_)
 	if (a_first_key != b_first_key)
 		return a_first_key > b_first_key ? 1 : -1;
 	else if (a->ranking != b->ranking)
-		return a->ranking < b->ranking ? 1 : -1;
+		return a->ranking > b->ranking ? 1 : -1;
 	else
 		return 0;
 }
@@ -4125,6 +4125,35 @@ static void get_top_keys(struct top_keys *top_keys)
 	}
 }
 
+struct line_stats {
+	unsigned short last_char_rank;
+	unsigned short total_rank;
+	unsigned short total_chars;
+};
+
+static void output_char(struct line_stats *s, struct kanji_entry *k)
+{
+	s->total_chars++;
+	s->last_char_rank = k->ranking;
+	printf("%s", k->c);
+}
+
+static void end_line(struct line_stats *s)
+{
+	if (!s->last_char_rank)
+		return;
+
+	printf(" (%d)\n", s->last_char_rank);
+	s->total_rank += s->last_char_rank;
+	s->last_char_rank = 0;
+}
+
+static void print_stats_summary(struct line_stats *s, struct top_keys *top_keys)
+{
+	printf("average rank: %.1f\n", (float) s->total_rank / top_keys->count);
+	printf("total chars:  %d\n", s->total_chars);
+}
+
 int print_last_rank_contained(
 	const char **cutoff_kanji_raw,
 	size_t cutoff_kanji_count)
@@ -4135,6 +4164,10 @@ int print_last_rank_contained(
 	size_t i;
 	int curr_top_key = -1;
 	struct top_keys top_keys;
+	struct line_stats line_stats;
+	unsigned short total_chars = 0;
+
+	memset(&line_stats, 0, sizeof(line_stats));
 
 	get_top_keys(&top_keys);
 	if (cutoff_kanji_count != top_keys.count - 1) {
@@ -4168,18 +4201,18 @@ int print_last_rank_contained(
 		    (curr_top_key < top_keys.count - 1 &&
 		     cutoff_kanji.k[curr_top_key]->rad_so_sort_key <=
 		     resorted[i].rad_so_sort_key)) {
-			if (curr_top_key >= 0)
-				printf("\n");
+			end_line(&line_stats);
 			curr_top_key++;
 			printf("%c ", top_keys.k[curr_top_key].key_ch);
 		}
 
 		if (!top_keys.k[curr_top_key].available)
 			continue;
-		printf("%s", resorted[i].c);
+
+		output_char(&line_stats, &resorted[i]);
 		top_keys.k[curr_top_key].available--;
 	}
-	printf("\n");
-
+	end_line(&line_stats);
+	print_stats_summary(&line_stats, &top_keys);
 	return 0;
 }
