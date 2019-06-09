@@ -4251,12 +4251,15 @@ int print_last_rank_contained(const char **argv, int argc)
 		const char *arg = argv[0];
 		argc--;
 		argv++;
-		if (!strcmp(arg, "-s"))
+		if (!strcmp(arg, "-s")) {
 			sort_each_line_by_rad_so = 1;
-		else if (!strcmp(arg, "--"))
+		} else if (!strcmp(arg, "--")) {
 			break;
-		fprintf(stderr, "フラグを認識できませんでした：%s\n", arg);
-		return 3;
+		} else {
+			fprintf(stderr, "フラグを認識できませんでした：%s\n",
+				arg);
+			return 3;
+		}
 	}
 	return print_last_rank_contained_parsed_args(
 			argc, argv, sort_each_line_by_rad_so);
