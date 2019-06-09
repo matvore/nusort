@@ -4190,7 +4190,7 @@ static int print_last_rank_contained_parsed_args(
 	get_top_keys(&top_keys);
 	if (cutoff_kanji_count != top_keys.count - 1) {
 		fprintf(stderr,
-			"%d個区切り漢字を必するけれど、%ld が渡された。\n",
+			"%d個の区切り漢字を必するけれど、%ld個が渡された。\n",
 			top_keys.count - 1, cutoff_kanji_count);
 		return 1;
 	}
