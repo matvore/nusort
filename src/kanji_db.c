@@ -4201,9 +4201,18 @@ int print_last_rank_contained(
 		    (curr_top_key < top_keys.count - 1 &&
 		     cutoff_kanji.k[curr_top_key]->rad_so_sort_key <=
 		     resorted[i].rad_so_sort_key)) {
+			const char *cutoff;
+
 			end_line(&line_stats);
+
+			if (curr_top_key == -1)
+				cutoff = "一";
+			else
+				cutoff = cutoff_kanji.k[curr_top_key]->c;
 			curr_top_key++;
-			printf("%c ", top_keys.k[curr_top_key].key_ch);
+			printf(
+				"[ %s ] %c ",
+				cutoff, top_keys.k[curr_top_key].key_ch);
 		}
 
 		if (!top_keys.k[curr_top_key].available)
