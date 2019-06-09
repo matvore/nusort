@@ -299,19 +299,19 @@ static void get_free_kanji_keys(struct used_bit_map *used)
 	}
 }
 
-void get_free_kanji_keys_count(int unused[KANJI_KEY_COUNT])
+void get_free_kanji_keys_count(struct unused_kanji_keys *u)
 {
 	struct used_bit_map used;
 	size_t key1;
 
 	get_free_kanji_keys(&used);
 
-	memset(unused, 0, sizeof(*unused * KANJI_KEY_COUNT));
+	memset(u, 0, sizeof(*u));
 	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
 		size_t key2;
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
 			if (!used.m[key1 * MAPPABLE_CHAR_COUNT + key2])
-				unused[key1]++;
+				u->count[key1]++;
 		}
 	}
 }

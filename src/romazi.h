@@ -11,5 +11,10 @@ extern const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT];
 
 char key_index_to_char(size_t index);
 size_t char_to_key_index(char ch);
-void get_free_kanji_keys_count(int unused[KANJI_KEY_COUNT]);
+
+struct unused_kanji_keys {
+	unsigned char count[KANJI_KEY_COUNT];
+};
+
+void get_free_kanji_keys_count(struct unused_kanji_keys *u);
 void print_free_kanji_keys();

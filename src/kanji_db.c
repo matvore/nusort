@@ -4096,7 +4096,7 @@ int print_last_rank_contained(
 	struct cutoff_kanji cutoff_kanji;
 	size_t i;
 	size_t curr_key;
-	size_t unused_keys_left[40];
+	struct unused_kanji_keys unused_kk;
 
 	if (cutoff_kanji_count != KANJI_KEY_COUNT - 1) {
 		fprintf(stderr,
@@ -4117,9 +4117,21 @@ int print_last_rank_contained(
 	qsort_r(resorted, kanji_count, sizeof(*resorted), &cutoff_kanji,
 		first_key_then_rank_cmp);
 
+	get_free_kanji_keys_count(&unused_kk);
 	curr_key = 0;
 	for (i = 0; i < kanji_count; i++) {
+		if (curr_key < KANJI_KEY_COUNT - 1 &&
+				cutoff_kanji.k[curr_key]->rad_so_sort_key <=
+				resorted[i].rad_so_sort_key) {
+			printf("\n");
+			curr_key++;
+		}
+
+		if (!unused_kk.count[curr_key])
+			continue;
+		printf("%s", resorted[i].c);
 	}
+	printf("\n");
 
 	return 0;
 }
