@@ -16,4 +16,4 @@ struct unused_kanji_keys {
 };
 
 void get_free_kanji_keys_count(struct unused_kanji_keys *u);
-void print_free_kanji_keys();
+void print_free_kanji_keys(void);

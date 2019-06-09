@@ -4166,7 +4166,6 @@ int print_last_rank_contained(
 	int curr_top_key = -1;
 	struct top_keys top_keys;
 	struct line_stats line_stats;
-	unsigned short total_chars = 0;
 
 	memset(&line_stats, 0, sizeof(line_stats));
 

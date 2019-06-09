@@ -265,13 +265,13 @@ size_t char_to_key_index(char ch)
 	assert(ch > 0);
 
 	if (char_to_key_index_map[0])
-		return char_to_key_index_map[ch];
+		return char_to_key_index_map[(int) ch];
 
 	for (key_index = 0; key_index < MAPPABLE_CHAR_COUNT; key_index++)
-		char_to_key_index_map[KEY_INDEX_TO_CHAR_MAP[key_index]] =
+		char_to_key_index_map[(int) KEY_INDEX_TO_CHAR_MAP[key_index]] =
 				key_index;
 
-	return char_to_key_index_map[ch];
+	return char_to_key_index_map[(int) ch];
 }
 
 struct used_bit_map {
@@ -284,7 +284,6 @@ static void get_free_kanji_keys(struct used_bit_map *used)
 	memset(used, 0, sizeof(*used));
 
 	for (i = ROMAZI; i->orig; i++) {
-		size_t char_i;
 		size_t first_key_off;
 
 		if (!i->use_as_is)
