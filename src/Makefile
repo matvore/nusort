@@ -2,5 +2,5 @@ CC = cc -Werror -Wall -Wdeclaration-after-statement -Wformat-security -Wno-forma
 
 all: nusort
 
-nusort: main.c romazi.c kanji_db.c util.c
-	$(CC) -o nusort *.c
+nusort: main.c romazi.c kanji_db.c util.c last_rank_contained.c
+	$(CC) -o nusort $^

@@ -1,4 +1,3 @@
-#include "kanji_db.h"
 #include "romazi.h"
 
 #include <stdio.h>
@@ -9,6 +8,8 @@ static const char *USAGE =
 "Usage: \n"
 "\tnusort free_kanji_keys\n"
 "\tnusort last_rank_contained [-s] CUTOFF_KANJI_1..CUTOFF_KANJI_n\n";
+
+int print_last_rank_contained(const char **argv, int argc);
 
 int main(int argc, const char **argv)
 {

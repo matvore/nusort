@@ -9,4 +9,5 @@ struct kanji_entry {
 	unsigned int rad_so_sort_key;
 };
 
-int print_last_rank_contained(const char **argv, int argc);
+size_t kanji_db_nr(void);
+struct kanji_entry *kanji_db(void);
