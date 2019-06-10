@@ -4093,8 +4093,9 @@ struct top_key {
 };
 
 struct top_keys {
-	short count;
+	unsigned short k_nr;
 	struct top_key k[KANJI_KEY_COUNT];
+	unsigned short total_chars;
 };
 
 static void get_top_keys(struct top_keys *top_keys)
@@ -4109,19 +4110,18 @@ static void get_top_keys(struct top_keys *top_keys)
 			unused_kk_index++) {
 		if (!unused_kk.count[unused_kk_index])
 			continue;
-
-		top_keys->k[top_keys->count].key_ch =
+		top_keys->k[top_keys->k_nr].key_ch =
 			KEY_INDEX_TO_CHAR_MAP[unused_kk_index];
-		top_keys->k[top_keys->count].available =
+		top_keys->k[top_keys->k_nr].available =
 			(unsigned char) unused_kk.count[unused_kk_index];
-		top_keys->count++;
+		top_keys->k_nr++;
+		top_keys->total_chars += unused_kk.count[unused_kk_index];
 	}
 }
 
 struct line_stats {
 	unsigned short last_char_rank;
 	unsigned short total_rank;
-	unsigned short total_chars;
 
 	unsigned char e_nr;
 	const struct kanji_entry *e[KANJI_KEY_COUNT];
@@ -4130,7 +4130,6 @@ struct line_stats {
 
 static void output_char(struct line_stats *s, struct kanji_entry *k)
 {
-	s->total_chars++;
 	s->last_char_rank = k->ranking;
 	s->e[s->e_nr++] = k;
 }
@@ -4169,8 +4168,8 @@ static void end_line(struct line_stats *s)
 
 static void print_stats_summary(struct line_stats *s, struct top_keys *top_keys)
 {
-	printf("average rank: %.1f\n", (float) s->total_rank / top_keys->count);
-	printf("total chars:  %d\n", s->total_chars);
+	printf("average rank: %.1f\n", (float) s->total_rank / top_keys->k_nr);
+	printf("total chars:  %d\n", top_keys->total_chars);
 }
 
 static int print_last_rank_contained_parsed_args(
@@ -4190,10 +4189,10 @@ static int print_last_rank_contained_parsed_args(
 	line_stats.sort_each_line_by_rad_so = sort_each_line_by_rad_so;
 
 	get_top_keys(&top_keys);
-	if (cutoff_kanji_count != top_keys.count - 1) {
+	if (cutoff_kanji_count != top_keys.k_nr - 1) {
 		fprintf(stderr,
 			"%d個の区切り漢字を必するけれど、%ld個が渡された。\n",
-			top_keys.count - 1, cutoff_kanji_count);
+			top_keys.k_nr - 1, cutoff_kanji_count);
 		return 1;
 	}
 
@@ -4218,7 +4217,7 @@ static int print_last_rank_contained_parsed_args(
 
 	for (i = 0; i < kanji_count; i++) {
 		if (curr_top_key < 0 ||
-		    (curr_top_key < top_keys.count - 1 &&
+		    (curr_top_key < top_keys.k_nr - 1 &&
 		     cutoff_kanji.k[curr_top_key]->rad_so_sort_key <=
 		     resorted[i].rad_so_sort_key)) {
 			const char *cutoff;
