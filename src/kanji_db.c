@@ -4098,6 +4098,8 @@ struct line_stats {
 
 	unsigned short k_nr;
 	struct top_key k[KANJI_KEY_COUNT];
+	short offset_to_target;
+
 	unsigned short total_chars;
 
 	unsigned char e_nr;
@@ -4156,10 +4158,11 @@ static void end_line(struct line_stats *s)
 	for (i = 0; i < s->e_nr; i++)
 		printf("%s", s->e[i]->c);
 
-	printf(" (%d)\n", s->last_char_rank);
+	printf(" (%d . %d)\n", s->last_char_rank, s->offset_to_target);
 
 	s->total_rank += s->last_char_rank;
 	s->last_char_rank = 0;
+	s->offset_to_target = 0;
 	s->e_nr = 0;
 }
 
@@ -4230,11 +4233,14 @@ static int print_last_rank_contained_parsed_args(
 				cutoff, line_stats.k[curr_top_key].key_ch);
 		}
 
+		if (resorted[i].ranking <= line_stats.total_chars)
+			line_stats.offset_to_target--;
 		if (!line_stats.k[curr_top_key].available)
 			continue;
 
 		output_char(&line_stats, &resorted[i]);
 		line_stats.k[curr_top_key].available--;
+		line_stats.offset_to_target++;
 	}
 	end_line(&line_stats);
 	print_stats_summary(&line_stats);
