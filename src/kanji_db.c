@@ -4092,41 +4092,38 @@ struct top_key {
 	unsigned char available;
 };
 
-struct top_keys {
+struct line_stats {
+	unsigned short last_char_rank;
+	unsigned short total_rank;
+
 	unsigned short k_nr;
 	struct top_key k[KANJI_KEY_COUNT];
 	unsigned short total_chars;
+
+	unsigned char e_nr;
+	const struct kanji_entry *e[KANJI_KEY_COUNT];
+	unsigned sort_each_line_by_rad_so : 1;
 };
 
-static void get_top_keys(struct top_keys *top_keys)
+static void get_top_keys(struct line_stats *s)
 {
 	struct unused_kanji_keys unused_kk;
 	size_t unused_kk_index = 0;
 
 	get_free_kanji_keys_count(&unused_kk);
 
-	memset(top_keys, 0, sizeof(*top_keys));
 	for (unused_kk_index = 0; unused_kk_index < KANJI_KEY_COUNT;
 			unused_kk_index++) {
 		if (!unused_kk.count[unused_kk_index])
 			continue;
-		top_keys->k[top_keys->k_nr].key_ch =
+		s->k[s->k_nr].key_ch =
 			KEY_INDEX_TO_CHAR_MAP[unused_kk_index];
-		top_keys->k[top_keys->k_nr].available =
+		s->k[s->k_nr].available =
 			(unsigned char) unused_kk.count[unused_kk_index];
-		top_keys->k_nr++;
-		top_keys->total_chars += unused_kk.count[unused_kk_index];
+		s->k_nr++;
+		s->total_chars += unused_kk.count[unused_kk_index];
 	}
 }
-
-struct line_stats {
-	unsigned short last_char_rank;
-	unsigned short total_rank;
-
-	unsigned char e_nr;
-	const struct kanji_entry *e[KANJI_KEY_COUNT];
-	unsigned sort_each_line_by_rad_so : 1;
-};
 
 static void output_char(struct line_stats *s, struct kanji_entry *k)
 {
@@ -4166,10 +4163,10 @@ static void end_line(struct line_stats *s)
 	s->e_nr = 0;
 }
 
-static void print_stats_summary(struct line_stats *s, struct top_keys *top_keys)
+static void print_stats_summary(struct line_stats *s)
 {
-	printf("average rank: %.1f\n", (float) s->total_rank / top_keys->k_nr);
-	printf("total chars:  %d\n", top_keys->total_chars);
+	printf("average rank: %.1f\n", (float) s->total_rank / s->k_nr);
+	printf("total chars:  %d\n", s->total_chars);
 }
 
 static int print_last_rank_contained_parsed_args(
@@ -4182,17 +4179,16 @@ static int print_last_rank_contained_parsed_args(
 	struct cutoff_kanji cutoff_kanji;
 	size_t i;
 	int curr_top_key = -1;
-	struct top_keys top_keys;
 	struct line_stats line_stats;
 
 	memset(&line_stats, 0, sizeof(line_stats));
 	line_stats.sort_each_line_by_rad_so = sort_each_line_by_rad_so;
 
-	get_top_keys(&top_keys);
-	if (cutoff_kanji_count != top_keys.k_nr - 1) {
+	get_top_keys(&line_stats);
+	if (cutoff_kanji_count != line_stats.k_nr - 1) {
 		fprintf(stderr,
 			"%d個の区切り漢字を必するけれど、%ld個が渡された。\n",
-			top_keys.k_nr - 1, cutoff_kanji_count);
+			line_stats.k_nr - 1, cutoff_kanji_count);
 		return 1;
 	}
 
@@ -4217,7 +4213,7 @@ static int print_last_rank_contained_parsed_args(
 
 	for (i = 0; i < kanji_count; i++) {
 		if (curr_top_key < 0 ||
-		    (curr_top_key < top_keys.k_nr - 1 &&
+		    (curr_top_key < line_stats.k_nr - 1 &&
 		     cutoff_kanji.k[curr_top_key]->rad_so_sort_key <=
 		     resorted[i].rad_so_sort_key)) {
 			const char *cutoff;
@@ -4231,17 +4227,17 @@ static int print_last_rank_contained_parsed_args(
 			curr_top_key++;
 			printf(
 				"[ %s ] %c ",
-				cutoff, top_keys.k[curr_top_key].key_ch);
+				cutoff, line_stats.k[curr_top_key].key_ch);
 		}
 
-		if (!top_keys.k[curr_top_key].available)
+		if (!line_stats.k[curr_top_key].available)
 			continue;
 
 		output_char(&line_stats, &resorted[i]);
-		top_keys.k[curr_top_key].available--;
+		line_stats.k[curr_top_key].available--;
 	}
 	end_line(&line_stats);
-	print_stats_summary(&line_stats, &top_keys);
+	print_stats_summary(&line_stats);
 	return 0;
 }
 
