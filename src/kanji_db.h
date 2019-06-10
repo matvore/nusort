@@ -5,7 +5,7 @@ struct kanji_entry {
 	char c[5];
 	/* 漢字出現による順位 */
 	unsigned short ranking;
-	/* 部首＋画数による併べ替えキー */
+	/* 部首＋画数による並べ替えキー */
 	unsigned int rad_so_sort_key;
 };
 

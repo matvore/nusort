@@ -10,8 +10,8 @@
 
 /*
  * 主な漢字データベース
- * 行はCodepointによって併べ替えられている。けれど、ユーザーが見るのは日本語の
- * 部首＋画数順。日本語の併べ替え順はフィールドrad_so_sort_keyで符号化されてい
+ * 行はCodepointによって並べ替えられている。けれど、ユーザーが見るのは日本語の
+ * 部首＋画数順。日本語の並べ替え順はフィールドrad_so_sort_keyで符号化されてい
  * る。
  * ranking (出現率) はGoogleKanji.xls から引用した
  * (<https://sites.google.com/site/shibano/shin-jouyoukanji-hyou-no-tame-no-kanji-shutsugen-hindo-chousa> でダウンロード可)。
