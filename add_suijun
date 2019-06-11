@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+priority=/tmp/priority_$$
+grep -v '^#' $HOME/hrs/priority/jpn >$priority
+
+sed -n '16,4040p' src/kanji_db.c |
+while read line; do
+	c=$(awk -F'"' '{print $2}' <<<"$line")
+	suijun=$(grep -n $c $priority | cut -d: -f1)
+
+	if [[ -z $suijun ]]; then
+		suijun=0
+	fi
+	sed "s/,/, $suijun,/" <<<"$line"
+done
