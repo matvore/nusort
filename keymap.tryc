@@ -1,0 +1,16 @@
+struct key_map {
+	unsigned int rows[7];
+}
+
+static struct key_map m = {
+	{
+		0012233,
+		0012233,
+		0245763,
+		0355763,
+		0211230,
+		0211110,
+		0211110,
+	}
+};
+
