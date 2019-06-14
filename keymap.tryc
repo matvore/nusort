@@ -1,8 +1,13 @@
-struct key_map {
+struct finger_travel_map {
 	unsigned int rows[7];
-}
+};
 
-static struct key_map m = {
+struct hand_travel_maps {
+	struct finger_travel_map[6];
+};
+
+static struct hand_travel_maps LEFT_HAND = {
+	/* １列目で始まる */
 	{
 		0012233,
 		0012233,
@@ -11,6 +16,16 @@ static struct key_map m = {
 		0211230,
 		0211110,
 		0211110,
-	}
+	},
+	/* ２列目で始まる */
+	{
+		0022233,
+		0022333,
+		0135763,
+		0267762,
+		0021340,
+		0021210,
+		0021210,
+	},
 };
 
