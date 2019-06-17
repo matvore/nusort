@@ -34,15 +34,15 @@ static int first_key(
 static int first_key_then_rank_cmp(void *thunk_, const void* a_, const void* b_)
 {
 	const struct cutoff_kanji *cutoff_kanji = thunk_;
-	const struct kanji_entry *a = a_;
-	const struct kanji_entry *b = b_;
-	int a_first_key = first_key(a, cutoff_kanji);
-	int b_first_key = first_key(b, cutoff_kanji);
+	const struct kanji_entry *const *a = a_;
+	const struct kanji_entry *const *b = b_;
+	int a_first_key = first_key(*a, cutoff_kanji);
+	int b_first_key = first_key(*b, cutoff_kanji);
 
 	if (a_first_key != b_first_key)
 		return a_first_key > b_first_key ? 1 : -1;
-	else if (a->ranking != b->ranking)
-		return a->ranking > b->ranking ? 1 : -1;
+	else if ((**a).ranking != (**b).ranking)
+		return (**a).ranking > (**b).ranking ? 1 : -1;
 	else
 		return 0;
 }
@@ -143,7 +143,7 @@ static int print_last_rank_contained_parsed_args(
 	const char **cutoff_kanji_raw,
 	int sort_each_line_by_rad_so)
 {
-	struct kanji_entry *resorted;
+	struct kanji_entry **resorted;
 	struct cutoff_kanji cutoff_kanji;
 	size_t i;
 	int curr_top_key = -1;
@@ -175,7 +175,8 @@ static int print_last_rank_contained_parsed_args(
 	cutoff_kanji.key_count = cutoff_kanji_count + 1;
 
 	resorted = xcalloc(kanji_db_nr(), sizeof(*resorted));
-	memcpy(resorted, kanji_db(), kanji_db_nr() * sizeof(*kanji_db()));
+	for (i = 0; i < kanji_db_nr(); i++)
+		resorted[i] = kanji_db() + i;
 	qsort_r(resorted, kanji_db_nr(), sizeof(*resorted), &cutoff_kanji,
 		first_key_then_rank_cmp);
 
@@ -183,7 +184,7 @@ static int print_last_rank_contained_parsed_args(
 		if (curr_top_key < 0 ||
 		    (curr_top_key < line_stats.k_nr - 1 &&
 		     cutoff_kanji.k[curr_top_key]->rad_so_sort_key <=
-		     resorted[i].rad_so_sort_key)) {
+		     resorted[i]->rad_so_sort_key)) {
 			const char *cutoff;
 
 			end_line(&line_stats);
@@ -198,12 +199,12 @@ static int print_last_rank_contained_parsed_args(
 				cutoff, line_stats.k[curr_top_key].key_ch);
 		}
 
-		if (resorted[i].ranking <= line_stats.total_chars)
+		if (resorted[i]->ranking <= line_stats.total_chars)
 			line_stats.offset_to_target--;
 		if (!line_stats.k[curr_top_key].available)
 			continue;
 
-		output_char(&line_stats, &resorted[i]);
+		output_char(&line_stats, resorted[i]);
 		line_stats.k[curr_top_key].available--;
 		line_stats.offset_to_target++;
 	}
