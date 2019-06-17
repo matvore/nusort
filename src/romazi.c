@@ -311,23 +311,52 @@ struct used_bit_map {
 	char m[MAPPABLE_CHAR_COUNT * MAPPABLE_CHAR_COUNT];
 };
 
+static int free_as_singleton_code(
+	const struct used_bit_map *used,
+	int key_code)
+{
+	size_t i;
+
+	for (i = key_code * MAPPABLE_CHAR_COUNT;
+			i < (key_code + 1) * MAPPABLE_CHAR_COUNT;
+			i++) {
+		if (used->m[i])
+			return 0;
+	}
+	return 1;
+}
+
+static int ascii_to_upper(int c, int change)
+{
+	if (!change || c < 'a' || c > 'z')
+		return c;
+	return c ^ 0x20;
+}
+
+static void mark_used(struct used_bit_map *used, const char *code, int caps)
+{
+	size_t first_key_off = char_to_key_index(ascii_to_upper(code[0], caps))
+		* MAPPABLE_CHAR_COUNT;
+
+	if (strlen(code) >= 2)
+		used->m[
+			first_key_off
+			+ char_to_key_index(ascii_to_upper(code[1], caps))
+		] = 1;
+	else
+		memset(used->m + first_key_off, 1, MAPPABLE_CHAR_COUNT);
+}
+
 static void get_free_kanji_keys(struct used_bit_map *used)
 {
 	struct romazi_entry *i;
 	memset(used, 0, sizeof(*used));
 
 	for (i = ROMAZI; i->orig; i++) {
-		size_t first_key_off;
-
-		if (!i->use_as_is)
-			continue;
-		first_key_off = char_to_key_index(i->orig[0])
-				* MAPPABLE_CHAR_COUNT;
-		if (strlen(i->orig) >= 2)
-			used->m[first_key_off + char_to_key_index(i->orig[1])] =
-				1;
-		else
-			memset(used->m + first_key_off, 1, MAPPABLE_CHAR_COUNT);
+		if (i->use_as_is)
+			mark_used(used, i->orig, 0);
+		if (i->auto_katakana)
+			mark_used(used, i->orig, 1);
 	}
 }
 
@@ -341,10 +370,20 @@ void get_free_kanji_keys_count(struct unused_kanji_keys *u)
 	memset(u, 0, sizeof(*u));
 	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
 		size_t key2;
+		char key1_ch;
+		size_t shifted_key1 = key1 + MAPPABLE_CHAR_COUNT / 2;
+
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
 			if (!used.m[key1 * MAPPABLE_CHAR_COUNT + key2])
 				u->count[key1]++;
 		}
+
+		key1_ch = KEY_INDEX_TO_CHAR_MAP[key1];
+		if (key1_ch >= '0' && key1_ch <= '9')
+			continue;
+
+		if (free_as_singleton_code(&used, shifted_key1))
+			u->count[key1]++;
 	}
 }
 
