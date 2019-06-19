@@ -12,6 +12,17 @@ struct romazi_entry {
 };
 
 struct romazi_entry ROMAZI[] = {
+	{"!",	"一",	1, 0},
+	{"@",	"二",	1, 0},
+	{"#",	"三",	1, 0},
+	{"$",	"四",	1, 0},
+	{"%",	"五",	1, 0},
+	{"^",	"六",	1, 0},
+	{"&",	"七",	1, 0},
+	{"*",	"八",	1, 0},
+	{"(",	"九",	1, 0},
+	{")",	"十",	1, 0},
+
 	{"j",	"っ",	1, 1},
 	{"f",	"ん",	1, 1},
 
@@ -379,8 +390,6 @@ void get_free_kanji_keys_count(struct unused_kanji_keys *u)
 		}
 
 		key1_ch = KEY_INDEX_TO_CHAR_MAP[key1];
-		if (key1_ch >= '0' && key1_ch <= '9')
-			continue;
 
 		if (free_as_singleton_code(&used, shifted_key1))
 			u->count[key1]++;
