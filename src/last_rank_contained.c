@@ -144,6 +144,7 @@ static int print_last_rank_contained_parsed_args(
 	int sort_each_line_by_rad_so)
 {
 	struct kanji_entry **resorted;
+	size_t resorted_nr;
 	struct cutoff_kanji cutoff_kanji;
 	size_t i;
 	int curr_top_key = -1;
@@ -175,12 +176,15 @@ static int print_last_rank_contained_parsed_args(
 	cutoff_kanji.key_count = cutoff_kanji_count + 1;
 
 	resorted = xcalloc(kanji_db_nr(), sizeof(*resorted));
-	for (i = 0; i < kanji_db_nr(); i++)
-		resorted[i] = kanji_db() + i;
-	qsort_r(resorted, kanji_db_nr(), sizeof(*resorted), &cutoff_kanji,
+	resorted_nr = 0;
+	for (i = 0; i < kanji_db_nr(); i++) {
+		if (!is_target_non_sorted_string(kanji_db()[i].c))
+			resorted[resorted_nr++] = kanji_db() + i;
+	}
+	qsort_r(resorted, resorted_nr, sizeof(*resorted), &cutoff_kanji,
 		first_key_then_rank_cmp);
 
-	for (i = 0; i < kanji_db_nr(); i++) {
+	for (i = 0; i < resorted_nr; i++) {
 		if (curr_top_key < 0 ||
 		    (curr_top_key < line_stats.k_nr - 1 &&
 		     cutoff_kanji.k[curr_top_key]->rad_so_sort_key <=

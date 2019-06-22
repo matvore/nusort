@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 struct romazi_entry {
@@ -282,8 +283,9 @@ struct romazi_entry ROMAZI[] = {
 	{"whe",	"うぇ",	0, 1},
 	{"who",	"うぉ",	0, 1},
 	{"-",	"ー",	1, 0},
-	{NULL,	NULL,	0, 0},
 };
+
+#define ROMAZI_NR (sizeof(ROMAZI) / sizeof(*ROMAZI))
 
 const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT] = {
 	'1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
@@ -316,6 +318,31 @@ size_t char_to_key_index(char ch)
 				key_index;
 
 	return char_to_key_index_map[(int) ch];
+}
+
+static const char *target_strs[ROMAZI_NR];
+
+static int target_strs_init;
+
+static int compare_strp(const void *a_, const void *b_)
+{
+	const char *a = *(const char *const *)a_;
+	const char *b = *(const char *const *)b_;
+	return strcmp(a, b);
+}
+
+int is_target_non_sorted_string(const char *s)
+{
+	if (!target_strs_init) {
+		size_t i;
+		for (i = 0; i < ROMAZI_NR; i++)
+			target_strs[i] = ROMAZI[i].conv;
+		qsort(target_strs, ROMAZI_NR, sizeof(*target_strs),
+		      compare_strp);
+		target_strs_init = 1;
+	}
+	return !!bsearch(&s, target_strs, ROMAZI_NR,  sizeof(*target_strs),
+			 compare_strp);
 }
 
 struct used_bit_map {
@@ -360,14 +387,15 @@ static void mark_used(struct used_bit_map *used, const char *code, int caps)
 
 static void get_free_kanji_keys(struct used_bit_map *used)
 {
-	struct romazi_entry *i;
+	size_t i;
 	memset(used, 0, sizeof(*used));
 
-	for (i = ROMAZI; i->orig; i++) {
-		if (i->use_as_is)
-			mark_used(used, i->orig, 0);
-		if (i->auto_katakana)
-			mark_used(used, i->orig, 1);
+	for (i = 0; i < ROMAZI_NR; i++) {
+		const struct romazi_entry *e = &ROMAZI[i];
+		if (e->use_as_is)
+			mark_used(used, e->orig, 0);
+		if (e->auto_katakana)
+			mark_used(used, e->orig, 1);
 	}
 }
 
