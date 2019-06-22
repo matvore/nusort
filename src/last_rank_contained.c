@@ -31,6 +31,15 @@ static int first_key(
 	return min;
 }
 
+static int rank_cmp(const void *a_, const void *b_)
+{
+	const struct kanji_entry *const *a = a_;
+	const struct kanji_entry *const *b = b_;
+	if ((**a).ranking != (**b).ranking)
+		return (**a).ranking > (**b).ranking ? 1 : -1;
+	return 0;
+}
+
 static int first_key_then_rank_cmp(void *thunk_, const void* a_, const void* b_)
 {
 	const struct cutoff_kanji *cutoff_kanji = thunk_;
@@ -41,10 +50,7 @@ static int first_key_then_rank_cmp(void *thunk_, const void* a_, const void* b_)
 
 	if (a_first_key != b_first_key)
 		return a_first_key > b_first_key ? 1 : -1;
-	else if ((**a).ranking != (**b).ranking)
-		return (**a).ranking > (**b).ranking ? 1 : -1;
-	else
-		return 0;
+	return rank_cmp(a_, b_);
 }
 
 static int kanji_db_compar(const void *key, const void *entry_)
@@ -67,6 +73,7 @@ struct line_stats {
 	short offset_to_target;
 
 	unsigned short total_chars;
+	unsigned short target_rank;
 
 	unsigned char e_nr;
 	const struct kanji_entry *e[KANJI_KEY_COUNT + 1];
@@ -134,8 +141,9 @@ static void end_line(struct line_stats *s)
 
 static void print_stats_summary(struct line_stats *s)
 {
-	printf("average rank: %.1f\n", (float) s->total_rank / s->k_nr);
-	printf("total chars:  %d\n", s->total_chars);
+	printf("各行平均位: %.1f\n", (float) s->total_rank / s->k_nr);
+	printf("目標位:  %d\n", s->target_rank);
+	printf("合計漢字数:  %d\n", s->total_chars);
 }
 
 static int print_last_rank_contained_parsed_args(
@@ -181,6 +189,8 @@ static int print_last_rank_contained_parsed_args(
 		if (!is_target_non_sorted_string(kanji_db()[i].c))
 			resorted[resorted_nr++] = kanji_db() + i;
 	}
+	qsort(resorted, resorted_nr, sizeof(*resorted), rank_cmp);
+	line_stats.target_rank = resorted[line_stats.total_chars]->ranking;
 	qsort_r(resorted, resorted_nr, sizeof(*resorted), &cutoff_kanji,
 		first_key_then_rank_cmp);
 
@@ -203,7 +213,7 @@ static int print_last_rank_contained_parsed_args(
 				cutoff, line_stats.k[curr_top_key].key_ch);
 		}
 
-		if (resorted[i]->ranking <= line_stats.total_chars)
+		if (resorted[i]->ranking <= line_stats.target_rank)
 			line_stats.offset_to_target--;
 		if (!line_stats.k[curr_top_key].available)
 			continue;
