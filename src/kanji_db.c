@@ -1,6 +1,6 @@
 #include "kanji_db.h"
 
-#include "compat.h"
+#include "util.h"
 
 #include <stdlib.h>
 #include <string.h>

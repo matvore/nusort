@@ -1,6 +1,6 @@
 #include "romazi.h"
 
-#include "compat.h"
+#include "util.h"
 
 #include <assert.h>
 #include <stdio.h>

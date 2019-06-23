@@ -1,4 +1,3 @@
-#include "compat.h"
 #include "kanji_db.h"
 #include "romazi.h"
 #include "util.h"
