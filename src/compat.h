@@ -1,47 +1,46 @@
+#include "util.h"
+
 #include <string.h>
 
-struct qsort_frame {
-	size_t begin;
-	size_t end;
+struct qsort_frames {
+	struct {
+		size_t begin;
+		size_t end;
+	} *f, *end;
 };
 
-static inline void qsort_advance_pivot(
-	char *el, size_t a, size_t *b, void *pivot_buff, size_t width)
+static inline void qsort_push_frame(
+	struct qsort_frames *f, size_t begin, size_t end)
 {
-	void *a_el = el + a * width;
-	memcpy(el + *b * width, a_el, width);
-	(*b)++;
-	memcpy(a_el, el + *b * width, width);
-	memcpy(el + *b * width, pivot_buff, width);
+	if (end >= begin + 2) {
+		f->end->begin = begin;
+		f->end->end = end;
+		f->end++;
+	}
 }
 
-#include <stdio.h>
-#define QSORT(prefix, el, cnt, lt) \
+#define QSORT(p, el, cnt, lt) \
 	do { \
-		struct qsort_frame f[10000] = {{0, cnt}}; \
-		size_t f_last = 0; \
-		char pivot_buff[sizeof(*(el))]; \
-		while (1) { \
-			struct qsort_frame *cf = f + f_last; \
-			size_t prefix##a, prefix##b = cf->begin; \
-			if (cf->end <= prefix##b) { \
-				if (!f_last) \
-					break; \
-				f_last--; \
-				continue; \
+		struct qsort_frames f; \
+		char pivot[sizeof(*(el))]; \
+		f.f = f.end = xcalloc(cnt / 2, sizeof(*f.f)); \
+		qsort_push_frame(&f, 0, cnt); \
+		while (f.end != f.f) { \
+			size_t begin, p##a, p##b; \
+			f.end--; \
+			p##b = begin = f.end->begin; \
+			memcpy(pivot, el + begin, sizeof(*(el))); \
+			for (p##a = begin + 1; p##a < f.end->end; p##a++) { \
+				if (lt) { \
+					(el)[p##b] = (el)[p##a]; \
+					p##b++; \
+					(el)[p##a] = (el)[p##b]; \
+					memcpy(&p##b[el], pivot, \
+					       sizeof(*(el))); \
+				} \
 			} \
-			memcpy(pivot_buff, el + prefix##b, sizeof(*(el))); \
-			for (prefix##a = prefix##b + 1; prefix##a < cf->end; \
-					prefix##a++) { \
-				if (lt) \
-					qsort_advance_pivot( \
-						(char *)(el), \
-						prefix##a, &prefix##b, \
-						pivot_buff, sizeof(*(el))); \
-			} \
-			f[f_last + 1].begin = cf->begin; \
-			f[f_last + 1].end = prefix##b; \
-			f[f_last].begin = prefix##b + 1; \
-			f_last++; \
+			qsort_push_frame(&f, begin, p##b); \
+			qsort_push_frame(&f, p##b + 1, p##a); \
 		} \
+		free(f.f); \
 	} while(0)
