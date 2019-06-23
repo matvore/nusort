@@ -1,3 +1,4 @@
+#include "compat.h"
 #include "kanji_db.h"
 #include "romazi.h"
 #include "util.h"
@@ -31,26 +32,16 @@ static int first_key(
 	return min;
 }
 
-static int rank_cmp(const void *a_, const void *b_)
+static int first_key_then_rank_lt(
+	const struct cutoff_kanji *cutoff_kanji,
+	const struct kanji_entry *a, const struct kanji_entry *b)
 {
-	const struct kanji_entry *const *a = a_;
-	const struct kanji_entry *const *b = b_;
-	if ((**a).ranking != (**b).ranking)
-		return (**a).ranking > (**b).ranking ? 1 : -1;
-	return 0;
-}
-
-static int first_key_then_rank_cmp(void *thunk_, const void* a_, const void* b_)
-{
-	const struct cutoff_kanji *cutoff_kanji = thunk_;
-	const struct kanji_entry *const *a = a_;
-	const struct kanji_entry *const *b = b_;
-	int a_first_key = first_key(*a, cutoff_kanji);
-	int b_first_key = first_key(*b, cutoff_kanji);
+	int a_first_key = first_key(a, cutoff_kanji);
+	int b_first_key = first_key(b, cutoff_kanji);
 
 	if (a_first_key != b_first_key)
-		return a_first_key > b_first_key ? 1 : -1;
-	return rank_cmp(a_, b_);
+		return a_first_key < b_first_key;
+	return a->ranking < b->ranking;
 }
 
 static int kanji_db_compar(const void *key, const void *entry_)
@@ -106,17 +97,6 @@ static void output_char(struct line_stats *s, struct kanji_entry *k)
 	s->e[s->e_nr++] = k;
 }
 
-static int rad_so_cmp(const void *a_, const void *b_)
-{
-	struct kanji_entry *a = *(struct kanji_entry **)a_;
-	struct kanji_entry *b = *(struct kanji_entry **)b_;
-
-	if (a->rad_so_sort_key != b->rad_so_sort_key)
-		return a->rad_so_sort_key > b->rad_so_sort_key ? 1 : -1;
-	else
-		return 0;
-}
-
 static void end_line(struct line_stats *s)
 {
 	size_t i;
@@ -126,7 +106,8 @@ static void end_line(struct line_stats *s)
 
 	if (s->sort_each_line_by_rad_so)
 		/* 部首＋画数で並べ替える */
-		qsort(s->e, s->e_nr, sizeof(*s->e), rad_so_cmp);
+		QSORT(, s->e, s->e_nr,
+		      s->e[a]->rad_so_sort_key < s->e[b]->rad_so_sort_key);
 
 	for (i = 0; i < s->e_nr; i++)
 		printf("%s", s->e[i]->c);
@@ -189,10 +170,11 @@ static int print_last_rank_contained_parsed_args(
 		if (!is_target_non_sorted_string(kanji_db()[i].c))
 			resorted[resorted_nr++] = kanji_db() + i;
 	}
-	qsort(resorted, resorted_nr, sizeof(*resorted), rank_cmp);
+	QSORT(, resorted, resorted_nr,
+	      resorted[a]->ranking < resorted[b]->ranking);
 	line_stats.target_rank = resorted[line_stats.total_chars]->ranking;
-	qsort_r(resorted, resorted_nr, sizeof(*resorted), &cutoff_kanji,
-		first_key_then_rank_cmp);
+	QSORT(, resorted, resorted_nr,
+	      first_key_then_rank_lt(&cutoff_kanji, resorted[a], resorted[b]));
 
 	for (i = 0; i < resorted_nr; i++) {
 		if (curr_top_key < 0 ||

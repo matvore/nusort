@@ -1,5 +1,7 @@
 #include "romazi.h"
 
+#include "compat.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -337,8 +339,8 @@ int is_target_non_sorted_string(const char *s)
 		size_t i;
 		for (i = 0; i < ROMAZI_NR; i++)
 			target_strs[i] = ROMAZI[i].conv;
-		qsort(target_strs, ROMAZI_NR, sizeof(*target_strs),
-		      compare_strp);
+		QSORT(, target_strs, ROMAZI_NR,
+		      strcmp(target_strs[a], target_strs[b]) < 0);
 		target_strs_init = 1;
 	}
 	return !!bsearch(&s, target_strs, ROMAZI_NR,  sizeof(*target_strs),

@@ -1,5 +1,7 @@
 #include "kanji_db.h"
 
+#include "compat.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -4047,20 +4049,14 @@ size_t kanji_db_nr()
 	return sizeof(kanji) / sizeof(*kanji);
 }
 
-static int kanjic_cmp(const void *a_, const void *b_)
-{
-	const struct kanji_entry *a = a_;
-	const struct kanji_entry *b = b_;
-	return strcmp(a->c, b->c);
-}
-
 struct kanji_entry *kanji_db()
 {
 	if (!sorted) {
 		size_t i;
 		for (i = 0; i < kanji_db_nr(); i++)
 			kanji[i].rad_so_sort_key = i;
-		qsort(kanji, kanji_db_nr(), sizeof(*kanji), kanjic_cmp);
+		QSORT(, kanji, kanji_db_nr(),
+		      strcmp(kanji[a].c, kanji[b].c) < 0);
 		sorted = 1;
 	}
 	return kanji;
