@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+grep -r sjt ~/hrs/code/kanji |
+	cut -d: -f 2 |
+	sed -E 's/...\t//; s/\t.*sjt([^\t]*).*/\1/'
