@@ -6,6 +6,8 @@ struct kanji_entry {
 	/* 漢字出現による順位 */
 	unsigned short ranking;
 
+	unsigned valid_cutoff : 1;
+
 	/* 追加する予定のあるフィールド：
 	unsigned jis_suijun : 3;
 	char zh_simplified[5];
