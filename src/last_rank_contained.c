@@ -160,6 +160,12 @@ static int print_last_rank_contained_parsed_args(
 					cutoff_kanji_raw[i]);
 			exit(2);
 		}
+		if (!cutoff_kanji.k[i]->valid_cutoff) {
+			fprintf(stderr, "[ %s ] は区切り漢字として使えません。"
+					"\n",
+					cutoff_kanji_raw[i]);
+			exit(3);
+		}
 	}
 	cutoff_kanji.key_count = cutoff_kanji_count + 1;
 
