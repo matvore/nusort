@@ -43,12 +43,6 @@ static int first_key_then_rank_lt(
 	return a->ranking < b->ranking;
 }
 
-static int kanji_db_compar(const void *key, const void *entry_)
-{
-	const struct kanji_entry *entry = entry_;
-	return strcmp(key, entry->c);
-}
-
 struct top_key {
 	char key_ch;
 	unsigned char available;
@@ -150,9 +144,9 @@ static int print_last_rank_contained_parsed_args(
 	}
 
 	for (i = 0; i < cutoff_kanji_count; i++) {
-		cutoff_kanji.k[i] = bsearch(
-			cutoff_kanji_raw[i], kanji_db(), kanji_db_nr(),
-			sizeof(*kanji_db()), kanji_db_compar);
+		BSEARCH(cutoff_kanji.k[i], kanji_db(), kanji_db_nr(),
+			strcmp(cutoff_kanji.k[i]->c, cutoff_kanji_raw[i]));
+
 		if (!cutoff_kanji.k[i]) {
 			fprintf(stderr, "[ %s ] は区切り漢字に指定されている"
 					"けれど、KANJI配列に含まれていない。"

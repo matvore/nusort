@@ -326,15 +326,9 @@ static const char *target_strs[ROMAZI_NR];
 
 static int target_strs_init;
 
-static int compare_strp(const void *a_, const void *b_)
-{
-	const char *a = *(const char *const *)a_;
-	const char *b = *(const char *const *)b_;
-	return strcmp(a, b);
-}
-
 int is_target_non_sorted_string(const char *s)
 {
+	const char **e;
 	if (!target_strs_init) {
 		size_t i;
 		for (i = 0; i < ROMAZI_NR; i++)
@@ -343,8 +337,8 @@ int is_target_non_sorted_string(const char *s)
 		      strcmp(target_strs[a], target_strs[b]) < 0);
 		target_strs_init = 1;
 	}
-	return !!bsearch(&s, target_strs, ROMAZI_NR,  sizeof(*target_strs),
-			 compare_strp);
+	BSEARCH(e, target_strs, ROMAZI_NR, strcmp(*e, s));
+	return !!e;
 }
 
 struct used_bit_map {

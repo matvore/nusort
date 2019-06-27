@@ -44,3 +44,20 @@ do { \
 	} \
 	free(f.f); \
 } while(0)
+
+#define BSEARCH(e, el, cnt, cmp) do { \
+	size_t min = 0, max = (cnt); \
+	while (min != max) { \
+		size_t mid = (max + min) / 2; \
+		int cmp_res; \
+		e = (el) + mid; \
+		cmp_res  = (cmp); \
+		if (!cmp_res) \
+			break; \
+		e = NULL; \
+		if (cmp_res < 0) \
+			min = mid + 1; \
+		else \
+			max = mid; \
+	} \
+} while (0)
