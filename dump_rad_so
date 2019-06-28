@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -e
+
+src=$HOME/Desktop/Unihan/Unihan_RadicalStrokeCounts.txt
+
+mkdir -p /tmp/dump_rad_so
+
+grep 'U+....	kRSAdobe_Japan1_6	C[+][^C]*$' $src |
+	sed 's/kRSAdobe_Japan1_6'$'\t//' |
+	sed 's/^U+//' |
+	awk '{print $1, $2}' |
+while read code info
+do
+	ch=$(printf '\u'$code)
+	echo $info |
+		sed -E 's/.*[+]//' |
+		awk -F. '{ print $1, $3 }' |
+		xargs printf '%02x%02x' >| /tmp/dump_rad_so/$ch
+	printf .
+done
+
+echo
