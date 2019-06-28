@@ -8,14 +8,26 @@ grep \{\" src/kanji_db.c |
 while read ch
 do
 	src=/tmp/dump_rad_so/$ch
+	smallest_matching=zzzz
 	if [[ ! -f $src ]]; then
-		new_code=$prev
-		echo skipping: $ch > /dev/stderr
-	else
-		new_code=$(cat $src)
+		echo skipping: $ch
+		continue
 	fi
-	if [[ $new_code < $prev ]]; then
+
+	while read code
+	do
+		if [[ $code == $prev ]]; then
+			smallest_matching=$code
+			break
+		fi
+		if [[ $code > $prev && $code < $smallest_matching ]]; then
+			smallest_matching=$code
+		fi
+	done <$src
+	if [[ $smallest_matching == 'zzzz' ]]; then
 		echo err: $ch
+	else
+		prev=$smallest_matching
+		echo ok: $ch - $prev
 	fi
-	prev=$new_code
 done
