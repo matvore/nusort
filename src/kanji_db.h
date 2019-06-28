@@ -1,12 +1,17 @@
 #include <stddef.h>
 
+#define CUTOFFTYPE_NONE                  0
+#define CUTOFFTYPE_NEWSTROKECOUNT        1
+#define CUTOFFTYPE_NEWRADICAL            2
+#define CUTOFFTYPE_NEWRADICALSTROKECOUNT 3
+
 struct kanji_entry {
 	/* UTF-8ヌル終端バイト列. */
 	char c[5];
 	/* 漢字出現による順位 */
 	unsigned short ranking;
 
-	unsigned valid_cutoff : 1;
+	unsigned cutoff_type : 2;
 
 	/* 追加する予定のあるフィールド：
 	unsigned jis_suijun : 3;

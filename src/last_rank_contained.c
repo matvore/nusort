@@ -154,7 +154,7 @@ static int print_last_rank_contained_parsed_args(
 					cutoff_kanji_raw[i]);
 			exit(2);
 		}
-		if (!cutoff_kanji.k[i]->valid_cutoff) {
+		if (!cutoff_kanji.k[i]->cutoff_type) {
 			fprintf(stderr, "[ %s ] は区切り漢字として使えません。"
 					"\n",
 					cutoff_kanji_raw[i]);
