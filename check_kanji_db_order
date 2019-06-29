@@ -3,10 +3,10 @@
 set -e
 
 prev=0000
-grep \{\" src/kanji_db.c |
-	awk -F\" '{print $2}' |
-while read ch
+awk -F\" '/{"/ {print NR, $2}' src/kanji_db.c |
+while read lino ch
 do
+	echo -n "$lino	"
 	src=/tmp/dump_rad_so/$ch
 	smallest_matching=zzzz
 	if [[ ! -f $src ]]; then

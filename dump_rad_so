@@ -16,6 +16,22 @@ echo a500 >>$dir/采
 echo 8702 >>$dir/舎
 echo 8709 >>$dir/舗
 
+format_code () {
+	awk -F. '
+{
+	# 一画の部首を全て同一の部首として見なす。
+	if ($1 <= 6) {$1 = "1"}
+
+	# 人と儿と入と八を同一の部首として見なす。
+	if ($1 >= 9 && $1 <= 12) {$1 = "9"}
+
+	# 匚と匸を同一の部首として見なす。
+	if ($1 == "23") {$1 = "22"}
+
+	printf "%02x%02x\n", $1, $3;
+}'
+}
+
 grep 'U+....	kRSAdobe_Japan1_6' $src |
 	sed 's/kRSAdobe_Japan1_6	//' |
 	sed 's/^U+//' |
@@ -25,7 +41,7 @@ do
 	for key in $keys; do
 		echo $key |
 			sed -E 's/.*[+]//' |
-			awk -F. '{ if ($1 == "23") {$1 = "22"} printf "%02x%02x\n", $1, $3}' >> $dir/$ch
+			format_code >> $dir/$ch
 	done
 	printf .
 done
