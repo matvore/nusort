@@ -13,6 +13,8 @@ echo 4307 >>$dir/斎
 echo 5609 >>$dir/蒸
 echo 7207 >>$dir/萬
 echo a500 >>$dir/采
+echo 8702 >>$dir/舎
+echo 8709 >>$dir/舗
 
 grep 'U+....	kRSAdobe_Japan1_6' $src |
 	sed 's/kRSAdobe_Japan1_6	//' |
