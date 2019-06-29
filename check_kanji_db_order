@@ -26,10 +26,10 @@ do
 	done <$src
 	if [[ $smallest_matching == 'zzzz' ]]; then
 		echo -n "err:	$ch - "
-		cat $src | tr '\n' ' '
-		echo
 	else
 		prev=$smallest_matching
-		echo "ok:	$ch - $prev"
+		echo -n "ok:	$ch - "
 	fi
+	cat $src | sort -u | tr '\n' ' '
+	echo
 done
