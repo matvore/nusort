@@ -8,6 +8,9 @@ dir=/tmp/dump_rad_so
 rm -rf $dir
 mkdir -p $dir
 
+echo 2c09 >>$dir/屠
+echo 4307 >>$dir/斎
+
 grep 'U+....	kRSAdobe_Japan1_6' $src |
 	sed 's/kRSAdobe_Japan1_6	//' |
 	sed 's/^U+//' |

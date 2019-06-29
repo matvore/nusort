@@ -25,9 +25,11 @@ do
 		fi
 	done <$src
 	if [[ $smallest_matching == 'zzzz' ]]; then
-		echo err: $ch
+		echo -n "err:	$ch - "
+		cat $src | tr '\n' ' '
+		echo
 	else
 		prev=$smallest_matching
-		echo ok: $ch - $prev
+		echo "ok:	$ch - $prev"
 	fi
 done
