@@ -11,6 +11,7 @@ mkdir -p $dir
 echo 2c09 >>$dir/屠
 echo 4307 >>$dir/斎
 echo 5609 >>$dir/蒸
+echo 7207 >>$dir/萬
 
 grep 'U+....	kRSAdobe_Japan1_6' $src |
 	sed 's/kRSAdobe_Japan1_6	//' |
