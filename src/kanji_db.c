@@ -4080,12 +4080,12 @@ static struct kanji_entry kanji[] = {
 
 static int sorted;
 
-size_t kanji_db_nr()
+size_t kanji_db_nr(void)
 {
 	return sizeof(kanji) / sizeof(*kanji);
 }
 
-struct kanji_entry *kanji_db()
+struct kanji_entry *kanji_db(void)
 {
 	if (!sorted) {
 		size_t i;

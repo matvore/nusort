@@ -405,7 +405,6 @@ void get_free_kanji_keys_count(struct unused_kanji_keys *u)
 	memset(u, 0, sizeof(*u));
 	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
 		size_t key2;
-		char key1_ch;
 		size_t shifted_key1 = key1 + MAPPABLE_CHAR_COUNT / 2;
 
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
@@ -413,14 +412,12 @@ void get_free_kanji_keys_count(struct unused_kanji_keys *u)
 				u->count[key1]++;
 		}
 
-		key1_ch = KEY_INDEX_TO_CHAR_MAP[key1];
-
 		if (free_as_singleton_code(&used, shifted_key1))
 			u->count[key1]++;
 	}
 }
 
-void print_free_kanji_keys()
+void print_free_kanji_keys(void)
 {
 	struct used_bit_map used;
 	size_t key1;
