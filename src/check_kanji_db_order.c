@@ -29,6 +29,21 @@ struct sort_info {
 	struct sort_key k[MAX_K];
 };
 
+static void sort_and_dedup_keys(struct sort_info *si)
+{
+	size_t src, dest = 0;
+	QSORT(, si->k, MAX_K, sort_key_cmp(si->k + a, si->k + b) < 0);
+
+	for (src = 0; src < MAX_K; src++) {
+		if (!si->k[src].rad)
+			continue;
+		if (src > 0 && !sort_key_cmp(&si->k[src - 1], &si->k[src]))
+			continue;
+		si->k[dest++] = si->k[src];
+	}
+	memset(si->k + dest, 0, sizeof(*si->k) * (MAX_K - dest));
+}
+
 static struct sort_info sort_infos[20000];
 static size_t sort_infos_nr;
 
@@ -157,8 +172,7 @@ static int process_rad_so_line(const char *line)
 			     supplemental_keys[i].strokes))
 			return 14;
 	}
-
-	sort_infos_nr++;
+	sort_and_dedup_keys(&sort_infos[sort_infos_nr++]);
 	return 0;
 }
 
@@ -203,8 +217,11 @@ static int check_order(void)
 			break;
 		}
 		key = smallest_matching;
-		printf("%s\t%02x%02x\n",
-		       k[i]->c, (int) key.rad, (int) key.strokes);
+		printf("%s\t", k[i]->c);
+		for (ki = 0; ki < MAX_K && si->k[ki].rad; ki++)
+			printf("%02x%02x ",
+				(int) si->k[ki].rad, (int) si->k[ki].strokes);
+		printf("\n");
 	}
 
 	free(k);
