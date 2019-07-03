@@ -5,7 +5,8 @@
 #include <string.h>
 
 static const char *USAGE =
-"Usage: \n"
+"Usage:\n"
+"\tnusort check_kanji_db_order\n"
 "\tnusort free_kanji_keys\n"
 "\tnusort last_rank_contained [-s] CUTOFF_KANJI_1..CUTOFF_KANJI_n\n";
 
