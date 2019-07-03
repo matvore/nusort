@@ -7,6 +7,7 @@
 #include "util.h"
 
 static const char *ADOBE_JAPAN = "\tkRSAdobe_Japan1_6";
+static int db_out;
 
 struct sort_key {
 	unsigned rad: 8;
@@ -176,6 +177,22 @@ static int process_rad_so_line(const char *line)
 	return 0;
 }
 
+static void output_char_line(
+	const struct kanji_entry *k, const struct sort_info *si)
+{
+	size_t ki;
+	printf("%s\t", k->c);
+	for (ki = 0; ki < MAX_K && si->k[ki].rad; ki++)
+		printf("%02x%02x ",
+			(int) si->k[ki].rad, (int) si->k[ki].strokes);
+	printf("\n");
+}
+
+static void output_db_line(const struct kanji_entry *k)
+{
+	printf("\t{\"%s\", %5d, %d},\n", k->c, k->ranking, k->cutoff_type);
+}
+
 static int check_order(void)
 {
 	struct kanji_entry const **k = xcalloc(kanji_db_nr(), sizeof(*k));
@@ -217,11 +234,10 @@ static int check_order(void)
 			break;
 		}
 		key = smallest_matching;
-		printf("%s\t", k[i]->c);
-		for (ki = 0; ki < MAX_K && si->k[ki].rad; ki++)
-			printf("%02x%02x ",
-				(int) si->k[ki].rad, (int) si->k[ki].strokes);
-		printf("\n");
+		if (!db_out)
+			output_char_line(k[i], si);
+		else
+			output_db_line(k[i]);
 	}
 
 	free(k);
@@ -229,7 +245,7 @@ static int check_order(void)
 	return res;
 }
 
-int check_kanji_db_order(void)
+int check_kanji_db_order(const char **argv, int argc)
 {
 	char rad_so_db_path[512];
 	int size = snprintf(
@@ -239,6 +255,21 @@ int check_kanji_db_order(void)
 	FILE *db_stream = NULL;
 	int res = 0;
 	char line[512];
+
+	while (argc > 0 && argv[0][0] == '-') {
+		const char *arg = argv[0];
+		argc--;
+		argv++;
+		if (!strcmp(arg, "--db-out")) {
+			db_out = 1;
+		} else if (!strcmp(arg, "--")) {
+			break;
+		} else {
+			fprintf(stderr, "フラグを認識できませんでした：%s\n",
+				arg);
+			return 3;
+		}
+	}
 
 	if (size >= sizeof(rad_so_db_path)) {
 		fprintf(stderr, "path too long\n");
