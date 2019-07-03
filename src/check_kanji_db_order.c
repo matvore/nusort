@@ -52,13 +52,28 @@ static void decode_codepoint(char *d, const char *codepoint_str)
 	*d = 0;
 }
 
+static int add_key(int rad, int so)
+{
+	size_t i;
+	struct sort_info *si = &sort_infos[sort_infos_nr];
+	for (i = 0; i < MAX_K; i++) {
+		if (!si->k[i].rad) {
+			si->k[i].rad = rad;
+			si->k[i].strokes = so;
+			return 1;
+		}
+	}
+
+	fprintf(stderr, "並べ替えキーが多すぎます\n");
+	return 0;
+}
+
 static int process_rad_so_line(const char *line)
 {
 	char codepoint_str[6];
 	int prefix_len;
 	const char *cur;
-	struct sort_key *k = sort_infos[sort_infos_nr].k;
-	size_t k_nr;
+	char *raw_ch = sort_infos[sort_infos_nr].c;
 
 	if (line[0] == '#' || line[0] == '\n')
 		return 0;
@@ -101,10 +116,6 @@ static int process_rad_so_line(const char *line)
 			return 12;
 		}
 		cur += len;
-		if (k_nr == MAX_K) {
-			fprintf(stderr, "並べ替えキーが多すぎます：%s", line);
-			return 13;
-		}
 
 		/* # 一画の部首を全て同一の部首として見なす。 */
 		if (rad <= 6)
@@ -119,14 +130,27 @@ static int process_rad_so_line(const char *line)
 		if (rad == 73)
 			rad = 72;
 
-		k->rad = rad;
-		k->strokes = so;
-		k++;
-		k_nr++;
+		if (!add_key(rad, so))
+			return 13;
 	}
 
-	decode_codepoint(sort_infos[sort_infos_nr++].c, codepoint_str);
+	decode_codepoint(raw_ch, codepoint_str);
+	if (!strcmp(raw_ch, "屠"))
+		add_key(0x2c, 0x09);
+	if (!strcmp(raw_ch, "斎"))
+		add_key(0x43, 0x07);
+	if (!strcmp(raw_ch, "蒸"))
+		add_key(0x56, 0x09);
+	if (!strcmp(raw_ch, "萬"))
+		add_key(0x72, 0x07);
+	if (!strcmp(raw_ch, "采"))
+		add_key(0xa5, 0x00);
+	if (!strcmp(raw_ch, "舎"))
+		add_key(0x87, 0x02);
+	if (!strcmp(raw_ch, "舗"))
+		add_key(0x87, 0x09);
 
+	sort_infos_nr++;
 	return 0;
 }
 
