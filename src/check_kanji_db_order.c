@@ -68,12 +68,27 @@ static int add_key(int rad, int so)
 	return 0;
 }
 
+static struct {
+	char c[5];
+	unsigned rad : 8;
+	unsigned strokes : 8;
+} supplemental_keys[] = {
+	{"屠", 0x2c, 0x09},
+	{"斎", 0x43, 0x07},
+	{"蒸", 0x56, 0x09},
+	{"萬", 0x72, 0x07},
+	{"采", 0xa5, 0x00},
+	{"舎", 0x87, 0x02},
+	{"舗", 0x87, 0x09},
+};
+
 static int process_rad_so_line(const char *line)
 {
 	char codepoint_str[6];
 	int prefix_len;
 	const char *cur;
 	char *raw_ch = sort_infos[sort_infos_nr].c;
+	size_t i;
 
 	if (line[0] == '#' || line[0] == '\n')
 		return 0;
@@ -135,20 +150,13 @@ static int process_rad_so_line(const char *line)
 	}
 
 	decode_codepoint(raw_ch, codepoint_str);
-	if (!strcmp(raw_ch, "屠"))
-		add_key(0x2c, 0x09);
-	if (!strcmp(raw_ch, "斎"))
-		add_key(0x43, 0x07);
-	if (!strcmp(raw_ch, "蒸"))
-		add_key(0x56, 0x09);
-	if (!strcmp(raw_ch, "萬"))
-		add_key(0x72, 0x07);
-	if (!strcmp(raw_ch, "采"))
-		add_key(0xa5, 0x00);
-	if (!strcmp(raw_ch, "舎"))
-		add_key(0x87, 0x02);
-	if (!strcmp(raw_ch, "舗"))
-		add_key(0x87, 0x09);
+	for (i = 0; i < sizeof(supplemental_keys) / sizeof(*supplemental_keys);
+	     i++) {
+		if (!strcmp(supplemental_keys[i].c, raw_ch) &&
+		    !add_key(supplemental_keys[i].rad,
+			     supplemental_keys[i].strokes))
+			return 14;
+	}
 
 	sort_infos_nr++;
 	return 0;
