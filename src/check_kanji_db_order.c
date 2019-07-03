@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "kanji_db.h"
 #include "util.h"
 
 static const char *ADOBE_JAPAN = "\tkRSAdobe_Japan1_6";
@@ -11,6 +12,15 @@ struct sort_key {
 	unsigned rad: 8;
 	unsigned strokes: 8;
 };
+
+static int sort_key_cmp(struct sort_key *a, struct sort_key *b)
+{
+	if (a->rad != b->rad)
+		return a->rad < b->rad ? -1 : 1;
+	if (a->strokes != b->strokes)
+		return a->strokes < b->strokes ? -1 : 1;
+	return 0;
+}
 
 #define MAX_K 15
 
@@ -95,14 +105,79 @@ static int process_rad_so_line(const char *line)
 			fprintf(stderr, "並べ替えキーが多すぎます：%s", line);
 			return 13;
 		}
+
+		/* # 一画の部首を全て同一の部首として見なす。 */
+		if (rad <= 6)
+			rad = 1;
+		/* 人と儿と入と八を同一の部首として見なす。*/
+		if (rad >= 9 && rad <= 12)
+			rad = 9;
+		/* 匚と匸を同一の部首として見なす。*/
+		if (rad == 23)
+			rad = 22;
+		/* 日と曰を同一の部首と見なす。*/
+		if (rad == 73)
+			rad = 72;
+
 		k->rad = rad;
 		k->strokes = so;
+		k++;
 		k_nr++;
 	}
 
 	decode_codepoint(sort_infos[sort_infos_nr++].c, codepoint_str);
 
 	return 0;
+}
+
+static int check_order(void)
+{
+	struct kanji_entry const **k = xcalloc(kanji_db_nr(), sizeof(*k));
+	size_t i;
+	struct sort_key key = {0, 0};
+	int res = 0;
+
+	for (i = 0; i < kanji_db_nr(); i++)
+		k[i] = kanji_db() + i;
+
+	QSORT(, k, kanji_db_nr(),
+	      k[a]->rad_so_sort_key < k[b]->rad_so_sort_key);
+
+	for (i = 0; i < kanji_db_nr(); i++) {
+		struct sort_key smallest_matching = {0xff, 0xff};
+		struct sort_info *si;
+		size_t ki;
+
+		BSEARCH(si, sort_infos, sort_infos_nr, strcmp(si->c, k[i]->c));
+
+		if (!si) {
+			fprintf(stderr,
+				"Unihanで並べ替えキーが見つかり"
+				"ませんでした: %s\n",
+				k[i]->c);
+			res = 30;
+			break;
+		}
+
+		for (ki = 0; ki < MAX_K && si->k[ki].rad; ki++) {
+			if (sort_key_cmp(&si->k[ki], &key) < 0)
+				continue;
+			if (sort_key_cmp(&si->k[ki], &smallest_matching) < 0)
+				smallest_matching = si->k[ki];
+		}
+		if (smallest_matching.rad == 0xff) {
+			fprintf(stderr, "err: %s\n", k[i]->c);
+			res = 31;
+			break;
+		}
+		key = smallest_matching;
+		printf("%s\t%02x%02x\n",
+		       k[i]->c, (int) key.rad, (int) key.strokes);
+	}
+
+	free(k);
+
+	return res;
 }
 
 int check_kanji_db_order(void)
@@ -142,7 +217,11 @@ int check_kanji_db_order(void)
 	}
 
 	QSORT(, sort_infos, sort_infos_nr,
-	      strcmp(sort_infos[a].c, sort_infos[b].c));
+	      strcmp(sort_infos[a].c, sort_infos[b].c) < 0);
 	fprintf(stderr, "%ld字の並べ替えキーを読み込み済み\n", sort_infos_nr);
+
+	if (!res)
+		res = check_order();
+
 	return res;
 }
