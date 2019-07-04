@@ -55,6 +55,7 @@ struct line_stats {
 	unsigned short k_nr;
 	struct top_key k[KANJI_KEY_COUNT];
 	short offset_to_target;
+	int overall_offset;
 
 	unsigned short total_chars;
 	unsigned short target_rank;
@@ -105,7 +106,9 @@ static void end_line(struct line_stats *s)
 	for (i = 0; i < s->e_nr; i++)
 		printf("%s", s->e[i]->c);
 
-	printf(" (%d . %d)\n", s->last_char_rank, s->offset_to_target);
+	s->overall_offset += s->offset_to_target;
+	printf(" (%d . %d . %d)\n", s->last_char_rank, s->offset_to_target,
+	       s->overall_offset);
 
 	s->total_rank += s->last_char_rank;
 	s->last_char_rank = 0;
