@@ -14,7 +14,7 @@ struct sort_key {
 	unsigned strokes: 8;
 };
 
-static int sort_key_cmp(struct sort_key *a, struct sort_key *b)
+static int sort_key_cmp(const struct sort_key *a, const struct sort_key *b)
 {
 	if (a->rad != b->rad)
 		return a->rad < b->rad ? -1 : 1;
@@ -188,9 +188,33 @@ static void output_char_line(
 	printf("\n");
 }
 
-static void output_db_line(const struct kanji_entry *k)
+static int figure_cutoff_type(
+	const struct sort_info *prev_si, const struct sort_info *si)
 {
-	printf("\t{\"%s\", %5d, %d},\n", k->c, k->ranking, k->cutoff_type);
+	size_t i, j;
+
+	/*  cutoff_typeを自動的に指定する */
+	if (!prev_si)
+		return 3;
+
+	for (i = 0; i < MAX_K; i++)
+		for (j = 0; j < MAX_K; j++)
+			if (prev_si->k[i].rad &&
+			    !sort_key_cmp(&prev_si->k[i], &si->k[j]))
+				return 0;
+
+	return 1;
+}
+
+static void output_db_line(
+	const struct kanji_entry *k,
+	const struct sort_info *prev_si,
+	const struct sort_info *si)
+{
+	int cutoff_type = k->cutoff_type;
+	if (!cutoff_type)
+		cutoff_type = figure_cutoff_type(prev_si, si);
+	printf("\t{\"%s\", %5d, %d},\n", k->c, k->ranking, cutoff_type);
 }
 
 static int check_order(void)
@@ -199,6 +223,7 @@ static int check_order(void)
 	size_t i;
 	struct sort_key key = {0, 0};
 	int res = 0;
+	struct sort_info *prev_si = NULL;
 
 	for (i = 0; i < kanji_db_nr(); i++)
 		k[i] = kanji_db() + i;
@@ -237,7 +262,9 @@ static int check_order(void)
 		if (!db_out)
 			output_char_line(k[i], si);
 		else
-			output_db_line(k[i]);
+			output_db_line(k[i], prev_si, si);
+
+		prev_si = si;
 	}
 
 	free(k);
