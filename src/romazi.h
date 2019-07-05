@@ -18,4 +18,3 @@ struct unused_kanji_keys {
 int is_target_non_sorted_string(const char *s);
 
 void get_free_kanji_keys_count(struct unused_kanji_keys *u);
-void print_free_kanji_keys(void);
