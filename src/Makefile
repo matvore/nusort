@@ -4,11 +4,15 @@ CC = cc -Werror -Wall -Wdeclaration-after-statement -Wformat-security -Wno-forma
 
 all: test nusort
 
-nusort: main.c romazi.c kanji_db.c util.c last_rank_contained.c check_kanji_db_order.c
-	$(CC) -o nusort $^
+SHARED_SRCS = romazi.c kanji_db.c util.c last_rank_contained.c check_kanji_db_order.c commands.c
+SRCS = $(SHARED_SRCS) main.c
+HDRS = commands.h kanji_db.h romazi.h util.h
 
-test: last_rank_contained_test.c
-	$(CC) last_rank_contained_test.c
+nusort: $(HDRS) $(SRCS)
+	$(CC) -o nusort $(SRCS)
+
+test: last_rank_contained_test.c $(HDRS) $(SHARED_SRCS)
+	$(CC) last_rank_contained_test.c $(SHARED_SRCS)
 	./a.out
 
 clean:

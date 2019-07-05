@@ -12,6 +12,9 @@ static const char *USAGE =
 
 int main(int argc, const char **argv)
 {
+	err = stderr;
+	out = stdout;
+
 	if (argc == 2 && !strcmp(argv[1], "free_kanji_keys")) {
 		print_free_kanji_keys();
 		return 0;

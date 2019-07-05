@@ -1,7 +1,11 @@
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 void *xcalloc(size_t count, size_t size);
+FILE *xfopen(const char *pathname, const char *mode);
+char *xfgets(char *s, int size, FILE *stream);
+void xfclose(FILE *stream);
 
 struct qsort_frames {
 	struct {

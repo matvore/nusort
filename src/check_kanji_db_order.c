@@ -302,26 +302,11 @@ int check_kanji_db_order(const char **argv, int argc)
 		fprintf(stderr, "path too long\n");
 		return 1;
 	}
-	if (!(db_stream = fopen(rad_so_db_path, "r"))) {
-		fprintf(stderr, "could not open %s\n:\t%s\n",
-			rad_so_db_path, strerror(errno));
-		return 2;
+	db_stream = xfopen(rad_so_db_path, "r");
+	while (!res && xfgets(line, sizeof(line), db_stream)) {
+		res = process_rad_so_line(line);
 	}
-	while (fgets(line, sizeof(line), db_stream)) {
-		int res = process_rad_so_line(line);
-		if (res)
-			break;
-	}
-	if (errno) {
-		fprintf(stderr, "error reading %s:\t%s\n", rad_so_db_path,
-			strerror(errno));
-		res = 3;
-	}
-	if (fclose(db_stream)) {
-		fprintf(stderr,
-			"WARNING: did not close %s properly\n:\t%s\n",
-			rad_so_db_path, strerror(errno));
-	}
+	xfclose(db_stream);
 
 	QSORT(, sort_infos, sort_infos_nr,
 	      strcmp(sort_infos[a].c, sort_infos[b].c) < 0);

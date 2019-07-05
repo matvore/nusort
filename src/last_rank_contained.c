@@ -1,3 +1,4 @@
+#include "commands.h"
 #include "kanji_db.h"
 #include "romazi.h"
 #include "util.h"
@@ -104,11 +105,11 @@ static void end_line(struct line_stats *s)
 		      s->e[a]->rad_so_sort_key < s->e[b]->rad_so_sort_key);
 
 	for (i = 0; i < s->e_nr; i++)
-		printf("%s", s->e[i]->c);
+		fprintf(out, "%s", s->e[i]->c);
 
 	s->overall_offset += s->offset_to_target;
-	printf(" (%d . %d . %d)\n", s->last_char_rank, s->offset_to_target,
-	       s->overall_offset);
+	fprintf(out, " (%d . %d . %d)\n",
+		s->last_char_rank, s->offset_to_target, s->overall_offset);
 
 	s->total_rank += s->last_char_rank;
 	s->last_char_rank = 0;
@@ -118,9 +119,9 @@ static void end_line(struct line_stats *s)
 
 static void print_stats_summary(struct line_stats *s)
 {
-	printf("各行平均位: %.1f\n", (float) s->total_rank / s->k_nr);
-	printf("目標位:  %d\n", s->target_rank);
-	printf("合計漢字数:  %d\n", s->total_chars);
+	fprintf(out, "各行平均位: %.1f\n", (float) s->total_rank / s->k_nr);
+	fprintf(out, "目標位:  %d\n", s->target_rank);
+	fprintf(out, "合計漢字数:  %d\n", s->total_chars);
 }
 
 static int print_last_rank_contained_parsed_args(
@@ -140,7 +141,7 @@ static int print_last_rank_contained_parsed_args(
 
 	get_top_keys(&line_stats);
 	if (cutoff_kanji_count != line_stats.k_nr - 1) {
-		fprintf(stderr,
+		fprintf(err,
 			"%d個の区切り漢字を必するけれど、%ld個が渡された。\n",
 			line_stats.k_nr - 1, cutoff_kanji_count);
 		return 1;
@@ -151,16 +152,15 @@ static int print_last_rank_contained_parsed_args(
 			strcmp(cutoff_kanji.k[i]->c, cutoff_kanji_raw[i]));
 
 		if (!cutoff_kanji.k[i]) {
-			fprintf(stderr, "[ %s ] は区切り漢字に指定されている"
-					"けれど、KANJI配列に含まれていない。"
-					"\n",
-					cutoff_kanji_raw[i]);
+			fprintf(err,
+				"[ %s ] は区切り漢字に指定されている"
+				"けれど、KANJI配列に含まれていない。\n",
+				cutoff_kanji_raw[i]);
 			exit(2);
 		}
 		if (!cutoff_kanji.k[i]->cutoff_type) {
-			fprintf(stderr, "[ %s ] は区切り漢字として使えません。"
-					"\n",
-					cutoff_kanji_raw[i]);
+			fprintf(err, "[ %s ] は区切り漢字として使えません。\n",
+				cutoff_kanji_raw[i]);
 			exit(3);
 		}
 	}
@@ -192,8 +192,7 @@ static int print_last_rank_contained_parsed_args(
 			else
 				cutoff = cutoff_kanji.k[curr_top_key]->c;
 			curr_top_key++;
-			printf(
-				"[ %s ] %c ",
+			fprintf(out, "[ %s ] %c ",
 				cutoff, line_stats.k[curr_top_key].key_ch);
 		}
 
@@ -223,8 +222,7 @@ int print_last_rank_contained(const char **argv, int argc)
 		} else if (!strcmp(arg, "--")) {
 			break;
 		} else {
-			fprintf(stderr, "フラグを認識できませんでした：%s\n",
-				arg);
+			fprintf(err, "フラグを認識できませんでした：%s\n", arg);
 			return 3;
 		}
 	}

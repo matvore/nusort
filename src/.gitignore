@@ -1,2 +1,3 @@
 nusort
 *.o
+*.testout
