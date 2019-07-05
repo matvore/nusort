@@ -141,6 +141,30 @@ static struct {
 	"exit: 0\n"
 },
 
+{
+	"kanji_not_in_db",
+	{
+		"会", "信", "刀", "匚", "告", "型", "女", "宿", "工", "弋",
+		"悪", "戸", "提", "话", "木", "業", "气", "減", "爪", "疋",
+		"示", "立", "結", "羽", "艸", "角", "谷", "足", "通", "里",
+		"隹", "風",
+	},
+	"[ 话 ] は区切り漢字に指定されているけれど、KANJI配列に含まれていない。\n"
+	"exit: 2\n",
+},
+
+{
+	"kanji_not_valid_kugiri",
+	{
+		"会", "信", "刀", "匚", "告", "型", "女", "宿", "工", "弋",
+		"悪", "戸", "提", "俯", "木", "業", "气", "減", "爪", "疋",
+		"示", "立", "結", "羽", "艸", "角", "谷", "足", "通", "里",
+		"隹", "風",
+	},
+	"[ 俯 ] は区切り漢字として使えません。\n"
+	"exit: 3\n",
+},
+
 };
 
 int main(void)
@@ -151,6 +175,8 @@ int main(void)
 		char actual_fn[512];
 		FILE *actual;
 		int exit_code, arg_count;
+
+		printf("テスト：(%s) %s\n", __FILE__, test_cases[test_i].name);
 
 		if (sizeof(actual_fn) <=
 		    snprintf(actual_fn, sizeof(actual_fn),

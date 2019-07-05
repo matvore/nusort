@@ -124,6 +124,42 @@ static void print_stats_summary(struct line_stats *s)
 	fprintf(out, "合計漢字数:  %d\n", s->total_chars);
 }
 
+static int read_user_cutoff_kanji(
+	const struct line_stats *line_stats,
+	size_t cutoff_kanji_count,
+	const char **cutoff_kanji_raw,
+	struct cutoff_kanji *cutoff_kanji)
+{
+	size_t i;
+
+	if (cutoff_kanji_count != line_stats->k_nr - 1) {
+		fprintf(err,
+			"%d個の区切り漢字を必するけれど、%ld個が渡された。\n",
+			line_stats->k_nr - 1, cutoff_kanji_count);
+		return 1;
+	}
+
+	for (i = 0; i < cutoff_kanji_count; i++) {
+		BSEARCH(cutoff_kanji->k[i], kanji_db(), kanji_db_nr(),
+			strcmp(cutoff_kanji->k[i]->c, cutoff_kanji_raw[i]));
+
+		if (!cutoff_kanji->k[i]) {
+			fprintf(err,
+				"[ %s ] は区切り漢字に指定されている"
+				"けれど、KANJI配列に含まれていない。\n",
+				cutoff_kanji_raw[i]);
+			return 2;
+		}
+		if (!cutoff_kanji->k[i]->cutoff_type) {
+			fprintf(err, "[ %s ] は区切り漢字として使えません。\n",
+				cutoff_kanji_raw[i]);
+			return 3;
+		}
+	}
+	cutoff_kanji->key_count = cutoff_kanji_count + 1;
+	return 0;
+}
+
 static int print_last_rank_contained_parsed_args(
 	size_t cutoff_kanji_count,
 	const char **cutoff_kanji_raw,
@@ -140,31 +176,17 @@ static int print_last_rank_contained_parsed_args(
 	line_stats.sort_each_line_by_rad_so = sort_each_line_by_rad_so;
 
 	get_top_keys(&line_stats);
-	if (cutoff_kanji_count != line_stats.k_nr - 1) {
-		fprintf(err,
-			"%d個の区切り漢字を必するけれど、%ld個が渡された。\n",
-			line_stats.k_nr - 1, cutoff_kanji_count);
-		return 1;
-	}
 
-	for (i = 0; i < cutoff_kanji_count; i++) {
-		BSEARCH(cutoff_kanji.k[i], kanji_db(), kanji_db_nr(),
-			strcmp(cutoff_kanji.k[i]->c, cutoff_kanji_raw[i]));
-
-		if (!cutoff_kanji.k[i]) {
-			fprintf(err,
-				"[ %s ] は区切り漢字に指定されている"
-				"けれど、KANJI配列に含まれていない。\n",
-				cutoff_kanji_raw[i]);
-			exit(2);
-		}
-		if (!cutoff_kanji.k[i]->cutoff_type) {
-			fprintf(err, "[ %s ] は区切り漢字として使えません。\n",
-				cutoff_kanji_raw[i]);
-			exit(3);
-		}
+	if (cutoff_kanji_count) {
+		int res = read_user_cutoff_kanji(
+			&line_stats, cutoff_kanji_count,
+			cutoff_kanji_raw, &cutoff_kanji);
+		if (res)
+			return res;
+	} else {
+		/* TODO: 実装する */
+		return 22;
 	}
-	cutoff_kanji.key_count = cutoff_kanji_count + 1;
 
 	resorted = xcalloc(kanji_db_nr(), sizeof(*resorted));
 	resorted_nr = 0;
