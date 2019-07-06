@@ -177,6 +177,16 @@ static int print_last_rank_contained_parsed_args(
 
 	get_top_keys(&line_stats);
 
+	resorted = xcalloc(kanji_db_nr(), sizeof(*resorted));
+	resorted_nr = 0;
+	for (i = 0; i < kanji_db_nr(); i++) {
+		if (!is_target_non_sorted_string(kanji_db()[i].c))
+			resorted[resorted_nr++] = kanji_db() + i;
+	}
+	QSORT(, resorted, resorted_nr,
+	      resorted[a]->ranking < resorted[b]->ranking);
+	line_stats.target_rank = resorted[line_stats.total_chars]->ranking;
+
 	if (cutoff_kanji_count) {
 		int res = read_user_cutoff_kanji(
 			&line_stats, cutoff_kanji_count,
@@ -188,15 +198,6 @@ static int print_last_rank_contained_parsed_args(
 		return 22;
 	}
 
-	resorted = xcalloc(kanji_db_nr(), sizeof(*resorted));
-	resorted_nr = 0;
-	for (i = 0; i < kanji_db_nr(); i++) {
-		if (!is_target_non_sorted_string(kanji_db()[i].c))
-			resorted[resorted_nr++] = kanji_db() + i;
-	}
-	QSORT(, resorted, resorted_nr,
-	      resorted[a]->ranking < resorted[b]->ranking);
-	line_stats.target_rank = resorted[line_stats.total_chars]->ranking;
 	QSORT(, resorted, resorted_nr,
 	      first_key_then_rank_lt(&cutoff_kanji, resorted[a], resorted[b]));
 
