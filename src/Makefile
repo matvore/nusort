@@ -12,12 +12,12 @@ nusort: $(HDRS) $(SRCS)
 	$(CC) -o nusort $(SRCS)
 
 last_rank_contained_test: last_rank_contained_test.c $(HDRS) $(SHARED_SRCS)
-	$(CC) last_rank_contained_test.c $(SHARED_SRCS)
-	./a.out
+	$(CC) -o $@_bin last_rank_contained_test.c $(SHARED_SRCS)
+	./$@_bin
 
 rank_coverage_test: rank_coverage_test.c $(HDRS) $(SHARED_SRCS)
-	$(CC) rank_coverage_test.c $(SHARED_SRCS)
-	./a.out
+	$(CC) -o $@_bin rank_coverage_test.c $(SHARED_SRCS)
+	./$@_bin
 
 test: last_rank_contained_test rank_coverage_test
 

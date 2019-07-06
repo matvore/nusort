@@ -12,8 +12,17 @@ void *xcalloc(size_t count, size_t size)
 		fprintf(stderr, "out of memory\n");
 		exit(90);
 	}
-	memset(res, 0, count * size);
 	return res;
+}
+
+void *xreallocarray(void *ptr, size_t count, size_t size)
+{
+	ptr = realloc(ptr, count * size);
+	if (!ptr && count) {
+		fprintf(stderr, "out of memory\n");
+		exit(90);
+	}
+	return ptr;
 }
 
 FILE *xfopen(const char *pathname, const char *mode)
