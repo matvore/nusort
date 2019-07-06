@@ -7,16 +7,18 @@ all: test nusort
 SHARED_SRCS = romazi.c kanji_db.c util.c last_rank_contained.c check_kanji_db_order.c commands.c rank_coverage.c
 SRCS = $(SHARED_SRCS) main.c
 HDRS = commands.h kanji_db.h romazi.h util.h rank_coverage.h
+TEST_SRCS = $(SHARED_SRCS) test_util.c
+TEST_HDRS = $(HDRS) test_util.h
 
 nusort: $(HDRS) $(SRCS)
 	$(CC) -o nusort $(SRCS)
 
-last_rank_contained_test: last_rank_contained_test.c $(HDRS) $(SHARED_SRCS)
-	$(CC) -o $@_bin last_rank_contained_test.c $(SHARED_SRCS)
+last_rank_contained_test: last_rank_contained_test.c $(TEST_HDRS) $(TEST_SRCS)
+	$(CC) -o $@_bin last_rank_contained_test.c $(TEST_SRCS)
 	./$@_bin
 
-rank_coverage_test: rank_coverage_test.c $(HDRS) $(SHARED_SRCS)
-	$(CC) -o $@_bin rank_coverage_test.c $(SHARED_SRCS)
+rank_coverage_test: rank_coverage_test.c $(TEST_HDRS) $(TEST_SRCS)
+	$(CC) -o $@_bin rank_coverage_test.c $(TEST_SRCS)
 	./$@_bin
 
 test: last_rank_contained_test rank_coverage_test

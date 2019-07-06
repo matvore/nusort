@@ -1,20 +1,22 @@
+#include "commands.h"
 #include "rank_coverage.h"
+#include "test_util.h"
 
 #include <stddef.h>
 #include <stdio.h>
 
 int main(void)
 {
-	size_t i;
-	int res;
+	start_test(__FILE__, "trivial");
+	{
+		size_t i;
 
-	rank_coverage_reset(32, 32);
-	for (i = 1; i <= 31; i++)
-		rank_coverage_add_kanji(i);
-	res = rank_coverage_add_kanji(32);
-	if (res != 0) {
-		fprintf(stderr, "fail: %d\n", res);
-		return 1;
+		rank_coverage_reset(32, 32);
+		for (i = 1; i <= 31; i++)
+			rank_coverage_add_kanji(i);
+		fprintf(out, "%d", rank_coverage_add_kanji(32));
 	}
+	end_test("0");
+
 	return 0;
 }

@@ -1,37 +1,8 @@
 #include "commands.h"
+#include "test_util.h"
 #include "util.h"
 
 #include <stdlib.h>
-
-static void verify_contents(const char *file, const char *contents)
-{
-	size_t contents_i = 0;
-	FILE *actual_stream = xfopen(file, "r");
-	char buffer[512];
-
-	while (contents[contents_i]) {
-		size_t read_len;
-
-		if (!xfgets(buffer, sizeof(buffer), actual_stream))
-			goto failure;
-
-		read_len = strlen(buffer);
-
-		if (strncmp(buffer, contents + contents_i, read_len))
-			goto failure;
-		contents_i += read_len;
-	}
-
-	if (xfgets(buffer, sizeof(buffer), actual_stream))
-		/* contentsがfileの内容より短い */
-		goto failure;
-	xfclose(actual_stream);
-
-	return;
-failure:
-	fprintf(stderr, "actual: %s\nexpected:\n%s\n", file, contents);
-	exit(1);
-}
 
 static struct {
 	const char *name;
@@ -172,31 +143,17 @@ int main(void)
 	size_t test_i;
 	for (test_i = 0; test_i < sizeof(test_cases) / sizeof(*test_cases);
 	     test_i++) {
-		char actual_fn[512];
-		FILE *actual;
-		int exit_code, arg_count;
+		int arg_count, exit_code;
 
-		printf("テスト：(%s) %s\n", __FILE__, test_cases[test_i].name);
+		start_test(__FILE__, test_cases[test_i].name);
 
-		if (sizeof(actual_fn) <=
-		    snprintf(actual_fn, sizeof(actual_fn),
-			     "last_rank_contained.%s.testout",
-			     test_cases[test_i].name)) {
-			fprintf(stderr, "バファが短すぎます\n");
-			exit(1);
-		}
-		actual = xfopen(actual_fn, "w");
-		out = err = actual;
 		for (arg_count = 0; test_cases[test_i].args[arg_count];
 		     arg_count++) {}
 		exit_code = print_last_rank_contained(
 			test_cases[test_i].args, arg_count);
-		fprintf(actual, "exit: %d\n", exit_code);
-		xfclose(actual);
-		out = stdout;
-		err = stderr;
+		fprintf(out, "exit: %d\n", exit_code);
 
-		verify_contents(actual_fn, test_cases[test_i].expected);
+		end_test(test_cases[test_i].expected);
 	}
 	return 0;
 }
