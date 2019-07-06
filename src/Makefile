@@ -24,5 +24,5 @@ rank_coverage_test: rank_coverage_test.c $(TEST_HDRS) $(TEST_SRCS)
 test: last_rank_contained_test rank_coverage_test
 
 clean:
-	rm -f *_test_bin
+	rm -f *_test_bin *.testout
 	rm -f nusort
