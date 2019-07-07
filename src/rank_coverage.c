@@ -36,7 +36,7 @@ static int count_in_range(int start_rank, int end_rank)
 {
 	int count = 0;
 	while (start_rank < end_rank)
-		count += rank_set(start_rank++) ? 1 : 0;
+		count += rank_set(++start_rank) ? 1 : 0;
 	return count;
 }
 
