@@ -27,6 +27,7 @@ void rank_coverage_reset(int target_rank_, int key_capacity)
 	keys_unfilled = key_capacity;
 
 	free(ranks);
+	ranks = NULL;
 	ranks_nr = 0;
 }
 
@@ -70,10 +71,10 @@ int rank_coverage_add_kanji(int rank)
 		do {
 			position--;
 		} while (!rank_set(position));
-		offset--;
-	} else if (rank <= target_rank) {
-		offset--;
 	}
+
+	if (rank <= target_rank)
+		offset--;
 
 	return offset;
 }
