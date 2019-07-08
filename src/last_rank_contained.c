@@ -1,5 +1,6 @@
 #include "commands.h"
 #include "kanji_db.h"
+#include "rank_coverage.h"
 #include "romazi.h"
 #include "util.h"
 
@@ -10,7 +11,7 @@
 
 struct cutoff_kanji {
 	unsigned int key_count;
-	struct kanji_entry *k[KANJI_KEY_COUNT - 1];
+	const struct kanji_entry *k[KANJI_KEY_COUNT - 1];
 };
 
 static int first_key(
@@ -86,7 +87,7 @@ static void get_top_keys(struct line_stats *s)
 	}
 }
 
-static void output_char(struct line_stats *s, struct kanji_entry *k)
+static void output_char(struct line_stats *s, const struct kanji_entry *k)
 {
 	s->last_char_rank = k->ranking;
 	s->e[s->e_nr++] = k;
@@ -156,8 +157,50 @@ static int read_user_cutoff_kanji(
 			return 3;
 		}
 	}
-	cutoff_kanji->key_count = cutoff_kanji_count + 1;
 	return 0;
+}
+
+static size_t find_best_cutoff(
+	int *cumulative_offset,
+	size_t start_from_kanji,
+	const struct kanji_entry **k,
+	size_t k_nr)
+{
+	size_t ki;
+	int best_offset = -0xffff;
+	int has_best = 0;
+	ssize_t best_ki = -1;
+
+	for (ki = start_from_kanji; ki < k_nr; ki++) {
+		int next_offset = rank_coverage_add_kanji(k[ki]->ranking);
+		if (!k[ki + 1]->cutoff_type)
+			continue;
+		next_offset += *cumulative_offset;
+		if (has_best) {
+			if (abs(next_offset) > abs(best_offset))
+				break;
+
+			if (abs(next_offset) == abs(best_offset) &&
+			    k[best_ki]->cutoff_type >= k[ki + 1]->cutoff_type)
+				continue;
+		}
+
+		best_offset = next_offset;
+		best_ki = ki + 1;
+		has_best = 1;
+	}
+
+	if (ki == k_nr) {
+		fprintf(stderr, "kanji_dbは小さすぎます。\n");
+		exit(4);
+	}
+	if (best_ki == -1) {
+		fprintf(stderr, "区切り漢字が見つかりませんでした。\n");
+		exit(29);
+	}
+
+	*cumulative_offset = best_offset;
+	return best_ki;
 }
 
 static int print_last_rank_contained_parsed_args(
@@ -165,7 +208,7 @@ static int print_last_rank_contained_parsed_args(
 	const char **cutoff_kanji_raw,
 	int sort_each_line_by_rad_so)
 {
-	struct kanji_entry **resorted;
+	const struct kanji_entry **resorted;
 	size_t resorted_nr;
 	struct cutoff_kanji cutoff_kanji;
 	size_t i;
@@ -180,13 +223,15 @@ static int print_last_rank_contained_parsed_args(
 	resorted = xcalloc(kanji_db_nr(), sizeof(*resorted));
 	resorted_nr = 0;
 	for (i = 0; i < kanji_db_nr(); i++) {
-		if (!is_target_non_sorted_string(kanji_db()[i].c))
-			resorted[resorted_nr++] = kanji_db() + i;
+		const struct kanji_entry *e = kanji_db() + i;
+		if (!is_target_non_sorted_string(e->c) && e->ranking < 0xffff)
+			resorted[resorted_nr++] = e;
 	}
 	QSORT(, resorted, resorted_nr,
 	      resorted[a]->ranking < resorted[b]->ranking);
 	line_stats.target_rank = resorted[line_stats.total_chars]->ranking;
 
+	cutoff_kanji.key_count = line_stats.k_nr;
 	if (cutoff_kanji_count) {
 		int res = read_user_cutoff_kanji(
 			&line_stats, cutoff_kanji_count,
@@ -194,8 +239,20 @@ static int print_last_rank_contained_parsed_args(
 		if (res)
 			return res;
 	} else {
-		/* TODO: 実装する */
-		return 22;
+		int cumulative_offset = 0;
+		size_t ki = 0;
+		QSORT(, resorted, resorted_nr, resorted[a]->rad_so_sort_key <
+					       resorted[b]->rad_so_sort_key);
+		for (; cutoff_kanji_count < line_stats.k_nr - 1;
+		     cutoff_kanji_count++) {
+			rank_coverage_reset(
+				line_stats.target_rank,
+				line_stats.k[cutoff_kanji_count].available);
+			ki = find_best_cutoff(
+				&cumulative_offset, ki, resorted, resorted_nr);
+
+			cutoff_kanji.k[cutoff_kanji_count] = resorted[ki];
+		}
 	}
 
 	QSORT(, resorted, resorted_nr,
