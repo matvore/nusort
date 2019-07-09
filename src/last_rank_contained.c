@@ -160,6 +160,14 @@ static int read_user_cutoff_kanji(
 	return 0;
 }
 
+static int is_better_cutoff(
+	const struct kanji_entry *best, const struct kanji_entry *candidate)
+{
+	if (best->cutoff_type != candidate->cutoff_type)
+		return best->cutoff_type < candidate->cutoff_type;
+	return best->ranking > candidate->ranking;
+}
+
 static size_t find_best_cutoff(
 	int *cumulative_offset,
 	size_t start_from_kanji,
@@ -180,7 +188,7 @@ static size_t find_best_cutoff(
 				break;
 
 			if (abs(next_offset) == abs(best_offset) &&
-			    k[best_ki]->cutoff_type >= k[ki + 1]->cutoff_type)
+			    !is_better_cutoff(k[best_ki], k[ki + 1]))
 				continue;
 		}
 
