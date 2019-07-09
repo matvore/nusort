@@ -167,8 +167,7 @@ static size_t find_best_cutoff(
 	size_t k_nr)
 {
 	size_t ki;
-	int best_offset = -0xffff;
-	int has_best = 0;
+	int best_offset;
 	ssize_t best_ki = -1;
 
 	for (ki = start_from_kanji; ki < k_nr; ki++) {
@@ -176,7 +175,7 @@ static size_t find_best_cutoff(
 		if (!k[ki + 1]->cutoff_type)
 			continue;
 		next_offset += *cumulative_offset;
-		if (has_best) {
+		if (best_ki != -1) {
 			if (abs(next_offset) > abs(best_offset))
 				break;
 
@@ -187,7 +186,6 @@ static size_t find_best_cutoff(
 
 		best_offset = next_offset;
 		best_ki = ki + 1;
-		has_best = 1;
 	}
 
 	if (ki == k_nr) {
