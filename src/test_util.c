@@ -38,10 +38,10 @@ static char actual_fn[512];
 
 void start_test(const char *file, const char *name)
 {
+	int printed = snprintf(
+		actual_fn, sizeof(actual_fn), "%s.%s.testout", file, name);
 	printf("テスト：(%s) %s\n", file, name);
-	if (sizeof(actual_fn) <=
-	    snprintf(actual_fn, sizeof(actual_fn),
-		     "%s.%s.testout", __FILE__, name)) {
+	if (sizeof(actual_fn) <= printed) {
 		fprintf(stderr, "バファが短すぎます\n");
 		exit(1);
 	}
