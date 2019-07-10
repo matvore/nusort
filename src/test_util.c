@@ -2,13 +2,17 @@
 #include "test_util.h"
 #include "util.h"
 
+#include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 static void verify_contents(const char *file, const char *contents)
 {
 	size_t contents_i = 0;
 	FILE *actual_stream = xfopen(file, "r");
 	char buffer[512];
+	char expected_fn[] = "/tmp/expected-XXXXXX";
+	int expected_fd;
 
 	while (contents[contents_i]) {
 		size_t read_len;
@@ -30,8 +34,23 @@ static void verify_contents(const char *file, const char *contents)
 
 	return;
 failure:
-	fprintf(stderr, "actual: %s\nexpected:\n%s\n", file, contents);
-	exit(1);
+	expected_fd = mkstemp(expected_fn);
+	if (expected_fd == -1) {
+		xfprintf(stderr, "mkstemp failed: %s\n", strerror(errno));
+		exit(4);
+	}
+	if (dprintf(expected_fd, "%s", contents) < 0) {
+		xfprintf(stderr, "dprintf failed: %s\n", strerror(errno));
+		exit(184);
+	}
+	if (close(expected_fd) == -1) {
+		xfprintf(stderr, "close failed: %s\n", strerror(errno));
+		exit(197);
+	}
+	xfprintf(stderr, "出力が違います。詳細はこれを実行してください：\n"
+			 "	diff %s %s\n",
+		 expected_fn, file);
+	exit(99);
 }
 
 static char actual_fn[512];

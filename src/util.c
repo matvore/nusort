@@ -1,6 +1,7 @@
 #include "util.h"
 
 #include <errno.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,4 +55,21 @@ void xfclose(FILE *stream)
 		return;
 	fprintf(stderr, "警告: fcloseが失配しました\n:\t%s\n",
 		strerror(errno));
+}
+
+int xfprintf(FILE *stream, const char *format, ...)
+{
+	int res;
+
+	va_list argp;
+	va_start(argp, format);
+	res = vfprintf(stream, format, argp);
+	va_end(argp);
+
+	if (res < 0) {
+		fprintf(stderr, "fprintfエラー: %s\n", strerror(errno));
+		exit(162);
+	}
+
+	return res;
 }

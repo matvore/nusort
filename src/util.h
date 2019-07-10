@@ -7,6 +7,7 @@ void *xreallocarray(void *ptr, size_t count, size_t size);
 FILE *xfopen(const char *pathname, const char *mode);
 char *xfgets(char *s, int size, FILE *stream);
 void xfclose(FILE *stream);
+int xfprintf(FILE *stream, const char *format, ...);
 
 struct qsort_frames {
 	struct {
