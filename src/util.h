@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void *xcalloc(size_t count, size_t size);
@@ -8,6 +9,7 @@ FILE *xfopen(const char *pathname, const char *mode);
 char *xfgets(char *s, int size, FILE *stream);
 void xfclose(FILE *stream);
 int xfprintf(FILE *stream, const char *format, ...);
+int xasprintf(char **strp, const char *format, ...);
 
 struct qsort_frames {
 	struct {
@@ -25,6 +27,12 @@ static inline void qsort_push_frame(
 		f->end++;
 	}
 }
+
+#define BUG(error) \
+do { \
+	xfprintf(stderr, "%s (%s:%d)\n", error, __FILE__, __LINE__); \
+	exit(224); \
+} while(0);
 
 #define QSORT(p, el, cnt, lt) \
 do { \

@@ -6,10 +6,12 @@
 #include <string.h>
 #include <unistd.h>
 
-static void verify_contents(const char *file, const char *contents)
+static char *actual_fn;
+
+static void verify_contents(const char *contents)
 {
 	size_t contents_i = 0;
-	FILE *actual_stream = xfopen(file, "r");
+	FILE *actual_stream = xfopen(actual_fn, "r");
 	char buffer[512];
 	char expected_fn[] = "/tmp/expected-XXXXXX";
 	int expected_fd;
@@ -49,29 +51,27 @@ failure:
 	}
 	xfprintf(stderr, "出力が違います。詳細はこれを実行してください：\n"
 			 "	diff %s %s\n",
-		 expected_fn, file);
+		 expected_fn, actual_fn);
 	exit(99);
 }
 
-static char actual_fn[512];
-
 void start_test(const char *file, const char *name)
 {
-	int printed = snprintf(
-		actual_fn, sizeof(actual_fn), "%s.%s.testout", file, name);
+	if (actual_fn != NULL)
+		BUG("既にテストが実行中です。");
+	xasprintf(&actual_fn, "%s.%s.testout", file, name);
 	printf("テスト：(%s) %s\n", file, name);
-	if (sizeof(actual_fn) <= printed) {
-		fprintf(stderr, "バファが短すぎます\n");
-		exit(1);
-	}
-
 	out = err = xfopen(actual_fn, "w");
 }
 
 void end_test(const char *expected)
 {
+	if (actual_fn == NULL)
+		BUG("実行中のテストはありません。");
 	xfclose(out);
 	out = stdout;
 	err = stderr;
-	verify_contents(actual_fn, expected);
+	verify_contents(expected);
+	free(actual_fn);
+	actual_fn = NULL;
 }

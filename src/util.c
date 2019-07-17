@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "util.h"
 
 #include <errno.h>
@@ -69,6 +71,23 @@ int xfprintf(FILE *stream, const char *format, ...)
 	if (res < 0) {
 		fprintf(stderr, "fprintfエラー: %s\n", strerror(errno));
 		exit(162);
+	}
+
+	return res;
+}
+
+int xasprintf(char **strp, const char *format, ...)
+{
+	int res;
+
+	va_list argp;
+	va_start(argp, format);
+	res = vasprintf(strp, format, argp);
+	va_end(argp);
+
+	if (res < 0) {
+		xfprintf(stderr, "asprintfエラー\n");
+		exit(46);
 	}
 
 	return res;

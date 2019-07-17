@@ -274,11 +274,7 @@ static int check_order(void)
 
 int check_kanji_db_order(const char **argv, int argc)
 {
-	char rad_so_db_path[512];
-	int size = snprintf(
-		rad_so_db_path, sizeof(rad_so_db_path),
-		"%s/Desktop/Unihan/Unihan_RadicalStrokeCounts.txt",
-		getenv("HOME"));
+	char *rad_so_db_path;
 	FILE *db_stream = NULL;
 	int res = 0;
 	char line[512];
@@ -298,11 +294,12 @@ int check_kanji_db_order(const char **argv, int argc)
 		}
 	}
 
-	if (size >= sizeof(rad_so_db_path)) {
-		fprintf(stderr, "path too long\n");
-		return 1;
-	}
+	xasprintf(&rad_so_db_path,
+		  "%s/Desktop/Unihan/Unihan_RadicalStrokeCounts.txt",
+		  getenv("HOME"));
 	db_stream = xfopen(rad_so_db_path, "r");
+	free(rad_so_db_path);
+
 	while (!res && xfgets(line, sizeof(line), db_stream)) {
 		res = process_rad_so_line(line);
 	}
