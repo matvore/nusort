@@ -18,9 +18,9 @@ void *xcalloc(size_t count, size_t size)
 	return res;
 }
 
-void *xreallocarray(void *ptr, size_t count, size_t size)
+void *xreallocarray(void *ptr, size_t count, size_t el_size)
 {
-	ptr = realloc(ptr, count * size);
+	ptr = realloc(ptr, count * el_size);
 	if (!ptr && count) {
 		fprintf(stderr, "out of memory\n");
 		exit(90);
