@@ -28,11 +28,14 @@ int xasprintf(char **strp, const char *format, ...);
 #define GROW_ARRAY_BY(array, grow_cnt) do { \
 	(array).cnt += grow_cnt; \
 	if ((array).alloc < (array).cnt) { \
+		size_t old_alloc = (array).alloc; \
 		(array).alloc *= 2; \
 		if ((array).alloc < (array).cnt) \
 			(array).alloc = (array).cnt; \
 		(array).el = xreallocarray((array).el, (array).alloc, \
 			sizeof(*(array).el)); \
+		memset((array).el + old_alloc, 0, \
+			((array).alloc - old_alloc) * sizeof(*(array).el)); \
 	} \
 } while (0);
 

@@ -426,6 +426,8 @@ void get_free_kanji_codes(struct short_code_array *codes)
 
 	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
 		size_t key2;
+		size_t shifted_key1 = key1 + MAPPABLE_CHAR_COUNT / 2;
+
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
 			if (used.m[key1 * MAPPABLE_CHAR_COUNT + key2])
 				continue;
@@ -434,6 +436,12 @@ void get_free_kanji_codes(struct short_code_array *codes)
 				KEY_INDEX_TO_CHAR_MAP[key1];
 			codes->el[codes->cnt - 1][1] =
 				KEY_INDEX_TO_CHAR_MAP[key2];
+		}
+
+		if (free_as_singleton_code(&used, shifted_key1)) {
+			GROW_ARRAY_BY(*codes, 1);
+			codes->el[codes->cnt - 1][0] =
+				KEY_INDEX_TO_CHAR_MAP[shifted_key1];
 		}
 	}
 }
