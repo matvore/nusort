@@ -15,10 +15,8 @@ int main(int argc, const char **argv)
 	err = stderr;
 	out = stdout;
 
-	if (argc == 2 && !strcmp(argv[1], "free_kanji_keys")) {
-		print_free_kanji_keys();
-		return 0;
-	}
+	if (argc >= 2 && !strcmp(argv[1], "free_kanji_keys"))
+		return free_kanji_keys(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "check_kanji_db_order"))
 		return check_kanji_db_order(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "last_rank_contained"))

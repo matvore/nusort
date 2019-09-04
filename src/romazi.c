@@ -417,7 +417,7 @@ void get_free_kanji_keys_count(struct unused_kanji_keys *u)
 	}
 }
 
-void print_free_kanji_keys(void)
+void get_free_kanji_codes(struct short_code_array *codes)
 {
 	struct used_bit_map used;
 	size_t key1;
@@ -429,9 +429,11 @@ void print_free_kanji_keys(void)
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
 			if (used.m[key1 * MAPPABLE_CHAR_COUNT + key2])
 				continue;
-			printf("%c%c\n",
-			       KEY_INDEX_TO_CHAR_MAP[key1],
-			       KEY_INDEX_TO_CHAR_MAP[key2]);
+			GROW_ARRAY_BY(*codes, 1);
+			codes->el[codes->cnt - 1][0] =
+				KEY_INDEX_TO_CHAR_MAP[key1];
+			codes->el[codes->cnt - 1][1] =
+				KEY_INDEX_TO_CHAR_MAP[key2];
 		}
 	}
 }

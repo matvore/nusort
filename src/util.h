@@ -11,6 +11,31 @@ void xfclose(FILE *stream);
 int xfprintf(FILE *stream, const char *format, ...);
 int xasprintf(char **strp, const char *format, ...);
 
+/*
+ * GROW_ARRAY_BY
+ *
+ * Create a struct that looks like this:
+ *
+ * struct array {
+ * 	TYPE *el;
+ * 	size_t cnt;
+ * 	size_t alloc;
+ * };
+ *
+ * Where TYPE is any type you want. The number of elements will be kept in 'cnt'
+ * and the capacity in 'alloc'.
+ */
+#define GROW_ARRAY_BY(array, grow_cnt) do { \
+	(array).cnt += grow_cnt; \
+	if ((array).alloc < (array).cnt) { \
+		(array).alloc *= 2; \
+		if ((array).alloc < (array).cnt) \
+			(array).alloc = (array).cnt; \
+		(array).el = xreallocarray((array).el, (array).alloc, \
+			sizeof(*(array).el)); \
+	} \
+} while (0);
+
 struct qsort_frames {
 	struct {
 		size_t begin;
