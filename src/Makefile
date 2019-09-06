@@ -17,6 +17,10 @@ last_rank_contained_test: last_rank_contained_test.c $(TEST_HDRS) $(TEST_SRCS)
 	$(CC) -o $@_bin last_rank_contained_test.c $(TEST_SRCS)
 	./$@_bin
 
+make_map_test: make_map_test.c $(TEST_HDRS) $(TEST_SRCS)
+	$(CC) -o $@_bin make_map_test.c $(TEST_SRCS)
+	./$@_bin
+
 rank_coverage_test: rank_coverage_test.c $(TEST_HDRS) $(TEST_SRCS)
 	$(CC) -o $@_bin rank_coverage_test.c $(TEST_SRCS)
 	./$@_bin
@@ -25,7 +29,7 @@ romazi_test: romazi_test.c $(TEST_HDRS) $(TEST_SRCS)
 	$(CC) -o $@_bin romazi_test.c $(TEST_SRCS)
 	./$@_bin
 
-test: last_rank_contained_test rank_coverage_test romazi_test
+test: last_rank_contained_test make_map_test rank_coverage_test romazi_test
 
 clean:
 	rm -f *_test_bin *.testout

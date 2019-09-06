@@ -39,6 +39,13 @@ int xasprintf(char **strp, const char *format, ...);
 	} \
 } while (0);
 
+#define FREE_ARRAY(array) do { \
+	free((array).el); \
+	(array).el = 0; \
+	(array).cnt = 0; \
+	(array).alloc = 0; \
+} while (0);
+
 struct qsort_frames {
 	struct {
 		size_t begin;

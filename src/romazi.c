@@ -2,6 +2,7 @@
 
 #include "util.h"
 
+#include <arpa/inet.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -443,5 +444,54 @@ void get_free_kanji_codes(struct short_code_array *codes)
 			codes->el[codes->cnt - 1][0] =
 				KEY_INDEX_TO_CHAR_MAP[shifted_key1];
 		}
+	}
+}
+
+static void append_copied_mapping(
+	struct key_mapping_array *codes, const struct romazi_entry *src)
+{
+	GROW_ARRAY_BY(*codes, 1);
+	strncpy(codes->el[codes->cnt - 1].orig, src->orig,
+		sizeof(codes->el[0].orig));
+	strncpy(codes->el[codes->cnt - 1].conv, src->conv,
+		sizeof(codes->el[0].conv));
+}
+
+static void hiragana_to_katakana(char *conv)
+{
+	while (*conv) {
+		uint16_t low_2_bytes =
+			((uint16_t)conv[1] << 8) + (conv[2] & 0xff);
+
+		low_2_bytes += 0x120;
+		conv[1] = low_2_bytes >> 8;
+		conv[2] = low_2_bytes;
+		/* UTF-8バイト間の繰り上げ */
+		if (conv[2] & 0x40) {
+			conv[2] &= ~0x40;
+			conv[1] += 1;
+		}
+		conv += 3;
+	}
+}
+
+void get_romazi_codes(struct key_mapping_array *codes)
+{
+	size_t i;
+	for (i = 0; i < ROMAZI_NR; i++) {
+		char *orig;
+
+		if (ROMAZI[i].use_as_is)
+			append_copied_mapping(codes, &ROMAZI[i]);
+		if (!ROMAZI[i].auto_katakana)
+			continue;
+
+		append_copied_mapping(codes, &ROMAZI[i]);
+
+		for (orig = codes->el[codes->cnt - 1].orig; *orig; orig++) {
+			if (*orig >= 'a' && *orig <= 'z')
+				*orig &= ~0x20;
+		}
+		hiragana_to_katakana(codes->el[codes->cnt - 1].conv);
 	}
 }

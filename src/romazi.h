@@ -26,3 +26,16 @@ struct short_code_array {
 };
 
 void get_free_kanji_codes(struct short_code_array *codes);
+
+struct key_mapping {
+	char orig[4];
+	char conv[7];
+};
+
+struct key_mapping_array {
+	struct key_mapping *el;
+	size_t cnt;
+	size_t alloc;
+};
+
+void get_romazi_codes(struct key_mapping_array *codes);
