@@ -1,0 +1,99 @@
+This document explains the "radical" system of Japanese Kanji for those who
+don't read Japanese.
+
+A radical (部首 - ぶしゅ) is a special kind of Kanji character. They can be
+categorized by how many strokes they have. The radicals are:
+
+(based on the radical chart from
+ https://github.com/google/horenso/blob/master/README.md)
+
+1 stroke:
+  一 丨 丶 丿 乙 亅
+2 strokes:
+  二 亠 人 儿 入 八 冂 冖 冫 几 凵 刀 力 勹 匕 匚 匸 十 卜 卩 厂 厶 又
+3 strokes:
+  ⺍ 口 囗 土 士 夂 夊 夕 大 女 子 宀 寸 小 尢 尸 屮 山 巛 工 己 巾 干 幺 广 廴
+  廾 弋 弓 彐 彡 彳
+4 strokes:
+  心 戈 戶 手 支 攴 文 斗 斤 方 无 日 曰 月 木 欠 止 歹 殳 毋 比 毛 氏 气 水 火
+  爪 父 爻 爿 片 牙 牛 犬
+5 strokes:
+  玄 玉 瓜 瓦 甘 生 用 田 疋 疒 癶 白 皮 皿 目 矛 矢 石 示 禸 禾 穴 立 竹
+6 strokes:
+  米 糸 缶 网 羊 羽 老 而 耒 耳 聿 肉 臣 自 至 臼 舌 舛 舟 艮 色 艸 虍 虫 血 行
+  衣 襾
+7 strokes:
+  見 角 言 谷 豆 豕 豸 貝 赤 走 足 身 車 辛 辰 辵 邑 酉 釆 里
+8 strokes:
+  金 長 門 阜 隶 隹 雨 靑 非
+9 strokes:
+  面 革 韋 韭 音 頁 風 飛 食 首 香
+10 strokes:
+  馬 骨 高 髟 鬥 鬯 鬲 鬼
+11 strokes:
+  魚 鳥 鹵 鹿 麥 麻 黃
+12 strokes or more:
+  黍 黑 黹 黽 鼎 鼓 鼠 鼻 齊 齒 龍 龜 龠
+
+ * Each Kanji has a "radical" associated with it, e.g. rad of 相 is 目
+
+ * Generally, the radical is roughly associated with the meaning of the Kanji
+
+   * e.g. radical of 地 (Earth, land - ち) is 土 (soil - つち)
+
+ * The radical of a radical is itself.
+
+ * Radicals have a particular order, as above, and that order is used to sort
+   characters in dictionaries.
+
+ * So, learning radicals has a practical use - you can look up Kanji in a
+   dictionary almost as easily as looking up an English word.
+
+ * Nusort treats radicals a little differently, for simplicity's sake:
+
+   * All 1-stroke radicals are considered the same one.
+
+   * The following radicals are a little easy to mix up, so they are treated
+     as the same as well
+       人 (person - ひと)
+       儿 (hitoashi - ひとあし)
+       入 (enter - はいる)
+       八 (eight - はち)
+
+   * Same goes for:
+       匚 (hakogamae - はこがまえ)
+       匸 (kakushigamae - かくしがまえ)
+
+   * As well as
+       日 (sun - ひ)
+       曰 (say - いわく)
+
+   * These four sets of "combined" radicals consist of radicals that are
+     consecutive in the canonical order, listed above.
+
+   * Other radicals which are easy to confuse are not "combined" in this
+     fashion, as it would likely result in other kinds of confusion when using a
+     normal dictionary.
+
+     * The radicals of 都 (capital - みやこ) and 降 (fall - ふる) are different:
+       邑 (oozato - おおざと) and 阜 (hill - おか) respectively, even though
+       they have an identical variant. They can be distuingished based on what
+       side of the Kanji they appear on.
+
+     * 肉 (meat - にく) often looks just like 月 (moon - つき) when it appears
+       as a radical, but the two radicals are easy to distinguish based on the
+       meaning of the character they appear in.
+
+ * Radicals have multiple forms, and sometimes the same radical has different
+   stroke counts depending on its variant. For instance:
+
+   * e.g. a variant of 水 (mizu, water, 4 strokes) is 氵 (3 strokes).
+
+ * The strokes in the character besides the radical are called the residual
+   stroke count (we don't care about the *total* stroke count).
+
+   * e.g. 汗 (sweat - あせ) has the radical 氵 (a variant of 水). Its residual
+     stroke count is 3.
+
+ * Characters in the Kanji Database are sorted first by radical, then by
+   residual stroke count.
