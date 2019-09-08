@@ -220,6 +220,7 @@ static int print_last_rank_contained_parsed_args(
 	size_t i;
 	int curr_top_key = -1;
 	struct line_stats line_stats;
+	int res = 0;
 
 	memset(&line_stats, 0, sizeof(line_stats));
 	line_stats.sort_each_line_by_rad_so = sort_each_line_by_rad_so;
@@ -239,11 +240,11 @@ static int print_last_rank_contained_parsed_args(
 
 	cutoff_kanji.key_count = line_stats.k_nr;
 	if (cutoff_kanji_count) {
-		int res = read_user_cutoff_kanji(
+		res = read_user_cutoff_kanji(
 			&line_stats, cutoff_kanji_count,
 			cutoff_kanji_raw, &cutoff_kanji);
 		if (res)
-			return res;
+			goto cleanup;
 	} else {
 		int cumulative_offset = 0;
 		size_t ki = 0;
@@ -293,7 +294,10 @@ static int print_last_rank_contained_parsed_args(
 	}
 	end_line(&line_stats);
 	print_stats_summary(&line_stats);
-	return 0;
+
+cleanup:
+	free(resorted);
+	return res;
 }
 
 int print_last_rank_contained(const char **argv, int argc)
