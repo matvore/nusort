@@ -1,0 +1,47 @@
+ 1 doc/radicals explains the order nusort assigns to kanji
+
+ 2 each key on the keyboard is assigned a certain range in
+   the canonical sequence of kanji.
+
+ 3 e.g. '1' could cover all the kanji from 一 (one いち,
+   inclusive) to 会 (meet あう, exclusive).
+
+ 4 '1' is the lowest-index key, so it contains the range
+   that starts at the first kanji.
+
+ 5 '2' could cover all the kanji from 会 to 信 (believe
+    しんじる).
+
+ 6 Note that in this example, keys 1 2 and 3 would cover
+   kanji with radical 人 (variants 亻and 𠆢). You will
+   need to know the stroke count to figure out which key
+   to use.
+
+ 7 Each key has up to 41 two-key-stroke kanji assigned to
+   it (e.g. 1 has codes "1[a-z;,./]" and "!").
+
+ 8 The highest-ranked (by usage frequency) characters are
+   assigned to these codes.
+
+ 9 If a key covers too small a range, we end up assigning
+   rare characters to 2-key codes, which is a waste as some
+   more common characters will end up getting longer codes.
+
+ a Conversely, ff a key covers too large a range, that key
+   won't be able to accomodate 2-key codes for common chars
+   in its range.
+
+ b The ideal is to cover characters with rank 1-1250 with
+   2-character codes in each key's range.
+
+ c The last_rank_contained command can be used in two ways:
+
+   * automatically find the best ranges to cover ranks
+     1-1250.
+
+   * report how well ranges cover ranks given a manually-
+     specified range.
+
+ d We can't cover ranks 1-1250 in all keys since some
+   characters are sorted "equally" (have the same radical
+   and residual stroke count)
