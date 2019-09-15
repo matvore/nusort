@@ -89,13 +89,18 @@ static struct {
 	unsigned rad : 8;
 	unsigned strokes : 8;
 } supplemental_keys[] = {
-	{"屠", 0x2c, 0x09},
-	{"斎", 0x43, 0x07},
-	{"蒸", 0x56, 0x09},
-	{"萬", 0x72, 0x07},
-	{"采", 0xa5, 0x00},
-	{"舎", 0x87, 0x02},
-	{"舗", 0x87, 0x09},
+	{"屠", 0x2d, 0x09},
+	{"斎", 0x44, 0x07},
+	{"蒸", 0x57, 0x09},
+	{"萬", 0x73, 0x07},
+	{"采", 0xa6, 0x00},
+	{"舎", 0x88, 0x02},
+	{"舗", 0x88, 0x09},
+	{"鼡", 0x1e, 0x05},
+	{"単", 0x1e, 0x06},
+	{"巣", 0x1e, 0x08},
+	{"営", 0x1e, 0x09},
+	{"厳", 0x1e, 0x0e},
 };
 
 static int process_rad_so_line(const char *line)
@@ -160,6 +165,12 @@ static int process_rad_so_line(const char *line)
 		/* 日と曰を同一の部首と見なす。*/
 		if (rad == 73)
 			rad = 72;
+		/*
+		 * 『口』以降の部首番号に一を足す。こうするとツかんむりが『口』
+		 * のもとの番号を取ることができます。
+		 */
+		if (rad >= 30)
+			rad += 1;
 
 		if (!add_key(rad, so))
 			return 13;
@@ -303,6 +314,14 @@ int check_kanji_db_order(const char **argv, int argc)
 	while (!res && xfgets(line, sizeof(line), db_stream)) {
 		res = process_rad_so_line(line);
 	}
+
+	/*
+	 * 部首の「⺍」はkRSAdobe_Japan1_6辞書に入ってないため、手動で定義する。
+	 */
+	strncpy(sort_infos[sort_infos_nr].c, "⺍", sizeof(sort_infos->c));
+	add_key(0x1e, 0x00);
+	sort_infos_nr++;
+
 	xfclose(db_stream);
 
 	QSORT(, sort_infos, sort_infos_nr,
