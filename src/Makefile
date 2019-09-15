@@ -13,6 +13,10 @@ TEST_HDRS = $(HDRS) test_util.h
 nusort: $(HDRS) $(SRCS)
 	$(CC) -o nusort $(SRCS)
 
+check_kanji_db_order_test: check_kanji_db_order_test.c $(TEST_HDRS) $(TEST_SRCS)
+	$(CC) -o $@_bin check_kanji_db_order_test.c $(TEST_SRCS)
+	./$@_bin
+
 last_rank_contained_test: last_rank_contained_test.c $(TEST_HDRS) $(TEST_SRCS)
 	$(CC) -o $@_bin last_rank_contained_test.c $(TEST_SRCS)
 	./$@_bin
@@ -29,7 +33,7 @@ romazi_test: romazi_test.c $(TEST_HDRS) $(TEST_SRCS)
 	$(CC) -o $@_bin romazi_test.c $(TEST_SRCS)
 	./$@_bin
 
-test: last_rank_contained_test make_map_test rank_coverage_test romazi_test
+test: check_kanji_db_order_test last_rank_contained_test make_map_test rank_coverage_test romazi_test
 
 clean:
 	rm -f *_test_bin *.testout

@@ -3,11 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "commands.h"
 #include "kanji_db.h"
 #include "util.h"
 
 static const char *ADOBE_JAPAN = "\tkRSAdobe_Japan1_6";
 static int db_out;
+static int quiet;
 
 struct sort_key {
 	unsigned rad: 8;
@@ -54,7 +56,7 @@ static void decode_codepoint(char *d, const char *codepoint_str)
 {
 	long codepoint = strtol(codepoint_str, NULL, 16);
 	if (codepoint < 0x0800) {
-		fprintf(stderr, "コードポイントが対象外: %ld\n", codepoint);
+		xfprintf(err, "コードポイントが対象外: %ld\n", codepoint);
 		exit(20);
 	}
 	if (codepoint <= 0xffff) {
@@ -80,7 +82,7 @@ static int add_key(int rad, int so)
 		}
 	}
 
-	fprintf(stderr, "並べ替えキーが多すぎます\n");
+	xfprintf(err, "並べ替えキーが多すぎます\n");
 	return 0;
 }
 
@@ -115,15 +117,15 @@ static int process_rad_so_line(const char *line)
 		return 0;
 	switch (sscanf(line, "U+%5[0-9A-F]%n", codepoint_str, &prefix_len)) {
 	case 0:
-		fprintf(stderr,
-			"警告: 行の形式が間違っています：%s\n",
-			line);
+		xfprintf(err,
+			 "警告: 行の形式が間違っています：%s\n",
+			 line);
 		return 0;
 	case 1:
 		break;
 	default:
-		fprintf(stderr, "予期していないエラー: %s\n",
-			strerror(errno));
+		xfprintf(err, "予期していないエラー: %s\n",
+			 strerror(errno));
 		return 10;
 	}
 
@@ -141,14 +143,14 @@ static int process_rad_so_line(const char *line)
 			       &rad, &so, &len)) {
 		case 0:
 		case 1:
-			fprintf(stderr, "行の形式が間違っています: (列 %d)\n%s",
-				(int)(cur - line), line);
+			xfprintf(err, "行の形式が間違っています: (列 %d)\n%s",
+				 (int)(cur - line), line);
 			return 11;
 		case 2:
 			break;
 		default:
-			fprintf(stderr, "予期していないエラー: %s\n",
-				strerror(errno));
+			xfprintf(err, "予期していないエラー: %s\n",
+				 strerror(errno));
 			return 12;
 		}
 		cur += len;
@@ -192,11 +194,11 @@ static void output_char_line(
 	const struct kanji_entry *k, const struct sort_info *si)
 {
 	size_t ki;
-	printf("%s\t", k->c);
+	xfprintf(out, "%s\t", k->c);
 	for (ki = 0; ki < MAX_K && si->k[ki].rad; ki++)
-		printf("%02x%02x ",
-			(int) si->k[ki].rad, (int) si->k[ki].strokes);
-	printf("\n");
+		xfprintf(out, "%02x%02x ",
+			 (int) si->k[ki].rad, (int) si->k[ki].strokes);
+	xfprintf(out, "\n");
 }
 
 static int figure_cutoff_type(
@@ -250,10 +252,10 @@ static int check_order(void)
 		BSEARCH(si, sort_infos, sort_infos_nr, strcmp(si->c, k[i]->c));
 
 		if (!si) {
-			fprintf(stderr,
-				"Unihanで並べ替えキーが見つかり"
-				"ませんでした: %s\n",
-				k[i]->c);
+			xfprintf(err,
+				 "Unihanで並べ替えキーが見つかり"
+				 "ませんでした: %s\n",
+				 k[i]->c);
 			res = 30;
 			break;
 		}
@@ -265,15 +267,17 @@ static int check_order(void)
 				smallest_matching = si->k[ki];
 		}
 		if (smallest_matching.rad == 0xff) {
-			fprintf(stderr, "err: %s\n", k[i]->c);
+			xfprintf(err, "err: %s\n", k[i]->c);
 			res = 31;
 			break;
 		}
 		key = smallest_matching;
-		if (!db_out)
-			output_char_line(k[i], si);
-		else
-			output_db_line(k[i], prev_si, si);
+		if (!quiet) {
+			if (!db_out)
+				output_char_line(k[i], si);
+			else
+				output_db_line(k[i], prev_si, si);
+		}
 
 		prev_si = si;
 	}
@@ -285,7 +289,6 @@ static int check_order(void)
 
 int check_kanji_db_order(const char **argv, int argc)
 {
-	char *rad_so_db_path;
 	FILE *db_stream = NULL;
 	int res = 0;
 	char line[512];
@@ -294,22 +297,21 @@ int check_kanji_db_order(const char **argv, int argc)
 		const char *arg = argv[0];
 		argc--;
 		argv++;
-		if (!strcmp(arg, "--db-out")) {
+		if (!strcmp(arg, "-q")) {
+			quiet = 1;
+		} else if (!strcmp(arg, "--db-out")) {
 			db_out = 1;
 		} else if (!strcmp(arg, "--")) {
 			break;
 		} else {
-			fprintf(stderr, "フラグを認識できませんでした：%s\n",
-				arg);
+			xfprintf(err, "フラグを認識できませんでした：%s\n",
+				 arg);
 			return 3;
 		}
 	}
 
-	xasprintf(&rad_so_db_path,
-		  "%s/Desktop/Unihan/Unihan_RadicalStrokeCounts.txt",
-		  getenv("HOME"));
-	db_stream = xfopen(rad_so_db_path, "r");
-	free(rad_so_db_path);
+	db_stream = xfopen(
+		"../third_party/Unihan_RadicalStrokeCounts.txt", "r");
 
 	while (!res && xfgets(line, sizeof(line), db_stream)) {
 		res = process_rad_so_line(line);
@@ -326,7 +328,7 @@ int check_kanji_db_order(const char **argv, int argc)
 
 	QSORT(, sort_infos, sort_infos_nr,
 	      strcmp(sort_infos[a].c, sort_infos[b].c) < 0);
-	fprintf(stderr, "%ld字の並べ替えキーを読み込み済み\n", sort_infos_nr);
+	xfprintf(err, "%ld字の並べ替えキーを読み込み済み\n", sort_infos_nr);
 
 	if (!res)
 		res = check_order();
