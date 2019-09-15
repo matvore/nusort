@@ -47,8 +47,16 @@ static void sort_and_dedup_keys(struct sort_info *si)
 	memset(si->k + dest, 0, sizeof(*si->k) * (MAX_K - dest));
 }
 
-static struct sort_info sort_infos[20000];
-static size_t sort_infos_nr;
+static struct {
+	struct sort_info *el;
+	size_t cnt;
+	size_t alloc;
+} sort_infos;
+
+static struct sort_info *last_si(void)
+{
+	return &sort_infos.el[sort_infos.cnt - 1];
+}
 
 void set_utf8_byte(char *d, unsigned char c) { *d = 0x80 | (c & 0x3f); }
 
@@ -73,11 +81,10 @@ static void decode_codepoint(char *d, const char *codepoint_str)
 static int add_key(int rad, int so)
 {
 	size_t i;
-	struct sort_info *si = &sort_infos[sort_infos_nr];
 	for (i = 0; i < MAX_K; i++) {
-		if (!si->k[i].rad) {
-			si->k[i].rad = rad;
-			si->k[i].strokes = so;
+		if (!last_si()->k[i].rad) {
+			last_si()->k[i].rad = rad;
+			last_si()->k[i].strokes = so;
 			return 1;
 		}
 	}
@@ -110,7 +117,6 @@ static int process_rad_so_line(const char *line)
 	char codepoint_str[6];
 	int prefix_len;
 	const char *cur;
-	char *raw_ch = sort_infos[sort_infos_nr].c;
 	size_t i;
 
 	if (line[0] == '#' || line[0] == '\n')
@@ -132,6 +138,8 @@ static int process_rad_so_line(const char *line)
 	cur = line + prefix_len;
 	if (strncmp(ADOBE_JAPAN, cur, strlen(ADOBE_JAPAN)))
 		return 0;
+
+	GROW_ARRAY_BY(sort_infos, 1);
 
 	cur += strlen(ADOBE_JAPAN);
 	while (1) {
@@ -178,15 +186,15 @@ static int process_rad_so_line(const char *line)
 			return 13;
 	}
 
-	decode_codepoint(raw_ch, codepoint_str);
+	decode_codepoint(last_si()->c, codepoint_str);
 	for (i = 0; i < sizeof(supplemental_keys) / sizeof(*supplemental_keys);
 	     i++) {
-		if (!strcmp(supplemental_keys[i].c, raw_ch) &&
+		if (!strcmp(supplemental_keys[i].c, last_si()->c) &&
 		    !add_key(supplemental_keys[i].rad,
 			     supplemental_keys[i].strokes))
 			return 14;
 	}
-	sort_and_dedup_keys(&sort_infos[sort_infos_nr++]);
+	sort_and_dedup_keys(last_si());
 	return 0;
 }
 
@@ -249,7 +257,8 @@ static int check_order(void)
 		struct sort_info *si;
 		size_t ki;
 
-		BSEARCH(si, sort_infos, sort_infos_nr, strcmp(si->c, k[i]->c));
+		BSEARCH(si, sort_infos.el, sort_infos.cnt,
+			strcmp(si->c, k[i]->c));
 
 		if (!si) {
 			xfprintf(err,
@@ -320,18 +329,20 @@ int check_kanji_db_order(const char **argv, int argc)
 	/*
 	 * 部首の「⺍」はkRSAdobe_Japan1_6辞書に入ってないため、手動で定義する。
 	 */
-	strncpy(sort_infos[sort_infos_nr].c, "⺍", sizeof(sort_infos->c));
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, "⺍", sizeof(last_si()->c));
 	add_key(0x1e, 0x00);
-	sort_infos_nr++;
 
 	xfclose(db_stream);
 
-	QSORT(, sort_infos, sort_infos_nr,
-	      strcmp(sort_infos[a].c, sort_infos[b].c) < 0);
-	xfprintf(err, "%ld字の並べ替えキーを読み込み済み\n", sort_infos_nr);
+	QSORT(, sort_infos.el, sort_infos.cnt,
+	      strcmp(sort_infos.el[a].c, sort_infos.el[b].c) < 0);
+	xfprintf(err, "%ld字の並べ替えキーを読み込み済み\n", sort_infos.cnt);
 
 	if (!res)
 		res = check_order();
+
+	FREE_ARRAY(sort_infos);
 
 	return res;
 }
