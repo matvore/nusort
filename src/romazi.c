@@ -306,7 +306,7 @@ const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT] = {
 
 static unsigned char char_to_key_index_map[128];
 
-size_t char_to_key_index(char ch)
+static size_t char_to_key_index(char ch)
 {
 	size_t key_index;
 
@@ -316,6 +316,7 @@ size_t char_to_key_index(char ch)
 	if (char_to_key_index_map[0])
 		return char_to_key_index_map[(int) ch];
 
+	memset(char_to_key_index_map, 0xff, sizeof(char_to_key_index_map));
 	for (key_index = 0; key_index < MAPPABLE_CHAR_COUNT; key_index++)
 		char_to_key_index_map[(int) KEY_INDEX_TO_CHAR_MAP[key_index]] =
 				key_index;
