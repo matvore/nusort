@@ -37,14 +37,14 @@ int xasprintf(char **strp, const char *format, ...);
 		memset((array).el + old_alloc, 0, \
 			((array).alloc - old_alloc) * sizeof(*(array).el)); \
 	} \
-} while (0);
+} while (0)
 
 #define FREE_ARRAY(array) do { \
 	free((array).el); \
 	(array).el = 0; \
 	(array).cnt = 0; \
 	(array).alloc = 0; \
-} while (0);
+} while (0)
 
 struct qsort_frames {
 	struct {
@@ -67,7 +67,7 @@ static inline void qsort_push_frame(
 do { \
 	xfprintf(stderr, "%s (%s:%d)\n", error, __FILE__, __LINE__); \
 	exit(224); \
-} while(0);
+} while(0)
 
 #define QSORT(p, el, cnt, lt) \
 do { \
