@@ -295,18 +295,16 @@ const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT] = {
 	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
 	'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',
 	'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/',
-	'-',
 
 	'!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
 	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
 	'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',
 	'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?',
-	'_',
 };
 
-static unsigned char char_to_key_index_map[128];
+static signed char char_to_key_index_map[128];
 
-static size_t char_to_key_index(char ch)
+static ssize_t char_to_key_index(char ch)
 {
 	size_t key_index;
 
@@ -371,8 +369,13 @@ static int ascii_to_upper(int c, int change)
 
 static void mark_used(struct used_bit_map *used, const char *code, int caps)
 {
-	size_t first_key_off = char_to_key_index(ascii_to_upper(code[0], caps))
-		* MAPPABLE_CHAR_COUNT;
+	ssize_t first_key_off =
+		char_to_key_index(ascii_to_upper(code[0], caps));
+
+	if (first_key_off == -1)
+		return;
+
+	first_key_off *= MAPPABLE_CHAR_COUNT;
 
 	if (strlen(code) >= 2)
 		used->m[

@@ -1,7 +1,7 @@
 #include <stddef.h>
 
 #define KANJI_KEY_COUNT 40
-#define MAPPABLE_CHAR_COUNT 82
+#define MAPPABLE_CHAR_COUNT (KANJI_KEY_COUNT * 2)
 
 extern const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT];
 
