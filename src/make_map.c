@@ -8,6 +8,6 @@ int make_map(const char **argv, int argc) {
 	get_romazi_codes(&codes);
 	for (i = 0; i < codes.cnt; i++)
 		xfprintf(out, "%s\t%s\n", codes.el[i].orig, codes.el[i].conv);
-	FREE_ARRAY(codes);
+	DESTROY_ARRAY(codes);
 	return 0;
 }

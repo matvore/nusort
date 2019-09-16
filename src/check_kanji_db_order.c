@@ -342,7 +342,7 @@ int check_kanji_db_order(const char **argv, int argc)
 	if (!res)
 		res = check_order();
 
-	FREE_ARRAY(sort_infos);
+	DESTROY_ARRAY(sort_infos);
 
 	return res;
 }

@@ -39,7 +39,7 @@ int xasprintf(char **strp, const char *format, ...);
 	} \
 } while (0)
 
-#define FREE_ARRAY(array) do { \
+#define DESTROY_ARRAY(array) do { \
 	free((array).el); \
 	(array).el = 0; \
 	(array).cnt = 0; \
