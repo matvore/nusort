@@ -9,21 +9,46 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct cutoff_kanji {
-	unsigned int key_count;
-	const struct kanji_entry *k[KANJI_KEY_COUNT - 1];
+struct line_stats {
+	unsigned short last_char_rank;
+
+	/* この行の全漢字の入力コードがこのキーから始まる */
+	char key_ch;
+
+	/* 未使用コード数 */
+	unsigned char available;
+
+	short offset_to_target;
+	int cumulative_offset;
+
+	/* 部首＋画数順位における、この行の全漢字より前（または同値）である。*/
+	const struct kanji_entry *cutoff;
+
+	unsigned char e_nr;
+	const struct kanji_entry *e[KANJI_KEY_COUNT + 1];
+};
+
+struct kanji_distribution {
+	unsigned sort_each_line_by_rad_so : 1;
+
+	unsigned short total_rank;
+	unsigned short total_chars;
+	unsigned short target_rank;
+
+	size_t line_stats_nr;
+	struct line_stats line_stats[KANJI_KEY_COUNT];
 };
 
 static int first_key(
 	const struct kanji_entry *kanji,
-	const struct cutoff_kanji *cutoff_kanji)
+	const struct kanji_distribution *kd)
 {
 	size_t min = 0;
-	size_t max = cutoff_kanji->key_count - 1;
+	size_t max = kd->line_stats_nr - 1;
 
 	do {
 		size_t mid = (min + max) / 2;
-		if (cutoff_kanji->k[mid]->rad_so_sort_key <=
+		if (kd->line_stats[mid + 1].cutoff->rad_so_sort_key <=
 				kanji->rad_so_sort_key)
 			min = mid + 1;
 		else
@@ -34,42 +59,22 @@ static int first_key(
 }
 
 static int first_key_then_rank_lt(
-	const struct cutoff_kanji *cutoff_kanji,
+	const struct kanji_distribution *kd,
 	const struct kanji_entry *a, const struct kanji_entry *b)
 {
-	int a_first_key = first_key(a, cutoff_kanji);
-	int b_first_key = first_key(b, cutoff_kanji);
+	int a_first_key = first_key(a, kd);
+	int b_first_key = first_key(b, kd);
 
 	if (a_first_key != b_first_key)
 		return a_first_key < b_first_key;
 	return a->ranking < b->ranking;
 }
 
-struct top_key {
-	char key_ch;
-	unsigned char available;
-};
+/* コマンドフラグ */
+static int hide_kanji;
+static int show_per_line_kanji_count;
 
-struct line_stats {
-	unsigned short last_char_rank;
-	unsigned short total_rank;
-
-	unsigned short k_nr;
-	struct top_key k[KANJI_KEY_COUNT];
-	short offset_to_target;
-	int overall_offset;
-
-	unsigned short total_chars;
-	unsigned short target_rank;
-
-	unsigned char e_nr;
-	const struct kanji_entry *e[KANJI_KEY_COUNT + 1];
-	unsigned sort_each_line_by_rad_so : 1;
-	unsigned hide_kanji : 1;
-	unsigned show_per_line_kanji_count : 1;
-};
-
-static void get_top_keys(struct line_stats *s)
+static void get_top_keys(struct kanji_distribution *kd)
 {
 	struct unused_kanji_keys unused_kk;
 	size_t unused_kk_index = 0;
@@ -78,88 +83,98 @@ static void get_top_keys(struct line_stats *s)
 
 	for (unused_kk_index = 0; unused_kk_index < KANJI_KEY_COUNT;
 			unused_kk_index++) {
+		struct line_stats *s;
 		if (!unused_kk.count[unused_kk_index])
 			continue;
-		s->k[s->k_nr].key_ch =
-			KEY_INDEX_TO_CHAR_MAP[unused_kk_index];
-		s->k[s->k_nr].available =
-			(unsigned char) unused_kk.count[unused_kk_index];
-		s->k_nr++;
-		s->total_chars += unused_kk.count[unused_kk_index];
+		s = &kd->line_stats[kd->line_stats_nr++];
+		s->key_ch = KEY_INDEX_TO_CHAR_MAP[unused_kk_index];
+		s->available = (unsigned char) unused_kk.count[unused_kk_index];
+		kd->total_chars += unused_kk.count[unused_kk_index];
 	}
 }
 
-static void end_line(struct line_stats *s)
+static void end_line(struct kanji_distribution *kd, struct line_stats *s)
 {
 	size_t i;
 
-	if (!s->last_char_rank)
-		return;
-
-	if (s->sort_each_line_by_rad_so)
+	if (kd->sort_each_line_by_rad_so)
 		/* 部首＋画数で並べ替える */
 		QSORT(, s->e, s->e_nr,
 		      s->e[a]->rad_so_sort_key < s->e[b]->rad_so_sort_key);
 
-	if (!s->hide_kanji) {
+	if (!hide_kanji) {
 		for (i = 0; i < s->e_nr; i++)
 			xfprintf(out, "%s", s->e[i]->c);
 		xfprintf(out, " ");
 	}
 
-	s->overall_offset += s->offset_to_target;
+	s->cumulative_offset = s->offset_to_target;
+	if (s != kd->line_stats)
+		s->cumulative_offset += (s - 1)->cumulative_offset;
 	xfprintf(out, "(%d . %d . %d",
-		 s->last_char_rank, s->offset_to_target, s->overall_offset);
-	if (s->show_per_line_kanji_count)
+		 s->last_char_rank, s->offset_to_target, s->cumulative_offset);
+	if (show_per_line_kanji_count)
 		xfprintf(out, " . %d", s->e_nr);
 
 	xfprintf(out, ")\n");
 
-	s->total_rank += s->last_char_rank;
-	s->last_char_rank = 0;
-	s->offset_to_target = 0;
-	s->e_nr = 0;
+	kd->total_rank += s->last_char_rank;
 }
 
-static void print_stats_summary(struct line_stats *s)
+static void print_stats_summary(struct kanji_distribution *kd)
 {
-	fprintf(out, "各行平均位: %.1f\n", (float) s->total_rank / s->k_nr);
-	fprintf(out, "目標位:  %d\n", s->target_rank);
-	fprintf(out, "合計漢字数:  %d\n", s->total_chars);
+	xfprintf(out, "各行平均位: %.1f\n",
+		 (float) kd->total_rank / kd->line_stats_nr);
+	xfprintf(out, "目標位:  %d\n", kd->target_rank);
+	xfprintf(out, "合計漢字数:  %d\n", kd->total_chars);
+}
+
+static const struct kanji_entry *first_kanji_in_rad_so(void)
+{
+	struct kanji_entry *cutoff = NULL;
+	BSEARCH(cutoff, kanji_db(), kanji_db_nr(),
+		strcmp(cutoff->c, "一"));
+	if (!cutoff)
+		BUG("「一」が漢字データベースで見つかりませんでした。");
+	return cutoff;
 }
 
 static int read_user_cutoff_kanji(
-	const struct line_stats *line_stats,
+	struct kanji_distribution *kd,
 	size_t cutoff_kanji_count,
-	const char **cutoff_kanji_raw,
-	struct cutoff_kanji *cutoff_kanji)
+	const char **cutoff_kanji_raw)
 {
 	size_t i;
 
-	if (cutoff_kanji_count != line_stats->k_nr - 1) {
+	if (cutoff_kanji_count != kd->line_stats_nr - 1) {
 		fprintf(err,
-			"%d個の区切り漢字を必するけれど、%ld個が渡された。\n",
-			line_stats->k_nr - 1, cutoff_kanji_count);
+			"%ld個の区切り漢字を必するけれど、%ld個が渡された。\n",
+			kd->line_stats_nr - 1, cutoff_kanji_count);
 		return 1;
 	}
 
 	for (i = 0; i < cutoff_kanji_count; i++) {
-		BSEARCH(cutoff_kanji->k[i], kanji_db(), kanji_db_nr(),
-			strcmp(cutoff_kanji->k[i]->c, cutoff_kanji_raw[i]));
+		const struct kanji_entry *cutoff = NULL;
 
-		if (!cutoff_kanji->k[i]) {
+		BSEARCH(cutoff, kanji_db(), kanji_db_nr(),
+			strcmp(cutoff->c, cutoff_kanji_raw[i]));
+
+		if (!cutoff) {
 			fprintf(err,
 				"[ %s ] は区切り漢字に指定されている"
 				"けれど、KANJI配列に含まれていない。\n",
 				cutoff_kanji_raw[i]);
 			return 2;
 		}
-		if (!cutoff_kanji->k[i]->cutoff_type) {
+		if (!cutoff->cutoff_type) {
 			fprintf(err, "[ %s ] は区切り漢字として使えません。\n",
 				cutoff_kanji_raw[i]);
 			return 3;
 		}
+
+		kd->line_stats[i + 1].cutoff = cutoff;
 	}
+
 	return 0;
 }
 
@@ -215,16 +230,15 @@ static size_t find_best_cutoff(
 static int print_last_rank_contained_parsed_args(
 	size_t cutoff_kanji_count,
 	const char **cutoff_kanji_raw,
-	struct line_stats *line_stats)
+	struct kanji_distribution *kd)
 {
 	const struct kanji_entry **resorted;
+	struct line_stats *line_stats = NULL;
 	size_t resorted_nr;
-	struct cutoff_kanji cutoff_kanji;
 	size_t i;
-	int curr_top_key = -1;
 	int res = 0;
 
-	get_top_keys(line_stats);
+	get_top_keys(kd);
 
 	resorted = xcalloc(kanji_db_nr(), sizeof(*resorted));
 	resorted_nr = 0;
@@ -235,13 +249,13 @@ static int print_last_rank_contained_parsed_args(
 	}
 	QSORT(, resorted, resorted_nr,
 	      resorted[a]->ranking < resorted[b]->ranking);
-	line_stats->target_rank = resorted[line_stats->total_chars]->ranking;
+	kd->target_rank = resorted[kd->total_chars]->ranking;
 
-	cutoff_kanji.key_count = line_stats->k_nr;
+	kd->line_stats[0].cutoff = first_kanji_in_rad_so();
+
 	if (cutoff_kanji_count) {
 		res = read_user_cutoff_kanji(
-			line_stats, cutoff_kanji_count,
-			cutoff_kanji_raw, &cutoff_kanji);
+			kd, cutoff_kanji_count, cutoff_kanji_raw);
 		if (res)
 			goto cleanup;
 	} else {
@@ -249,51 +263,52 @@ static int print_last_rank_contained_parsed_args(
 		size_t ki = 0;
 		QSORT(, resorted, resorted_nr, resorted[a]->rad_so_sort_key <
 					       resorted[b]->rad_so_sort_key);
-		for (; cutoff_kanji_count < line_stats->k_nr - 1;
+		for (cutoff_kanji_count = 1;
+		     cutoff_kanji_count < kd->line_stats_nr;
 		     cutoff_kanji_count++) {
 			rank_coverage_reset(
-				line_stats->target_rank,
-				line_stats->k[cutoff_kanji_count].available);
+				kd->target_rank,
+				kd->line_stats[cutoff_kanji_count - 1]
+					.available);
+
 			ki = find_best_cutoff(
 				&cumulative_offset, ki, resorted, resorted_nr);
 
-			cutoff_kanji.k[cutoff_kanji_count] = resorted[ki];
+			kd->line_stats[cutoff_kanji_count].cutoff =
+				resorted[ki];
 		}
 	}
 
 	QSORT(, resorted, resorted_nr,
-	      first_key_then_rank_lt(&cutoff_kanji, resorted[a], resorted[b]));
+	      first_key_then_rank_lt(kd, resorted[a], resorted[b]));
 
 	for (i = 0; i < resorted_nr; i++) {
-		if (curr_top_key < 0 ||
-		    (curr_top_key < line_stats->k_nr - 1 &&
-		     cutoff_kanji.k[curr_top_key]->rad_so_sort_key <=
+		if (!line_stats ||
+		    (line_stats != &kd->line_stats[kd->line_stats_nr - 1] &&
+		     (line_stats + 1)->cutoff->rad_so_sort_key <=
 		     resorted[i]->rad_so_sort_key)) {
-			const char *cutoff;
-
-			end_line(line_stats);
-
-			if (curr_top_key == -1)
-				cutoff = "一";
-			else
-				cutoff = cutoff_kanji.k[curr_top_key]->c;
-			curr_top_key++;
-			fprintf(out, "[ %s ] %c ",
-				cutoff, line_stats->k[curr_top_key].key_ch);
+			if (!line_stats) {
+				line_stats = &kd->line_stats[0];
+			} else {
+				end_line(kd, line_stats);
+				line_stats++;
+			}
+			xfprintf(out, "[ %s ] %c ",
+				 line_stats->cutoff->c, line_stats->key_ch);
 		}
 
-		if (resorted[i]->ranking <= line_stats->target_rank)
+		if (resorted[i]->ranking <= kd->target_rank)
 			line_stats->offset_to_target--;
-		if (!line_stats->k[curr_top_key].available)
+		if (!line_stats->available)
 			continue;
 
 		line_stats->last_char_rank = resorted[i]->ranking;
 		line_stats->e[line_stats->e_nr++] = resorted[i];
-		line_stats->k[curr_top_key].available--;
+		line_stats->available--;
 		line_stats->offset_to_target++;
 	}
-	end_line(line_stats);
-	print_stats_summary(line_stats);
+	end_line(kd, line_stats);
+	print_stats_summary(kd);
 
 cleanup:
 	free(resorted);
@@ -302,18 +317,19 @@ cleanup:
 
 int print_last_rank_contained(const char **argv, int argc)
 {
-	struct line_stats line_stats = {0};
+	struct kanji_distribution kanji_distribution = {0};
+	show_per_line_kanji_count = 0;
 
 	while (argc > 0 && argv[0][0] == '-') {
 		const char *arg = argv[0];
 		argc--;
 		argv++;
 		if (!strcmp(arg, "-s")) {
-			line_stats.sort_each_line_by_rad_so = 1;
+			kanji_distribution.sort_each_line_by_rad_so = 1;
 		} else if (!strcmp(arg, "-k")) {
-			line_stats.hide_kanji = 1;
+			hide_kanji = 1;
 		} else if (!strcmp(arg, "-n")) {
-			line_stats.show_per_line_kanji_count = 1;
+			show_per_line_kanji_count = 1;
 		} else if (!strcmp(arg, "--")) {
 			break;
 		} else {
@@ -322,5 +338,6 @@ int print_last_rank_contained(const char **argv, int argc)
 		}
 	}
 
-	return print_last_rank_contained_parsed_args(argc, argv, &line_stats);
+	return print_last_rank_contained_parsed_args(
+		argc, argv, &kanji_distribution);
 }
