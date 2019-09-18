@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdint.h>
 
 #define CUTOFFTYPE_NONE                  0
 #define CUTOFFTYPE_NEWSTROKECOUNT        1
@@ -9,7 +10,7 @@ struct kanji_entry {
 	/* UTF-8ヌル終端バイト列. */
 	char c[5];
 	/* 漢字出現による順位 */
-	unsigned short ranking;
+	uint16_t ranking;
 
 	unsigned cutoff_type : 2;
 
