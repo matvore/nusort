@@ -1,9 +1,15 @@
+#ifndef ROMAZI_H
+#define ROMAZI_H
+
 #include <stddef.h>
+#include <sys/types.h>
 
 #define KANJI_KEY_COUNT 40
 #define MAPPABLE_CHAR_COUNT (KANJI_KEY_COUNT * 2)
 
 extern const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT];
+
+ssize_t char_to_key_index_or_die(char ch);
 
 struct unused_kanji_keys {
 	unsigned char count[KANJI_KEY_COUNT];
@@ -33,3 +39,5 @@ struct key_mapping_array {
 };
 
 void get_romazi_codes(struct key_mapping_array *codes);
+
+#endif

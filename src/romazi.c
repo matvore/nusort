@@ -304,6 +304,10 @@ const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT] = {
 
 static signed char char_to_key_index_map[128];
 
+/*
+ * 漢字とカナ入力で使わないキーはインデックスを持たない。そのキーの場合は、
+ * -1を返す。
+ */
 static ssize_t char_to_key_index(char ch)
 {
 	size_t key_index;
@@ -320,6 +324,16 @@ static ssize_t char_to_key_index(char ch)
 				key_index;
 
 	return char_to_key_index_map[(int) ch];
+}
+
+ssize_t char_to_key_index_or_die(char ch)
+{
+	ssize_t i = char_to_key_index(ch);
+
+	if (i == -1)
+		BUG("char -> キーインデックスマップで見つからない： %c", ch);
+
+	return i;
 }
 
 static const char *target_strs[ROMAZI_NR];
