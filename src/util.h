@@ -11,6 +11,7 @@ void xfclose(FILE *stream);
 int xfprintf(FILE *stream, const char *format, ...);
 int xasprintf(char **strp, const char *format, ...);
 int xfputc(int c, FILE *stream);
+size_t xfread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 
 /*
  * GROW_ARRAY_BY
@@ -45,6 +46,11 @@ int xfputc(int c, FILE *stream);
 	(array).el = 0; \
 	(array).cnt = 0; \
 	(array).alloc = 0; \
+} while (0)
+
+#define FREE(ptr) do { \
+	free(ptr); \
+	(ptr) = NULL; \
 } while (0)
 
 struct qsort_frames {

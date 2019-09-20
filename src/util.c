@@ -33,7 +33,7 @@ FILE *xfopen(const char *pathname, const char *mode)
 	FILE *f = fopen(pathname, mode);
 	if (!f) {
 		fprintf(stderr,
-			"%sを開く際にfopenが失配しました：\n\t%s\n",
+			"%s を開く際にfopenが失配しました：\n\t%s\n",
 			pathname, strerror(errno));
 		exit(91);
 	}
@@ -101,4 +101,14 @@ int xfputc(int c, FILE *stream)
 		exit(88);
 	}
 	return c;
+}
+
+size_t xfread(void *ptr, size_t size, size_t nmemb, FILE *stream)
+{
+	size_t read_size = fread(ptr, size, nmemb, stream);
+	if (ferror(stream)) {
+		xfprintf(stderr, "freadエラー\n");
+		exit(215);
+	}
+	return read_size;
 }
