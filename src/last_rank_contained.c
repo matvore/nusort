@@ -34,7 +34,7 @@ static void print_stats_summary(struct kanji_distribution *kd)
 	xfprintf(out, "合計漢字数:  %d\n", kd->total_chars);
 }
 
-int print_last_rank_contained(const char **argv, int argc)
+int print_last_rank_contained(char const *const *argv, int argc)
 {
 	struct kanji_distribution kanji_distribution = {0};
 	size_t i;

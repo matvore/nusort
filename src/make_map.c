@@ -50,7 +50,7 @@ static void get_kanji_codes(struct key_mapping_array *m)
 	DESTROY_ARRAY(free_kanji_codes);
 }
 
-int make_map(const char **argv, int argc) {
+int make_map(char const *const *argv, int argc) {
 	struct key_mapping_array codes = {0};
 	size_t i;
 

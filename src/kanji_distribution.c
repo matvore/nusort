@@ -185,7 +185,7 @@ void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd)
 
 int kanji_distribution_parse_user_cutoff(
 	struct kanji_distribution *kd,
-	const char **argv,
+	char const *const *argv,
 	int argc)
 {
 	size_t i;

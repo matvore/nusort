@@ -3,7 +3,7 @@
 #include "romazi.h"
 #include "util.h"
 
-int free_kanji_keys(const char **argv, int argc)
+int free_kanji_keys(char const *const *argv, int argc)
 {
 	struct short_code_array codes = {0};
 	size_t i;

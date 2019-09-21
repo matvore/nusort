@@ -296,7 +296,7 @@ static int check_order(void)
 	return res;
 }
 
-int check_kanji_db_order(const char **argv, int argc)
+int check_kanji_db_order(char const *const *argv, int argc)
 {
 	FILE *db_stream = NULL;
 	int res = 0;

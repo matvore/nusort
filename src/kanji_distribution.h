@@ -44,7 +44,7 @@ void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd);
 
 int kanji_distribution_parse_user_cutoff(
 	struct kanji_distribution *kd,
-	const char **argv,
+	char const *const *argv,
 	int argc);
 
 void kanji_distribution_populate(struct kanji_distribution *kd);
