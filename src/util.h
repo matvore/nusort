@@ -8,8 +8,13 @@ void *xreallocarray(void *ptr, size_t count, size_t el_size);
 FILE *xfopen(const char *pathname, const char *mode);
 char *xfgets(char *s, int size, FILE *stream);
 void xfclose(FILE *stream);
+
+__attribute__((format (printf, 2, 3)))
 int xfprintf(FILE *stream, const char *format, ...);
+
+__attribute__((format (printf, 2, 3)))
 int xasprintf(char **strp, const char *format, ...);
+
 int xfputc(int c, FILE *stream);
 size_t xfread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 

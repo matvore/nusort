@@ -193,7 +193,7 @@ int kanji_distribution_parse_user_cutoff(
 
 	if (argc != kd->line_stats_nr - 1) {
 		xfprintf(err,
-			 "%ld個の区切り漢字を必するけれど、%ld個が渡された。\n",
+			 "%ld個の区切り漢字を必するけれど、%d個が渡された。\n",
 			 kd->line_stats_nr - 1, argc);
 		return 1;
 	}
