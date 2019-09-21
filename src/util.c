@@ -92,3 +92,13 @@ int xasprintf(char **strp, const char *format, ...)
 
 	return res;
 }
+
+int xfputc(int c, FILE *stream)
+{
+	c = fputc(c, stream);
+	if (c == EOF) {
+		xfprintf(stderr, "fputcエラー\n");
+		exit(88);
+	}
+	return c;
+}

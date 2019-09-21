@@ -10,6 +10,7 @@ char *xfgets(char *s, int size, FILE *stream);
 void xfclose(FILE *stream);
 int xfprintf(FILE *stream, const char *format, ...);
 int xasprintf(char **strp, const char *format, ...);
+int xfputc(int c, FILE *stream);
 
 /*
  * GROW_ARRAY_BY
@@ -63,9 +64,11 @@ static inline void qsort_push_frame(
 	}
 }
 
-#define BUG(error) \
+#define BUG(...) \
 do { \
-	xfprintf(stderr, "%s (%s:%d)\n", error, __FILE__, __LINE__); \
+	xfprintf(stderr, "BUG at (%s:%d)\n", __FILE__, __LINE__); \
+	xfprintf(stderr, __VA_ARGS__); \
+	xfputc('\n', stderr); \
 	exit(224); \
 } while(0)
 
