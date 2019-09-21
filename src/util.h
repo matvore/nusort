@@ -96,9 +96,14 @@ do { \
 		memcpy(pivot, el + begin, sizeof(*(el))); \
 		for (p##a = begin + 1; p##a < f.end->end; p##a++) { \
 			if (lt) { \
-				(el)[p##b] = (el)[p##a]; \
+				/* \
+				 * = 演算子の代わりにmemcpyを使えば el の要素 \
+				 * それぞれが固定配でも el をも並べ替えられま \
+				 * す。 \
+				*/ \
+				memcpy(&p##b[el], &p##a[el], sizeof(*(el))); \
 				p##b++; \
-				(el)[p##a] = (el)[p##b]; \
+				memcpy(&p##a[el], &p##b[el], sizeof(*(el))); \
 				memcpy(&p##b[el], pivot, sizeof(*(el))); \
 			} \
 		} \
