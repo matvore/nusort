@@ -51,6 +51,17 @@ char *xfgets(char *s, int size, FILE *stream)
 	return s;
 }
 
+void xfputs(char const *s, FILE *stream)
+{
+	int res = fputs(s, stream);
+	if (res == EOF) {
+		fputs("fputsエラー\n", stderr);
+		exit(155);
+	}
+	if (res < 0)
+		BUG("fputsから規定に反する戻り値");
+}
+
 void xfclose(FILE *stream)
 {
 	if (!fclose(stream))

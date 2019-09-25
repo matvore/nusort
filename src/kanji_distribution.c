@@ -127,8 +127,8 @@ static void end_line(struct kanji_distribution *kd, struct line_stats *ls)
 
 	if (kd->sort_each_line_by_rsc)
 		/* 部首＋画数で並べ替える */
-		QSORT(, ls->e, ls->e_nr,
-		      ls->e[a]->rsc_sort_key < ls->e[b]->rsc_sort_key);
+		QSORT(, ls->e, ls->e_nr, ls->e[a]->distinct_rsc_sort_key <
+					 ls->e[b]->distinct_rsc_sort_key);
 }
 
 static void populate_non_hard_coded(struct resorted_kanji_db *resorted)
@@ -167,8 +167,9 @@ void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd)
 	common_init(kd);
 	populate_non_hard_coded(&resorted);
 
-	QSORT(, resorted.el, resorted.cnt, resorted.el[a]->rsc_sort_key <
-					   resorted.el[b]->rsc_sort_key);
+	QSORT(, resorted.el, resorted.cnt,
+	      resorted.el[a]->distinct_rsc_sort_key <
+	      resorted.el[b]->distinct_rsc_sort_key);
 	for (cutoff_kanji_count = 1;
 	     cutoff_kanji_count < kd->line_stats_nr;
 	     cutoff_kanji_count++) {

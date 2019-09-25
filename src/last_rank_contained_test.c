@@ -171,6 +171,12 @@ static struct {
 	"合計漢字数:  1250\n"
 	"exit: 0\n"
 },
+
+{
+	"showing_space_for_potential_cutoff",
+	{"-c"},
+	0
+}
 };
 
 int main(void)

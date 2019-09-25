@@ -8,7 +8,8 @@ static const char *USAGE =
 "Usage:\n"
 "\tnusort check_kanji_db_order [--db-out] [-q]\n"
 "\tnusort free_kanji_keys\n"
-"\tnusort last_rank_contained [-s] [-k] [-n] CUTOFF_KANJI_1..CUTOFF_KANJI_n\n"
+"\tnusort last_rank_contained [-c] [-s] [-k] [-n] "
+	"CUTOFF_KANJI_1..CUTOFF_KANJI_n\n"
 "\tnusort make_map\n";
 
 int main(int argc, const char **argv)

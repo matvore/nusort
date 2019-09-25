@@ -7,6 +7,7 @@ void *xcalloc(size_t count, size_t size);
 void *xreallocarray(void *ptr, size_t count, size_t el_size);
 FILE *xfopen(const char *pathname, const char *mode);
 char *xfgets(char *s, int size, FILE *stream);
+void xfputs(char const *s, FILE *stream);
 void xfclose(FILE *stream);
 
 __attribute__((format (printf, 2, 3)))

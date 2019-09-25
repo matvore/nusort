@@ -4061,8 +4061,13 @@ struct kanji_entry const *kanji_db(void)
 {
 	if (!sorted) {
 		size_t i;
-		for (i = 0; i < kanji_db_nr(); i++)
-			kanji[i].rsc_sort_key = i;
+		uint16_t rsc_sort_key = 0;
+		for (i = 0; i < kanji_db_nr(); i++) {
+			if (kanji[i].cutoff_type)
+				rsc_sort_key++;
+			kanji[i].rsc_sort_key = rsc_sort_key;
+			kanji[i].distinct_rsc_sort_key = i;
+		}
 		QSORT(, kanji, kanji_db_nr(),
 		      strcmp(kanji[a].c, kanji[b].c) < 0);
 		sorted = 1;

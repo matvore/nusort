@@ -250,7 +250,7 @@ static int check_order(void)
 		k[i] = kanji_db() + i;
 
 	QSORT(, k, kanji_db_nr(),
-	      k[a]->rsc_sort_key < k[b]->rsc_sort_key);
+	      k[a]->distinct_rsc_sort_key < k[b]->distinct_rsc_sort_key);
 
 	for (i = 0; i < kanji_db_nr(); i++) {
 		struct sort_key smallest_matching = {0xff, 0xff};

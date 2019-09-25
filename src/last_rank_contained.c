@@ -3,8 +3,11 @@
 #include "util.h"
 
 /* コマンドフラグ */
-static int hide_kanji;
-static int show_per_line_kanji_count;
+static struct {
+	unsigned hide_kanji : 1;
+	unsigned show_per_line_kanji_count : 1;
+	unsigned show_space_for_cutoff_points : 1;
+} flags;
 
 static void print_line_stats(const struct line_stats *s)
 {
@@ -12,15 +15,21 @@ static void print_line_stats(const struct line_stats *s)
 
 	xfprintf(out, "[ %s ] %c ", s->cutoff->c, s->key_ch);
 
-	if (!hide_kanji) {
-		for (i = 0; i < s->e_nr; i++)
-			xfprintf(out, "%s", s->e[i]->c);
-		xfprintf(out, " ");
+	if (!flags.hide_kanji) {
+		for (i = 0; i < s->e_nr; i++) {
+			if (flags.show_space_for_cutoff_points &&
+			    i &&
+			    (s->e[i-1]->rsc_sort_key != s->e[i]->rsc_sort_key))
+				xfputc(' ', out);
+
+			xfputs(s->e[i]->c, out);
+		}
+		xfputc(' ', out);
 	}
 
 	xfprintf(out, "(%d . %d . %d",
 		 s->last_char_rank, s->offset_to_target, s->cumulative_offset);
-	if (show_per_line_kanji_count)
+	if (flags.show_per_line_kanji_count)
 		xfprintf(out, " . %d", s->e_nr);
 
 	xfprintf(out, ")\n");
@@ -39,7 +48,7 @@ int print_last_rank_contained(char const *const *argv, int argc)
 	struct kanji_distribution kanji_distribution = {0};
 	size_t i;
 
-	show_per_line_kanji_count = 0;
+	memset(&flags, 0, sizeof(flags));
 
 	while (argc > 0 && argv[0][0] == '-') {
 		const char *arg = argv[0];
@@ -48,9 +57,12 @@ int print_last_rank_contained(char const *const *argv, int argc)
 		if (!strcmp(arg, "-s")) {
 			kanji_distribution.sort_each_line_by_rsc = 1;
 		} else if (!strcmp(arg, "-k")) {
-			hide_kanji = 1;
+			flags.hide_kanji = 1;
 		} else if (!strcmp(arg, "-n")) {
-			show_per_line_kanji_count = 1;
+			flags.show_per_line_kanji_count = 1;
+		} else if (!strcmp(arg, "-c")) {
+			kanji_distribution.sort_each_line_by_rsc = 1;
+			flags.show_space_for_cutoff_points = 1;
 		} else if (!strcmp(arg, "--")) {
 			break;
 		} else {
