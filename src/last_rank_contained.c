@@ -46,7 +46,7 @@ int print_last_rank_contained(char const *const *argv, int argc)
 		argc--;
 		argv++;
 		if (!strcmp(arg, "-s")) {
-			kanji_distribution.sort_each_line_by_rad_so = 1;
+			kanji_distribution.sort_each_line_by_rsc = 1;
 		} else if (!strcmp(arg, "-k")) {
 			hide_kanji = 1;
 		} else if (!strcmp(arg, "-n")) {

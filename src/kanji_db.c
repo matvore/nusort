@@ -8,7 +8,7 @@
 /*
  * 主な漢字データベース
  * 行は部首＋画数によって並べ替えられている。けれど、初めてkanji_dbを呼び出す時
- * は部首＋画数並べ替えキーがアサインされrad_so_sort_keyに書き込まれ、
+ * は部首＋画数並べ替えキーがアサインされrsc_sort_keyに書き込まれ、
  * codepointで並べ替えられる。
  * ranking (出現率) はGoogleKanji.xls から引用した
  * (<https://sites.google.com/site/shibano/shin-jouyoukanji-hyou-no-tame-no-kanji-shutsugen-hindo-chousa> でダウンロード可)。
@@ -4062,7 +4062,7 @@ struct kanji_entry *kanji_db(void)
 	if (!sorted) {
 		size_t i;
 		for (i = 0; i < kanji_db_nr(); i++)
-			kanji[i].rad_so_sort_key = i;
+			kanji[i].rsc_sort_key = i;
 		QSORT(, kanji, kanji_db_nr(),
 		      strcmp(kanji[a].c, kanji[b].c) < 0);
 		sorted = 1;

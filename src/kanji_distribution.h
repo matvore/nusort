@@ -23,7 +23,7 @@ struct line_stats {
 };
 
 struct kanji_distribution {
-	unsigned sort_each_line_by_rad_so : 1;
+	unsigned sort_each_line_by_rsc : 1;
 
 	uint16_t total_rank;
 	uint16_t total_chars;

@@ -13,8 +13,8 @@ static int first_key(
 
 	do {
 		size_t mid = (min + max) / 2;
-		if (kd->line_stats[mid + 1].cutoff->rad_so_sort_key <=
-				kanji->rad_so_sort_key)
+		if (kd->line_stats[mid + 1].cutoff->rsc_sort_key <=
+				kanji->rsc_sort_key)
 			min = mid + 1;
 		else
 			max = mid;
@@ -54,7 +54,7 @@ static void get_top_keys(struct kanji_distribution *kd)
 	}
 }
 
-static const struct kanji_entry *first_kanji_in_rad_so(void)
+static struct kanji_entry const *first_kanji_in_rsc(void)
 {
 	struct kanji_entry *cutoff = NULL;
 	BSEARCH(cutoff, kanji_db(), kanji_db_nr(),
@@ -125,10 +125,10 @@ static void end_line(struct kanji_distribution *kd, struct line_stats *ls)
 	if (ls != kd->line_stats)
 		ls->cumulative_offset += (ls - 1)->cumulative_offset;
 
-	if (kd->sort_each_line_by_rad_so)
+	if (kd->sort_each_line_by_rsc)
 		/* 部首＋画数で並べ替える */
 		QSORT(, ls->e, ls->e_nr,
-		      ls->e[a]->rad_so_sort_key < ls->e[b]->rad_so_sort_key);
+		      ls->e[a]->rsc_sort_key < ls->e[b]->rsc_sort_key);
 }
 
 static void populate_non_hard_coded(struct resorted_kanji_db *resorted)
@@ -154,7 +154,7 @@ static void common_init(struct kanji_distribution *kd)
 	kd->target_rank = resorted.el[kd->total_chars]->ranking;
 	DESTROY_ARRAY(resorted);
 
-	kd->line_stats[0].cutoff = first_kanji_in_rad_so();
+	kd->line_stats[0].cutoff = first_kanji_in_rsc();
 }
 
 void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd)
@@ -167,8 +167,8 @@ void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd)
 	common_init(kd);
 	populate_non_hard_coded(&resorted);
 
-	QSORT(, resorted.el, resorted.cnt, resorted.el[a]->rad_so_sort_key <
-					   resorted.el[b]->rad_so_sort_key);
+	QSORT(, resorted.el, resorted.cnt, resorted.el[a]->rsc_sort_key <
+					   resorted.el[b]->rsc_sort_key);
 	for (cutoff_kanji_count = 1;
 	     cutoff_kanji_count < kd->line_stats_nr;
 	     cutoff_kanji_count++) {
@@ -236,8 +236,8 @@ void kanji_distribution_populate(struct kanji_distribution *kd)
 	line_stats = &kd->line_stats[0];
 	for (i = 0; i < resorted.cnt; i++) {
 		if (line_stats != &kd->line_stats[kd->line_stats_nr - 1] &&
-		     (line_stats + 1)->cutoff->rad_so_sort_key <=
-		     resorted.el[i]->rad_so_sort_key) {
+		     (line_stats + 1)->cutoff->rsc_sort_key <=
+		     resorted.el[i]->rsc_sort_key) {
 			end_line(kd, line_stats);
 			line_stats++;
 		}

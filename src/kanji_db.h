@@ -21,7 +21,7 @@ struct kanji_entry {
 	*/
 
 	/* 部首＋画数による並べ替えキー */
-	unsigned int rad_so_sort_key;
+	unsigned int rsc_sort_key;
 };
 
 size_t kanji_db_nr(void);

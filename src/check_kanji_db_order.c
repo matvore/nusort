@@ -112,7 +112,7 @@ static struct {
 	{"厳", 0x1e, 0x0e},
 };
 
-static int process_rad_so_line(const char *line)
+static int process_rsc_line(char const *line)
 {
 	char codepoint_str[6];
 	int prefix_len;
@@ -250,7 +250,7 @@ static int check_order(void)
 		k[i] = kanji_db() + i;
 
 	QSORT(, k, kanji_db_nr(),
-	      k[a]->rad_so_sort_key < k[b]->rad_so_sort_key);
+	      k[a]->rsc_sort_key < k[b]->rsc_sort_key);
 
 	for (i = 0; i < kanji_db_nr(); i++) {
 		struct sort_key smallest_matching = {0xff, 0xff};
@@ -323,7 +323,7 @@ int check_kanji_db_order(char const *const *argv, int argc)
 		"../third_party/Unihan_RadicalStrokeCounts.txt", "r");
 
 	while (!res && xfgets(line, sizeof(line), db_stream)) {
-		res = process_rad_so_line(line);
+		res = process_rsc_line(line);
 	}
 
 	/*
