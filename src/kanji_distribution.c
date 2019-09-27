@@ -56,7 +56,7 @@ static void get_top_keys(struct kanji_distribution *kd)
 
 static struct kanji_entry const *first_kanji_in_rsc(void)
 {
-	struct kanji_entry *cutoff = NULL;
+	struct kanji_entry const *cutoff = NULL;
 	BSEARCH(cutoff, kanji_db(), kanji_db_nr(),
 		strcmp(cutoff->c, "一"));
 	if (!cutoff)

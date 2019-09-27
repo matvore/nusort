@@ -25,4 +25,4 @@ struct kanji_entry {
 };
 
 size_t kanji_db_nr(void);
-struct kanji_entry *kanji_db(void);
+struct kanji_entry const *kanji_db(void);

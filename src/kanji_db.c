@@ -4057,7 +4057,7 @@ size_t kanji_db_nr(void)
 	return sizeof(kanji) / sizeof(*kanji);
 }
 
-struct kanji_entry *kanji_db(void)
+struct kanji_entry const *kanji_db(void)
 {
 	if (!sorted) {
 		size_t i;
