@@ -28,13 +28,18 @@ void *xreallocarray(void *ptr, size_t count, size_t el_size)
 	return ptr;
 }
 
+void report_fopen_failure(char const *pathname)
+{
+	fprintf(stderr,
+		"%s を開く際にfopenが失配しました：\n\t%s\n",
+		pathname, strerror(errno));
+}
+
 FILE *xfopen(const char *pathname, const char *mode)
 {
 	FILE *f = fopen(pathname, mode);
 	if (!f) {
-		fprintf(stderr,
-			"%s を開く際にfopenが失配しました：\n\t%s\n",
-			pathname, strerror(errno));
+		report_fopen_failure(pathname);
 		exit(91);
 	}
 	return f;

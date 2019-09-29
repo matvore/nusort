@@ -35,8 +35,14 @@ static uint8_t io_buffer_read(struct io_buffer *b) { return b->buf[b->pos++]; }
 
 static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 {
-	struct io_buffer exp = {xfopen(expected_fn, "r")};
+	struct io_buffer exp = {fopen(expected_fn, "r")};
 	struct io_buffer act = {xfopen(actual_fn, "r")};
+	int exp_opened = !!exp.stream;
+
+	if (!exp_opened) {
+		report_fopen_failure(expected_fn);
+		goto failure;
+	}
 
 	while (io_buffer_has_more(&exp) && io_buffer_has_more(&act)) {
 		if (io_buffer_read(&exp) != io_buffer_read(&act))
@@ -53,9 +59,11 @@ static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 	return;
 
 failure:
-	xfprintf(stderr, "出力が違います。詳細はこれを実行してください：\n"
-			 "	diff %s %s\n",
-		 expected_fn, actual_fn);
+	if (exp_opened)
+		xfprintf(stderr, "出力が違います。"
+				 "詳細はこれを実行してください：\n"
+				 "	diff %s %s\n",
+			 expected_fn, actual_fn);
 	if (can_fix_with_cp)
 		xfprintf(stderr, "出力ファイルを更新するには、"
 				 "これを実行してください：\n"
