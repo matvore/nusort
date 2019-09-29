@@ -143,6 +143,17 @@ static void get_kanji_codes(struct key_mapping_array *m)
 	DESTROY_ARRAY(free_kanji_codes);
 }
 
+static int code_lt(char const *a, char const *b)
+{
+	size_t a_len = strlen(a);
+	size_t b_len = strlen(b);
+
+	if (a_len != b_len)
+		return a_len < b_len;
+
+	return strcmp(a, b) < 0;
+}
+
 int make_map(char const *const *argv, int argc) {
 	struct key_mapping_array codes = {0};
 	size_t i;
@@ -164,6 +175,9 @@ int make_map(char const *const *argv, int argc) {
 
 	get_romazi_codes(&codes);
 	get_kanji_codes(&codes);
+
+	QSORT(, codes.el, codes.cnt,
+	      code_lt(codes.el[a].orig, codes.el[b].orig));
 
 	for (i = 0; i < codes.cnt; i++)
 		xfprintf(out, "%s\t%s\n", codes.el[i].orig, codes.el[i].conv);
