@@ -7,6 +7,8 @@
 #define KANJI_KEY_COUNT 40
 #define MAPPABLE_CHAR_COUNT (KANJI_KEY_COUNT * 2)
 
+typedef int8_t key_index_t;
+
 extern const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT];
 
 ssize_t char_to_key_index_or_die(char ch);

@@ -142,15 +142,15 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 	DESTROY_ARRAY(free_kanji_codes);
 }
 
-static int code_lt(char const *a, char const *b)
+int code_cmp(char const *a, char const *b)
 {
 	size_t a_len = strlen(a);
 	size_t b_len = strlen(b);
 
 	if (a_len != b_len)
-		return a_len < b_len;
+		return a_len < b_len ? -1 : 1;
 
-	return strcmp(a, b) < 0;
+	return strcmp(a, b);
 }
 
 void mapping_populate(struct mapping *mapping)
@@ -159,7 +159,8 @@ void mapping_populate(struct mapping *mapping)
 	get_kanji_codes(&mapping->codes, mapping->ergonomic_sort);
 
 	QSORT(, mapping->codes.el, mapping->codes.cnt,
-	      code_lt(mapping->codes.el[a].orig, mapping->codes.el[b].orig));
+	      code_cmp(mapping->codes.el[a].orig,
+		       mapping->codes.el[b].orig) < 0);
 }
 
 void mapping_destroy(struct mapping *mapping)
