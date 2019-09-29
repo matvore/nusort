@@ -166,9 +166,6 @@ static int process_rsc_line(char const *line)
 		/* # 一画の部首を全て同一の部首として見なす。 */
 		if (rad <= 6)
 			rad = 1;
-		/* 人と儿と入と八を同一の部首として見なす。*/
-		if (rad >= 9 && rad <= 12)
-			rad = 9;
 		/* 匚と匸を同一の部首として見なす。*/
 		if (rad == 23)
 			rad = 22;
