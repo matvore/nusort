@@ -33,7 +33,7 @@ static int io_buffer_has_more(struct io_buffer *b)
 
 static uint8_t io_buffer_read(struct io_buffer *b) { return b->buf[b->pos++]; }
 
-static void verify_contents(const char *expected_fn)
+static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 {
 	struct io_buffer exp = {xfopen(expected_fn, "r")};
 	struct io_buffer act = {xfopen(actual_fn, "r")};
@@ -56,6 +56,11 @@ failure:
 	xfprintf(stderr, "出力が違います。詳細はこれを実行してください：\n"
 			 "	diff %s %s\n",
 		 expected_fn, actual_fn);
+	if (can_fix_with_cp)
+		xfprintf(stderr, "出力ファイルを更新するには、"
+				 "これを実行してください：\n"
+				 "	cp %s %s\n",
+			 actual_fn, expected_fn);
 	exit(99);
 }
 
@@ -102,7 +107,7 @@ void end_test(const char *expected)
 		xfprintf(stderr, "close failed: %s\n", strerror(errno));
 		exit(197);
 	}
-	verify_contents(expected_fn);
+	verify_contents(expected_fn, 0);
 	FREE(actual_fn);
 }
 
@@ -112,7 +117,7 @@ void end_test_expected_content_in_file(void)
 	xasprintf(&expected_fn,
 		  "expected_test_out/%s.%s", test_source_file, test_name);
 	end_test_common();
-	verify_contents(expected_fn);
+	verify_contents(expected_fn, 1);
 	FREE(expected_fn);
 	FREE(actual_fn);
 }
