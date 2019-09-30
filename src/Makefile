@@ -1,24 +1,33 @@
 .PHONY: test clean
 
-CC = cc -Werror -Wall -Wdeclaration-after-statement -Wformat-security -Wno-format-zero-length -Wold-style-definition -Woverflow -Wpointer-arith -Wstrict-prototypes -Wunused -Wvla $(CC_FLAGS)
+CFLAGS = \
+	-Werror \
+	-Wall \
+	-Wdeclaration-after-statement \
+	-Wformat-security \
+	-Wno-format-zero-length \
+	-Wold-style-definition \
+	-Woverflow \
+	-Wpointer-arith \
+	-Wstrict-prototypes \
+	-Wunused \
+	-Wvla
 
 all: test nusort
 
-SHARED_SRCS = \
-	check_kanji_db_order.c \
-	commands.c \
-	free_kanji_keys.c \
-	kanji_db.c \
-	kanji_distribution.c \
-	keyboard.c \
-	last_rank_contained.c \
-	make_map.c \
-	mapping.c \
-	rank_coverage.c \
-	romazi.c \
-	util.c
-
-SRCS = $(SHARED_SRCS) main.c
+SHARED_OBJS = \
+	check_kanji_db_order.o \
+	commands.o \
+	free_kanji_keys.o \
+	kanji_db.o \
+	kanji_distribution.o \
+	keyboard.o \
+	last_rank_contained.o \
+	make_map.o \
+	mapping.o \
+	rank_coverage.o \
+	romazi.o \
+	util.o
 
 HDRS = \
 	commands.h \
@@ -28,39 +37,21 @@ HDRS = \
 	mapping.h \
 	rank_coverage.h \
 	romazi.h \
+	test_util.h \
 	util.h
 
-TEST_SRCS = $(SHARED_SRCS) test_util.c
-TEST_HDRS = $(HDRS) test_util.h
+%.o: %.c $(HDRS)
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $<
 
-nusort: $(HDRS) $(SRCS)
-	$(CC) -o nusort $(SRCS)
+nusort: $(SHARED_OBJS) main.o
+	$(CC) $(CFLAGS) -o nusort $^
 
-check_kanji_db_order_test: check_kanji_db_order_test.c $(TEST_HDRS) $(TEST_SRCS)
-	$(CC) -o $@_bin check_kanji_db_order_test.c $(TEST_SRCS)
+%_test: %_test.o $(SHARED_OBJS) test_util.o
+	$(CC) $(CFLAGS) -o $@_bin $^
 	./$@_bin
 
-keyboard_test: keyboard_test.c $(TEST_HDRS) $(TEST_SRCS)
-	$(CC) -o $@_bin keyboard_test.c $(TEST_SRCS)
-	./$@_bin
-
-last_rank_contained_test: last_rank_contained_test.c $(TEST_HDRS) $(TEST_SRCS)
-	$(CC) -o $@_bin last_rank_contained_test.c $(TEST_SRCS)
-	./$@_bin
-
-make_map_test: make_map_test.c $(TEST_HDRS) $(TEST_SRCS)
-	$(CC) -o $@_bin make_map_test.c $(TEST_SRCS)
-	./$@_bin
-
-rank_coverage_test: rank_coverage_test.c $(TEST_HDRS) $(TEST_SRCS)
-	$(CC) -o $@_bin rank_coverage_test.c $(TEST_SRCS)
-	./$@_bin
-
-romazi_test: romazi_test.c $(TEST_HDRS) $(TEST_SRCS)
-	$(CC) -o $@_bin romazi_test.c $(TEST_SRCS)
-	./$@_bin
-
-test: check_kanji_db_order_test \
+test: \
+	check_kanji_db_order_test \
 	keyboard_test \
 	last_rank_contained_test \
 	make_map_test \
@@ -68,5 +59,5 @@ test: check_kanji_db_order_test \
 	romazi_test
 
 clean:
-	rm -f *_test_bin *.testout
+	rm -f *_test_bin *.testout *.o
 	rm -f nusort
