@@ -7,14 +7,6 @@
 #include <errno.h>
 #include <string.h>
 
-static void draw_keyboard(void)
-{
-	if (!fwrite(keyboard_bytes(), keyboard_size(), 1, out)) {
-		xfprintf(stderr, "fwriteエラー:\t%s\n", strerror(errno));
-		exit(72);
-	}
-}
-
 int main(void)
 {
 	start_test(__FILE__, "default_view");
@@ -23,7 +15,7 @@ int main(void)
 		m.ergonomic_sort = 1;
 		mapping_populate(&m);
 		keyboard_update(&m, "");
-		draw_keyboard();
+		keyboard_write(out);
 		mapping_destroy(&m);
 	}
 	end_test_expected_content_in_file();
@@ -34,7 +26,7 @@ int main(void)
 		m.ergonomic_sort = 1;
 		mapping_populate(&m);
 		keyboard_update(&m, "/");
-		draw_keyboard();
+		keyboard_write(out);
 		mapping_destroy(&m);
 	}
 	end_test_expected_content_in_file();

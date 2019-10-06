@@ -3,6 +3,7 @@
 #include "romazi.h"
 #include "util.h"
 
+#include <errno.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -35,6 +36,12 @@ static char keyboard[sizeof(KEYBOARD)] = {0};
 
 char const *keyboard_bytes(void) { return keyboard; }
 size_t keyboard_size(void) { return sizeof(KEYBOARD); }
+
+void keyboard_write(FILE *stream)
+{
+	if (!fwrite(keyboard_bytes(), keyboard_size(), 1, stream))
+		DIE(errno, "キーボードをfwriteする");
+}
 
 void keyboard_update(struct mapping const *mapping, char const *prefix)
 {
