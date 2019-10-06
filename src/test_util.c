@@ -98,23 +98,9 @@ static void end_test_common(void)
 void end_test(const char *expected)
 {
 	char expected_fn[] = "/tmp/expected-XXXXXX";
-	int expected_fd;
 
 	end_test_common();
-
-	expected_fd = mkstemp(expected_fn);
-	if (expected_fd == -1) {
-		xfprintf(stderr, "mkstemp failed: %s\n", strerror(errno));
-		exit(4);
-	}
-	if (dprintf(expected_fd, "%s", expected) < 0) {
-		xfprintf(stderr, "dprintf failed: %s\n", strerror(errno));
-		exit(184);
-	}
-	if (close(expected_fd) == -1) {
-		xfprintf(stderr, "close failed: %s\n", strerror(errno));
-		exit(197);
-	}
+	store_in_tmp_file(expected, expected_fn);
 	verify_contents(expected_fn, 0);
 	FREE(actual_fn);
 }
@@ -128,4 +114,21 @@ void end_test_expected_content_in_file(void)
 	verify_contents(expected_fn, 1);
 	FREE(expected_fn);
 	FREE(actual_fn);
+}
+
+void store_in_tmp_file(char const *str, char *tmp_file_template)
+{
+	int fd = mkstemp(tmp_file_template);
+	size_t str_size = strlen(str);
+	ssize_t written;
+
+	if (fd == -1)
+		DIE(errno, "mkstemp");
+
+	written = write(fd, str, str_size);
+	if (written == -1)
+		DIE(errno, "一時ファイルの %s に書き込む", tmp_file_template);
+
+	if (close(fd) == -1)
+		DIE(errno, "一時ファイルの %s を閉じる", tmp_file_template);
 }
