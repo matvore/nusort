@@ -8,6 +8,7 @@ static const char *USAGE =
 "Usage:\n"
 "\tnusort check_kanji_db_order [--db-out] [-q]\n"
 "\tnusort free_kanji_keys\n"
+"\tnusort input\n"
 "\tnusort last_rank_contained [-c] [-s] [-k] [-n] "
 	"CUTOFF_KANJI_1..CUTOFF_KANJI_n\n"
 "\tnusort make_map\n";
@@ -16,9 +17,12 @@ int main(int argc, const char **argv)
 {
 	err = stderr;
 	out = stdout;
+	in = stdin;
 
 	if (argc >= 2 && !strcmp(argv[1], "free_kanji_keys"))
 		return free_kanji_keys(argv + 2, argc - 2);
+	if (argc >= 2 && !strcmp(argv[1], "input"))
+		return input(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "check_kanji_db_order"))
 		return check_kanji_db_order(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "last_rank_contained"))

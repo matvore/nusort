@@ -41,6 +41,17 @@ FILE *xfopen(const char *pathname, const char *mode)
 	return f;
 }
 
+int xfgetc(FILE *stream)
+{
+	int c;
+	if (ferror(stream) != 0)
+		BUG("fgetc の前にファイルエラーが未処理です");
+	c = fgetc(stream);
+	if (ferror(stream) != 0)
+		DIE(0, "fgetc");
+	return c;
+}
+
 char *xfgets(char *s, int size, FILE *stream)
 {
 	s = fgets(s, size, stream);

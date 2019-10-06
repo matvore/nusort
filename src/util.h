@@ -9,6 +9,7 @@ void *xreallocarray(void *ptr, size_t count, size_t el_size);
 void report_fopen_failure(char const *pathname);
 FILE *xfopen(const char *pathname, const char *mode);
 
+int xfgetc(FILE *stream);
 char *xfgets(char *s, int size, FILE *stream);
 void xfputs(char const *s, FILE *stream);
 void xfclose(FILE *stream);

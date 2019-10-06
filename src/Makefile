@@ -19,6 +19,7 @@ SHARED_OBJS = \
 	check_kanji_db_order.o \
 	commands.o \
 	free_kanji_keys.o \
+	input.o \
 	kanji_db.o \
 	kanji_distribution.o \
 	keyboard.o \
@@ -52,6 +53,7 @@ nusort: $(SHARED_OBJS) main.o
 
 test: \
 	check_kanji_db_order_test \
+	input_test \
 	keyboard_test \
 	last_rank_contained_test \
 	make_map_test \
