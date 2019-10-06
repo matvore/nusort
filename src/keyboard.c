@@ -39,7 +39,7 @@ size_t keyboard_size(void) { return sizeof(KEYBOARD); }
 void keyboard_update(struct mapping const *mapping, char const *prefix)
 {
 	key_index_t ki;
-	char full_code[4];
+	orig_t full_code;
 	size_t missing_char_index = strlen(prefix);
 
 	strncpy(full_code, prefix, sizeof(full_code));

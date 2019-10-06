@@ -29,8 +29,11 @@ struct short_code_array {
 
 void get_free_kanji_codes(struct short_code_array *codes);
 
+/* ヌル終端の入力コード */
+typedef char orig_t[4];
+
 struct key_mapping {
-	char orig[4];
+	orig_t orig;
 	char conv[7];
 };
 
