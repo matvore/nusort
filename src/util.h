@@ -134,19 +134,29 @@ do { \
 	free(f.f); \
 } while(0)
 
-#define BSEARCH(e, el, cnt, cmp) do { \
+#define BSEARCH_INDEX(index, cnt, cmp_prelude, cmp) do { \
 	size_t min = 0, max = (cnt); \
+	int cmp_res; \
 	while (min != max) { \
-		size_t mid = (max + min) / 2; \
-		int cmp_res; \
-		e = (el) + mid; \
-		cmp_res  = (cmp); \
+		(index) = (max + min) / 2; \
+		cmp_prelude; \
+		cmp_res = (cmp); \
 		if (!cmp_res) \
 			break; \
-		e = NULL; \
 		if (cmp_res < 0) \
-			min = mid + 1; \
+			min = (index) + 1; \
 		else \
-			max = mid; \
+			max = (index); \
 	} \
+	if (cmp_res > 0) \
+		(index) = ~(index); \
+	else if (cmp_res < 0) \
+		(index) = ~((index) + 1); \
+} while (0)
+
+#define BSEARCH(e, el, cnt, cmp) do { \
+	ssize_t index; \
+	BSEARCH_INDEX(index, cnt, (e) = (el) + (index), cmp); \
+	if (index < 0) \
+		(e) = 0; \
 } while (0)

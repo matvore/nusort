@@ -52,6 +52,7 @@ nusort: $(SHARED_OBJS) main.o
 	./$@_bin
 
 test: \
+	bsearch_test \
 	check_kanji_db_order_test \
 	input_test \
 	keyboard_test \
