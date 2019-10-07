@@ -71,7 +71,8 @@ int input_impl(struct mapping const *mapping)
 
 		ch = xfgetc(in);
 
-		if (ch == EOF)
+		/* EOF、 ^D 又は Escape の場合は終了します。 */
+		if (ch == EOF || ch == 4 || ch == '\e')
 			break;
 
 		so_far_input[strlen(so_far_input)] = ch;
