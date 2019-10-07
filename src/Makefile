@@ -20,6 +20,7 @@ SHARED_OBJS = \
 	commands.o \
 	free_kanji_keys.o \
 	input.o \
+	input_impl.o \
 	kanji_db.o \
 	kanji_distribution.o \
 	keyboard.o \
@@ -32,6 +33,7 @@ SHARED_OBJS = \
 
 HDRS = \
 	commands.h \
+	input_impl.h \
 	kanji_db.h \
 	kanji_distribution.h \
 	keyboard.h \
