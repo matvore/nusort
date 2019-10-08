@@ -43,6 +43,37 @@ void keyboard_write(FILE *stream)
 		DIE(errno, "キーボードをfwriteする");
 }
 
+struct keyboard_slice {
+	unsigned offset : 16;
+	unsigned len : 16;
+};
+
+static struct keyboard_slice ki_to_slice(key_index_t ki)
+{
+	struct keyboard_slice s;
+
+	s.offset = LINE_OFFSET[ki / 10];
+
+	if (ki < KANJI_KEY_COUNT) {
+		s.offset += (ki % 10) * 6;
+		s.len = 3;
+	} else {
+		s.offset += (ki % 10) * 9;
+		s.len = 6;
+	}
+
+	return s;
+}
+
+static void write_cell(key_index_t ki, char const *str, size_t len)
+{
+	struct keyboard_slice s = ki_to_slice(ki);
+	char *keyboard_p = keyboard + s.offset;
+
+	memcpy(keyboard_p, str, len);
+	memset(keyboard_p + len, 0, s.len - len);
+}
+
 void keyboard_update(struct mapping const *mapping, char const *prefix)
 {
 	key_index_t ki;
@@ -54,32 +85,37 @@ void keyboard_update(struct mapping const *mapping, char const *prefix)
 	if (!keyboard[0])
 		memcpy(keyboard, KEYBOARD, sizeof(KEYBOARD));
 
+	/* 入力文字列を全てキーから消し、キーを空にします。*/
 	for (ki = 0; ki < MAPPABLE_CHAR_COUNT; ki++) {
-		size_t char_offset = LINE_OFFSET[ki / 10];
-		char *keyboard_p;
-		size_t char_bytes;
-		struct key_mapping const *m;
+		struct keyboard_slice s = ki_to_slice(ki);
+		memcpy(keyboard + s.offset, KEYBOARD + s.offset, s.len);
+	}
 
-		if (ki < KANJI_KEY_COUNT) {
-			char_offset += (ki % 10) * 6;
-			char_bytes = 3;
-		} else {
-			char_offset += (ki % 10) * 9;
-			char_bytes = 6;
-		}
+	for (ki = 0; ki < MAPPABLE_CHAR_COUNT; ki++) {
+		struct key_mapping const *m;
+		size_t str_bytes;
 
 		full_code[missing_char_index] = KEY_INDEX_TO_CHAR_MAP[ki];
 
 		BSEARCH(m, mapping->codes.el, mapping->codes.cnt,
 			code_cmp(m->orig, full_code));
 
-		keyboard_p = keyboard + char_offset;
-		if (!m) {
-			memcpy(keyboard_p, KEYBOARD + char_offset, char_bytes);
-		} else {
-			size_t conv_len = strlen(m->conv);
-			memcpy(keyboard_p, m->conv, conv_len);
-			memset(keyboard_p + conv_len, 0, char_bytes - conv_len);
+		if (!m)
+			continue;
+		str_bytes = strlen(m->conv);
+		if (str_bytes < 6) {
+			write_cell(ki, m->conv, str_bytes);
+			continue;
 		}
+		if (str_bytes == 6) {
+			/* 入力文字列がカナ２個です。*/
+			key_index_t non_shifted = ki % KANJI_KEY_COUNT;
+			key_index_t shifted = non_shifted + KANJI_KEY_COUNT;
+			write_cell(shifted, m->conv, 3);
+			write_cell(non_shifted, m->conv + 3, 3);
+			continue;
+		}
+
+		BUG("conv が長すぎます");
 	}
 }

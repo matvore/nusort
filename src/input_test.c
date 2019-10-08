@@ -21,6 +21,8 @@ static struct {
 
 {"possible_code_requires_two_more_chars", "x!", HAS_XYZ},
 
+{"long_conv_strs", "tya" "HWI" "DWO" "WHO" "YE", ERGONOMIC_SORT},
+
 };
 
 static void set_mapping(struct mapping *m, enum mapping_type type)
