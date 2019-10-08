@@ -105,14 +105,10 @@ static size_t find_best_cutoff(
 		best_ki = ki + 1;
 	}
 
-	if (ki == k->cnt) {
-		fprintf(stderr, "kanji_dbは小さすぎます。\n");
-		exit(4);
-	}
-	if (best_ki == -1) {
-		fprintf(stderr, "区切り漢字が見つかりませんでした。\n");
-		exit(29);
-	}
+	if (ki == k->cnt)
+		DIE(0, "kanji_dbは小さすぎます。");
+	if (best_ki == -1)
+		DIE(0, "区切り漢字が見つかりませんでした。");
 
 	*cumulative_offset = best_offset;
 	return best_ki;

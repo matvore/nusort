@@ -11,20 +11,16 @@
 void *xcalloc(size_t count, size_t size)
 {
 	void *res = calloc(count, size);
-	if (!res) {
-		fprintf(stderr, "out of memory\n");
-		exit(90);
-	}
+	if (!res)
+		DIE(errno, "calloc");
 	return res;
 }
 
 void *xreallocarray(void *ptr, size_t count, size_t el_size)
 {
 	ptr = realloc(ptr, count * el_size);
-	if (!ptr && count) {
-		fprintf(stderr, "out of memory\n");
-		exit(90);
-	}
+	if (!ptr && count)
+		DIE(errno, "realloc");
 	return ptr;
 }
 
@@ -48,21 +44,16 @@ FILE *xfopen(const char *pathname, const char *mode)
 char *xfgets(char *s, int size, FILE *stream)
 {
 	s = fgets(s, size, stream);
-	if (!s && errno) {
-		fprintf(stderr, "fgetsが失配しました:\t%s\n",
-			strerror(errno));
-		exit(92);
-	}
+	if (!s && errno)
+		DIE(errno, "fgets");
 	return s;
 }
 
 void xfputs(char const *s, FILE *stream)
 {
 	int res = fputs(s, stream);
-	if (res == EOF) {
-		fputs("fputsエラー\n", stderr);
-		exit(155);
-	}
+	if (res == EOF)
+		DIE(errno, "fputs");
 	if (res < 0)
 		BUG("fputsから規定に反する戻り値");
 }
@@ -84,10 +75,8 @@ int xfprintf(FILE *stream, const char *format, ...)
 	res = vfprintf(stream, format, argp);
 	va_end(argp);
 
-	if (res < 0) {
-		fprintf(stderr, "fprintfエラー: %s\n", strerror(errno));
-		exit(162);
-	}
+	if (res < 0)
+		DIE(errno, "fprintf");
 
 	return res;
 }
@@ -101,10 +90,8 @@ int xasprintf(char **strp, const char *format, ...)
 	res = vasprintf(strp, format, argp);
 	va_end(argp);
 
-	if (res < 0) {
-		xfprintf(stderr, "asprintfエラー\n");
-		exit(46);
-	}
+	if (res < 0)
+		DIE(0, "asprintf");
 
 	return res;
 }
@@ -112,19 +99,15 @@ int xasprintf(char **strp, const char *format, ...)
 int xfputc(int c, FILE *stream)
 {
 	c = fputc(c, stream);
-	if (c == EOF) {
-		xfprintf(stderr, "fputcエラー\n");
-		exit(88);
-	}
+	if (c == EOF)
+		DIE(errno, "fputc");
 	return c;
 }
 
 size_t xfread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
 	size_t read_size = fread(ptr, size, nmemb, stream);
-	if (ferror(stream)) {
-		xfprintf(stderr, "freadエラー\n");
-		exit(215);
-	}
+	if (ferror(stream))
+		DIE(errno, "fread");
 	return read_size;
 }

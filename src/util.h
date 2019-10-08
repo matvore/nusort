@@ -23,6 +23,22 @@ int xfputc(int c, FILE *stream);
 size_t xfread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 
 /*
+ * xfprintf, xfputc などが DIE を呼び出すことができるため、DIE の実装では使えま
+ * せん。
+ */
+#define DIE(error_number, ...) do { \
+	fprintf(stderr, "致命的なエラー %s:%d\n", __FILE__, __LINE__); \
+	fprintf(stderr, __VA_ARGS__); \
+	fputc('\n', stderr); \
+	if (error_number) { \
+		fputc('\t', stderr); \
+		fputs(strerror(error_number), stderr); \
+		fputc('\n', stderr); \
+	} \
+	exit(228); \
+} while (0)
+
+/*
  * GROW_ARRAY_BY
  *
  * Create a struct that looks like this:

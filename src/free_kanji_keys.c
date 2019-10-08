@@ -10,7 +10,7 @@ int free_kanji_keys(char const *const *argv, int argc)
 
 	if (argc) {
 		xfprintf(err, "引数を渡さないでください。\n");
-		exit(200);
+		return 200;
 	}
 
 	get_free_kanji_codes(&codes);

@@ -52,8 +52,7 @@ int rank_coverage_add_kanji(int rank)
 		memset(ranks + ranks_nr, 0, required_ranks_nr - ranks_nr);
 		ranks_nr = required_ranks_nr;
 	} else if (ranks[byte_i] & bit_mask) {
-		fprintf(stderr, "順位がすでに追加されている: %d\n", rank);
-		exit(142);
+		DIE(0, "順位がすでに追加されている: %d", rank);
 	}
 	ranks[byte_i] |= bit_mask;
 	if (keys_unfilled > 0) {

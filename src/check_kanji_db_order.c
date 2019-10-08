@@ -63,10 +63,8 @@ void set_utf8_byte(char *d, unsigned char c) { *d = 0x80 | (c & 0x3f); }
 static void decode_codepoint(char *d, const char *codepoint_str)
 {
 	long codepoint = strtol(codepoint_str, NULL, 16);
-	if (codepoint < 0x0800) {
-		xfprintf(err, "コードポイントが対象外: %ld\n", codepoint);
-		exit(20);
-	}
+	if (codepoint < 0x0800)
+		DIE(0, "コードポイントが対象外: %ld", codepoint);
 	if (codepoint <= 0xffff) {
 		*d++ = 0xe0 | (codepoint >> 12);
 	} else {
