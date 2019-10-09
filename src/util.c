@@ -27,7 +27,7 @@ void *xreallocarray(void *ptr, size_t count, size_t el_size)
 void report_fopen_failure(char const *pathname)
 {
 	fprintf(stderr,
-		"%s を開く際にfopenが失配しました：\n\t%s\n",
+		"%s を開く際にfopenが失敗しました：\n\t%s\n",
 		pathname, strerror(errno));
 }
 
@@ -73,7 +73,7 @@ void xfclose(FILE *stream)
 {
 	if (!fclose(stream))
 		return;
-	fprintf(stderr, "警告: fcloseが失配しました\n:\t%s\n",
+	fprintf(stderr, "警告: fcloseが失敗しました\n:\t%s\n",
 		strerror(errno));
 }
 
