@@ -128,9 +128,7 @@ static int process_rsc_line(char const *line)
 	case 1:
 		break;
 	default:
-		xfprintf(err, "予期していないエラー: %s\n",
-			 strerror(errno));
-		return 10;
+		DIE(1, "行の認識に失敗しました: %s", line);
 	}
 
 	cur = line + prefix_len;
@@ -155,9 +153,7 @@ static int process_rsc_line(char const *line)
 		case 2:
 			break;
 		default:
-			xfprintf(err, "予期していないエラー: %s\n",
-				 strerror(errno));
-			return 12;
+			DIE(1, "行の認識に失敗しました: %s", line);
 		}
 		cur += len;
 
