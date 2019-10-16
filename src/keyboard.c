@@ -40,7 +40,7 @@ size_t keyboard_size(void) { return sizeof(KEYBOARD); }
 void keyboard_write(FILE *stream)
 {
 	if (!fwrite(keyboard_bytes(), keyboard_size(), 1, stream))
-		DIE(errno, "キーボードをfwriteする");
+		DIE(1, "キーボードをfwriteする");
 }
 
 struct keyboard_slice {

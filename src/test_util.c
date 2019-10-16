@@ -123,12 +123,12 @@ void store_in_tmp_file(char const *str, char *tmp_file_template)
 	ssize_t written;
 
 	if (fd == -1)
-		DIE(errno, "mkstemp");
+		DIE(1, "mkstemp");
 
 	written = write(fd, str, str_size);
 	if (written == -1)
-		DIE(errno, "一時ファイルの %s に書き込む", tmp_file_template);
+		DIE(1, "一時ファイルの %s に書き込む", tmp_file_template);
 
 	if (close(fd) == -1)
-		DIE(errno, "一時ファイルの %s を閉じる", tmp_file_template);
+		DIE(1, "一時ファイルの %s を閉じる", tmp_file_template);
 }

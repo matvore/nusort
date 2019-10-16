@@ -12,7 +12,7 @@ void *xcalloc(size_t count, size_t size)
 {
 	void *res = calloc(count, size);
 	if (!res)
-		DIE(errno, "calloc");
+		DIE(1, "calloc");
 	return res;
 }
 
@@ -20,7 +20,7 @@ void *xreallocarray(void *ptr, size_t count, size_t el_size)
 {
 	ptr = realloc(ptr, count * el_size);
 	if (!ptr && count)
-		DIE(errno, "realloc");
+		DIE(1, "realloc");
 	return ptr;
 }
 
@@ -56,7 +56,7 @@ char *xfgets(char *s, int size, FILE *stream)
 {
 	s = fgets(s, size, stream);
 	if (!s && errno)
-		DIE(errno, "fgets");
+		DIE(1, "fgets");
 	return s;
 }
 
@@ -64,7 +64,7 @@ void xfputs(char const *s, FILE *stream)
 {
 	int res = fputs(s, stream);
 	if (res == EOF)
-		DIE(errno, "fputs");
+		DIE(1, "fputs");
 	if (res < 0)
 		BUG("fputsから規定に反する戻り値");
 }
@@ -87,7 +87,7 @@ int xfprintf(FILE *stream, const char *format, ...)
 	va_end(argp);
 
 	if (res < 0)
-		DIE(errno, "fprintf");
+		DIE(1, "fprintf");
 
 	return res;
 }
@@ -111,7 +111,7 @@ int xfputc(int c, FILE *stream)
 {
 	c = fputc(c, stream);
 	if (c == EOF)
-		DIE(errno, "fputc");
+		DIE(1, "fputc");
 	return c;
 }
 
@@ -119,6 +119,36 @@ size_t xfread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
 	size_t read_size = fread(ptr, size, nmemb, stream);
 	if (ferror(stream))
-		DIE(errno, "fread");
+		DIE(1, "fread");
 	return read_size;
+}
+
+/*
+ * xfprintf, xfputc などが DIE を呼び出すことができるため、DIE の実装では使えま
+ * せん。
+ */
+void _Noreturn die(
+	int show_errno,
+	char const *file,
+	long line,
+	char const *format,
+	...)
+{
+	char const *preamble = "致命的なエラー";
+	va_list argp;
+
+	if (show_errno)
+		perror(preamble);
+	else
+		fprintf(stderr, "%s\n", preamble);
+
+	fprintf(stderr, "\tat %s:%ld\n", file, line);
+
+	va_start(argp, format);
+	vfprintf(stderr, format, argp);
+	va_end(argp);
+
+	fputc('\n', stderr);
+
+	exit(228);
 }

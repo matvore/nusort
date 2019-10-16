@@ -12,8 +12,7 @@ static void check_term_op(int res)
 		return;
 
 	if (res == -1)
-		DIE(errno,
-		    "ターミナルの属性を設定する際にエラーが発生しました。");
+		DIE(1, "ターミナルの属性を設定する際にエラーが発生しました。");
 
 	BUG("規定に反する戻り値");
 }
