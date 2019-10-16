@@ -11,50 +11,30 @@ static char *actual_fn;
 static const char *test_source_file;
 static const char *test_name;
 
-struct io_buffer {
-	FILE *stream;
-	uint8_t buf[512];
-	size_t pos;
-	size_t end;
-};
-
-static int io_buffer_has_more(struct io_buffer *b)
-{
-	if (b->pos < b->end)
-		return 1;
-
-	b->end = xfread(b->buf, 1, sizeof(b->buf), b->stream);
-
-	b->pos = 0;
-	memset(b->buf + b->end, 0, sizeof(b->buf) - b->end);
-
-	return b->end != 0;
-}
-
-static uint8_t io_buffer_read(struct io_buffer *b) { return b->buf[b->pos++]; }
-
 static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 {
-	struct io_buffer exp = {fopen(expected_fn, "r")};
-	struct io_buffer act = {xfopen(actual_fn, "r")};
-	int exp_opened = !!exp.stream;
+	FILE *act = xfopen(actual_fn, "r");
+	FILE *exp = fopen(expected_fn, "r");
+	int exp_opened = !!exp;
 
 	if (!exp_opened) {
 		report_fopen_failure(expected_fn);
 		goto failure;
 	}
 
-	while (io_buffer_has_more(&exp) && io_buffer_has_more(&act)) {
-		if (io_buffer_read(&exp) != io_buffer_read(&act))
+	while (1) {
+		int expc = xfgetc(exp);
+		int actc = xfgetc(act);
+
+		if (expc != actc)
 			goto failure;
+
+		if (expc == EOF)
+			break;
 	}
 
-	if (io_buffer_has_more(&exp) || io_buffer_has_more(&act))
-		/* ファイルのサイズが違います */
-		goto failure;
-
-	xfclose(exp.stream);
-	xfclose(act.stream);
+	xfclose(exp);
+	xfclose(act);
 
 	return;
 
