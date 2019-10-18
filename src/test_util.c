@@ -3,11 +3,15 @@
 #include "util.h"
 
 #include <errno.h>
+#include <pthread.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 
 static char *actual_fn;
+static FILE *test_output_pipe_read;
+/* Thread that takes test output and removes binary-looking bytes. */
+static pthread_t test_output_processor;
 static const char *test_source_file;
 static const char *test_name;
 
@@ -52,13 +56,37 @@ failure:
 	exit(99);
 }
 
+static void *start_output_processor(void *unused)
+{
+	FILE *output = xfopen(actual_fn, "w");
+	int b;
+
+	while ((b = xfgetc(test_output_pipe_read)) != EOF)
+		xfputc(b, output);
+
+	XFCLOSE(output);
+	XFCLOSE(test_output_pipe_read);
+
+	return NULL;
+}
+
 void start_test(const char *source_file, const char *name)
 {
+	int test_output_pipe[2];
 	if (actual_fn != NULL)
 		BUG("既にテストが実行中です。");
 	xasprintf(&actual_fn, "%s.%s.testout", source_file, name);
 	xfprintf(stderr, "テスト：(%s) %s\n", source_file, name);
-	out = err = xfopen(actual_fn, "w");
+
+	if (pipe(test_output_pipe))
+		DIE(1, "pipe");
+
+	test_output_pipe_read = xfdopen(test_output_pipe[0], "r");
+	out = err = xfdopen(test_output_pipe[1], "w");
+
+	if (pthread_create(&test_output_processor, NULL, start_output_processor,
+			   NULL))
+		DIE(1, "pthread_create");
 
 	test_source_file = source_file;
 	test_name = name;
@@ -71,6 +99,9 @@ static void end_test_common(void)
 	xfclose(out);
 	out = stdout;
 	err = stderr;
+	errno = pthread_join(test_output_processor, NULL);
+	if (errno)
+		DIE(1, "pthread_join");
 	test_source_file = NULL;
 	test_name = NULL;
 }

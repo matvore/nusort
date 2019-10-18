@@ -1,6 +1,7 @@
 .PHONY: test clean
 
 CFLAGS = \
+	-pthread \
 	-Werror \
 	-Wall \
 	-Wdeclaration-after-statement \

@@ -40,6 +40,14 @@ FILE *xfopen(const char *pathname, const char *mode)
 	return f;
 }
 
+FILE *xfdopen(int fd, char const *mode)
+{
+	FILE *f = fdopen(fd, mode);
+	if (!f)
+		DIE(1, "fdopen");
+	return f;
+}
+
 int xfgetc(FILE *stream)
 {
 	int c;
