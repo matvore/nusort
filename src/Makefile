@@ -5,6 +5,7 @@ CFLAGS = \
 	-Werror \
 	-Wall \
 	-Wdeclaration-after-statement \
+	-Wmissing-prototypes \
 	-Wformat-security \
 	-Wno-format-zero-length \
 	-Wold-style-definition \

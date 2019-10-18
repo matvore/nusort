@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "input_impl.h"
 #include "keyboard.h"
 #include "mapping.h"
 #include "romazi.h"

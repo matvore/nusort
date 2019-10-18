@@ -58,7 +58,7 @@ static struct sort_info *last_si(void)
 	return &sort_infos.el[sort_infos.cnt - 1];
 }
 
-void set_utf8_byte(char *d, unsigned char c) { *d = 0x80 | (c & 0x3f); }
+static void set_utf8_byte(char *d, unsigned char c) { *d = 0x80 | (c & 0x3f); }
 
 static void decode_codepoint(char *d, const char *codepoint_str)
 {

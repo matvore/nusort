@@ -1,3 +1,4 @@
+#include "commands.h"
 #include "input_impl.h"
 #include "mapping.h"
 #include "util.h"
