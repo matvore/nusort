@@ -61,8 +61,10 @@ static void *start_output_processor(void *unused)
 	FILE *output = xfopen(actual_fn, "w");
 	int b;
 
-	while ((b = xfgetc(test_output_pipe_read)) != EOF)
-		xfputc(b, output);
+	while ((b = xfgetc(test_output_pipe_read)) != EOF) {
+		if (b)
+			xfputc(b, output);
+	}
 
 	XFCLOSE(output);
 	XFCLOSE(test_output_pipe_read);
