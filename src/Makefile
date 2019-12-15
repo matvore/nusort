@@ -25,6 +25,8 @@ SHARED_OBJS = \
 	h2k.o \
 	input.o \
 	input_impl.o \
+	kana_stats.o \
+	kana_stats_util.o \
 	kanji_db.o \
 	kanji_distribution.o \
 	keyboard.o \
@@ -39,6 +41,7 @@ HDRS = \
 	chars.h \
 	commands.h \
 	input_impl.h \
+	kana_stats_util.h \
 	kanji_db.h \
 	kanji_distribution.h \
 	keyboard.h \
@@ -64,6 +67,8 @@ test: \
 	hashmap_test \
 	h2k_test \
 	input_test \
+	kana_stats_test \
+	kana_stats_util_test \
 	keyboard_test \
 	last_rank_contained_test \
 	make_map_test \

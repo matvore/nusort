@@ -11,5 +11,7 @@ int codepoint_range(char const *c) {
 		return CODEPOINT_RANGE_OTHER;
 	if (strcmp(c, "ヶ") <= 0)
 		return CODEPOINT_RANGE_KATAKANA;
+	if (strcmp(c, "ー") <= 0)
+		return CODEPOINT_RANGE_KATAKANA_SPECIAL;
 	return CODEPOINT_RANGE_OTHER;
 }

@@ -7,7 +7,11 @@
  */
 #define CODEPOINT_RANGE_HIRAGANA 0
 #define CODEPOINT_RANGE_KATAKANA 1
-#define CODEPOINT_RANGE_OTHER 2
+
+/* 該当する平仮名コードポイントのない片仮名。 */
+#define CODEPOINT_RANGE_KATAKANA_SPECIAL 2
+
+#define CODEPOINT_RANGE_OTHER 3
 
 int codepoint_range(char const *c);
 

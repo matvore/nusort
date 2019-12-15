@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #define CONFIG_TESTS_IGNORE_NULL_BYTES 1
+#define CONFIG_TESTS_STDIN_FROM_FILE 2
 void config_tests(int flags_);
 void set_test_source_file(char const *fn);
 

@@ -104,16 +104,29 @@ void start_test(const char *name)
 			   NULL))
 		DIE(1, "pthread_create");
 
+	if (flags & CONFIG_TESTS_STDIN_FROM_FILE) {
+		char *input_fn;
+		xasprintf(&input_fn, "test_input/%s.%s",
+			  test_source_file, name);
+		in = xfopen(input_fn, "r");
+		FREE(input_fn);
+	}
+
 	test_name = name;
 }
 
 static void end_test_common(void)
 {
+	if (flags & CONFIG_TESTS_STDIN_FROM_FILE) {
+		if (xfgetc(in) != -1)
+			DIE(0, "入力が最後まで読み込まれていない");
+		XFCLOSE(in);
+	}
+
 	if (actual_fn == NULL)
 		BUG("実行中のテストはありません。");
-	xfclose(out);
-	out = stdout;
-	err = stderr;
+	XFCLOSE(out);
+	out = err = NULL;
 	errno = pthread_join(test_output_processor, NULL);
 	if (errno)
 		DIE(1, "pthread_join");
