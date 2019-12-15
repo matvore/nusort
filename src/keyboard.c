@@ -77,7 +77,7 @@ static void write_cell(key_index_t ki, char const *str, size_t len)
 void keyboard_update(struct mapping const *mapping, char const *prefix)
 {
 	key_index_t ki;
-	orig_t full_code;
+	Orig full_code;
 	size_t missing_char_index = strlen(prefix);
 
 	strncpy(full_code, prefix, sizeof(full_code));

@@ -11,14 +11,14 @@
 
 static int is_code_prefix(
 	struct mapping const *mapping,
-	orig_t const so_far_input)
+	Orig const so_far_input)
 {
 	size_t so_far_len = strlen(so_far_input);
-	orig_t extended_input;
+	Orig extended_input;
 
-	memcpy(&extended_input, so_far_input, sizeof(orig_t));
+	memcpy(&extended_input, so_far_input, sizeof(Orig));
 
-	for (size_t try_i = so_far_len; try_i < sizeof(orig_t) - 1; try_i++) {
+	for (size_t try_i = so_far_len; try_i < sizeof(Orig) - 1; try_i++) {
 		ssize_t extended_i;
 		extended_input[try_i] = 1;
 
@@ -46,11 +46,11 @@ static int is_code_prefix(
 	return 0;
 }
 
-static int is_done(struct mapping const *mapping, orig_t const so_far_input)
+static int is_done(struct mapping const *mapping, Orig const so_far_input)
 {
 	struct key_mapping const *m;
 
-	if (strlen(so_far_input) == sizeof(orig_t) - 1)
+	if (strlen(so_far_input) == sizeof(Orig) - 1)
 		return 1;
 
 	BSEARCH(m, mapping->codes.el, mapping->codes.cnt,
@@ -61,7 +61,7 @@ static int is_done(struct mapping const *mapping, orig_t const so_far_input)
 
 int input_impl(struct mapping const *mapping)
 {
-	orig_t so_far_input = {0};
+	Orig so_far_input = {0};
 
 	while (1) {
 		int ch;
