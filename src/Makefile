@@ -58,6 +58,7 @@ nusort: $(SHARED_OBJS) main.o
 test: \
 	bsearch_test \
 	check_kanji_db_order_test \
+	hashmap_test \
 	input_test \
 	keyboard_test \
 	last_rank_contained_test \

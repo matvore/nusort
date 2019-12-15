@@ -157,3 +157,56 @@ do { \
 	if (index < 0) \
 		(e) = 0; \
 } while (0)
+
+/*
+ * ごく単純なハッシュマップ
+ *
+ * キーがバイト列として扱います。２個のキーのバイトが一致していればキーが同一
+ * として見なします。キーがポインターであればまたはポインターを格納するstruct
+ * の場合でもそのポインターの差すメモリーがfreeされません。キーの全バイトが０
+ * の時はバケツが空と見なします。このハッシュマップは固定サイズの文字列に向い
+ * ています。
+ *
+ * ハッシュマップを初期化後にバケツ数を変更できません。
+ *
+ * ハッシュマップを格納するstructは下記の様に宣言されます：
+ *
+ * struct hashmap {
+ * 	KEY_TYPE *keys;
+ * 	VAL_TYPE *values;
+ * 	size_t bucket_cnt;
+ * };
+ */
+
+/* ハッシュマップを初期化して、バケツを bc 個作ります。 */
+#define INIT_HASHMAP(hashmap, bc) do { \
+	if ((hashmap).keys || (hashmap).values || (hashmap).bucket_cnt) \
+		BUG("hashmapのフィールドが０に設定されていない"); \
+	(hashmap).bucket_cnt = (bc); \
+	(hashmap).keys = \
+		xcalloc((hashmap).bucket_cnt, sizeof((hashmap).keys)); \
+	(hashmap).values = \
+		xcalloc((hashmap).bucket_cnt, sizeof((hashmap).values)); \
+} while (0)
+
+/*
+ * キーがマップに入っていれば、そのバケツを見つけます。
+ * マップに入っていなければ、そのキーの書き込めるバケツを見つけます。
+ */
+#define FIND_HASHMAP_ENTRY(hashmap, key, found_key, found_value) do { \
+	size_t index = find_hashmap_entry_impl( \
+		(hashmap).keys, sizeof (hashmap).keys[0], \
+		(hashmap).bucket_cnt, &(key)); \
+	(found_key) = (hashmap).keys + index; \
+	(found_value) = (hashmap).values + index; \
+} while (0)
+
+#define DESTROY_HASHMAP(hashmap) do { \
+	FREE((hashmap).keys); \
+	FREE((hashmap).values); \
+	(hashmap).bucket_cnt = 0; \
+} while (0)
+
+size_t find_hashmap_entry_impl(
+	void const *keys_, size_t key_size,
+	size_t bucket_cnt, void const *target_key_);

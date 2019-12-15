@@ -158,3 +158,43 @@ void _Noreturn die(
 
 	exit(228);
 }
+
+static int bytes_are_zero(char const *buf, size_t s)
+{
+	while (s) {
+		if (*buf)
+			return 0;
+		buf++;
+		s--;
+	}
+	return 1;
+}
+
+size_t find_hashmap_entry_impl(
+	void const *keys_, size_t key_size,
+	size_t bucket_cnt, void const *target_key_)
+{
+	char const *target_key = target_key_;
+	size_t key_hash = 0;
+	size_t i;
+	char const *keys = keys_;
+
+	for (i = 0; i < key_size; i++) {
+		key_hash *= 31;
+		key_hash += target_key[i];
+	}
+	key_hash %= bucket_cnt;
+
+	i = key_hash;
+	while (1) {
+		char const *bucket_ptr = keys + (key_size * i);
+		if (bytes_are_zero(bucket_ptr, key_size))
+			return i;
+		if (!memcmp(bucket_ptr, target_key, key_size))
+			return i;
+
+		i = (i + 1) % bucket_cnt;
+		if (i == key_hash)
+			BUG("hash map is already full");
+	}
+}
