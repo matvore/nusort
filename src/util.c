@@ -159,8 +159,9 @@ void _Noreturn die(
 	exit(228);
 }
 
-static int bytes_are_zero(char const *buf, size_t s)
+int bytes_are_zero(void const *buf_, size_t s)
 {
+	char const *buf = buf_;
 	while (s) {
 		if (*buf)
 			return 0;

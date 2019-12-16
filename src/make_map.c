@@ -6,23 +6,31 @@ int make_map(char const *const *argv, int argc) {
 	struct mapping mapping = {0};
 	size_t i;
 	int res = 0;
+	struct romazi_config romazi_config = {0};
+
+	init_romazi_config_for_cli_flags(&romazi_config);
 
 	mapping.ergonomic_sort = 0;
+	mapping.include_kanji = 1;
 
 	while (argc > 0) {
-		const char *arg = argv[0];
-		argc--;
-		argv++;
-		if (!strcmp(arg, "-s")) {
+		if (!strcmp(argv[0], "-s")) {
 			mapping.ergonomic_sort = 1;
-		} else {
+			argv++;
+			argc--;
+		} else if (!strcmp(argv[0], "--no-kanji")) {
+			mapping.include_kanji = 0;
+			argv++;
+			argc--;
+		} else if (!parse_romazi_flags(&argc, &argv, &romazi_config)) {
 			xfprintf(err,
-				 "フラグを認識できませんでした：%s\n", arg);
+				 "フラグを認識できませんでした：%s\n", argv[0]);
 			res = 3;
 			goto cleanup;
 		}
 	}
 
+	init_romazi(&romazi_config);
 	mapping_populate(&mapping);
 
 	for (i = 0; i < mapping.codes.cnt; i++)

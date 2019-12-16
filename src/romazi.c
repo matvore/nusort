@@ -16,17 +16,6 @@ struct romazi_entry {
 };
 
 struct romazi_entry ROMAZI[] = {
-	{"!",	"一",	1, 0},
-	{"@",	"二",	1, 0},
-	{"#",	"三",	1, 0},
-	{"$",	"四",	1, 0},
-	{"%",	"五",	1, 0},
-	{"^",	"六",	1, 0},
-	{"&",	"七",	1, 0},
-	{"*",	"八",	1, 0},
-	{"(",	"九",	1, 0},
-	{")",	"十",	1, 0},
-
 	{"j",	"っ",	1, 1},
 	{"f",	"ん",	1, 1},
 
@@ -279,7 +268,6 @@ struct romazi_entry ROMAZI[] = {
 	{"wa",	"わ",	1, 1},
 	{"wi",	"うぃ",	0, 1},
 	{"we",	"うぇ",	0, 1},
-	{"wo",	"を",	1, 0},
 	{"wha",	"うぁ",	0, 1},
 	{"whi",	"うぃ",	0, 1},
 	{"whu",	"うぅ",	0, 1},
@@ -287,8 +275,6 @@ struct romazi_entry ROMAZI[] = {
 	{"who",	"うぉ",	0, 1},
 	{"-",	"ー",	1, 0},
 };
-
-#define ROMAZI_NR (sizeof(ROMAZI) / sizeof(*ROMAZI))
 
 const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT] = {
 	'1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
@@ -336,22 +322,35 @@ KeyIndex char_to_key_index_or_die(char ch)
 	return i;
 }
 
-static const char *target_strs[ROMAZI_NR];
+struct {
+	char const **el;
+	size_t cnt;
+	size_t alloc;
+} target_strs;
 
-static int target_strs_init;
+static struct key_mapping_array codes;
+
+static void verify_initialized(void)
+{
+	if (!codes.cnt)
+		BUG("must call init_romazi()");
+}
 
 int is_target_non_sorted_string(const char *s)
 {
 	const char **e;
-	if (!target_strs_init) {
+	if (!target_strs.cnt) {
 		size_t i;
-		for (i = 0; i < ROMAZI_NR; i++)
-			target_strs[i] = ROMAZI[i].conv;
-		QSORT(, target_strs, ROMAZI_NR,
-		      strcmp(target_strs[a], target_strs[b]) < 0);
-		target_strs_init = 1;
+
+		verify_initialized();
+		for (i = 0; i < codes.cnt; i++) {
+			GROW_ARRAY_BY(target_strs, 1);
+			target_strs.el[i] = codes.el[i].conv;
+		}
+		QSORT(, target_strs.el, target_strs.cnt,
+		      strcmp(target_strs.el[a], target_strs.el[b]) < 0);
 	}
-	BSEARCH(e, target_strs, ROMAZI_NR, strcmp(*e, s));
+	BSEARCH(e, target_strs.el, target_strs.cnt, strcmp(*e, s));
 	return !!e;
 }
 
@@ -374,43 +373,28 @@ static int free_as_singleton_code(
 	return 1;
 }
 
-static int ascii_to_upper(int c, int change)
-{
-	if (!change || c < 'a' || c > 'z')
-		return c;
-	return c ^ 0x20;
-}
-
-static void mark_used(struct used_bit_map *used, const char *code, int caps)
-{
-	ssize_t first_key_off =
-		char_to_key_index(ascii_to_upper(code[0], caps));
-
-	if (first_key_off == -1)
-		return;
-
-	first_key_off *= MAPPABLE_CHAR_COUNT;
-
-	if (strlen(code) >= 2)
-		used->m[
-			first_key_off
-			+ char_to_key_index(ascii_to_upper(code[1], caps))
-		] = 1;
-	else
-		memset(used->m + first_key_off, 1, MAPPABLE_CHAR_COUNT);
-}
-
 static void get_free_kanji_keys(struct used_bit_map *used)
 {
 	size_t i;
+
+	verify_initialized();
 	memset(used, 0, sizeof(*used));
 
-	for (i = 0; i < ROMAZI_NR; i++) {
-		const struct romazi_entry *e = &ROMAZI[i];
-		if (e->use_as_is)
-			mark_used(used, e->orig, 0);
-		if (e->auto_katakana)
-			mark_used(used, e->orig, 1);
+	for (i = 0; i < codes.cnt; i++) {
+		ssize_t first_key_off = char_to_key_index(codes.el[i].orig[0]);
+
+		if (first_key_off == -1)
+			continue;
+
+		first_key_off *= MAPPABLE_CHAR_COUNT;
+
+		if (strlen(codes.el[i].orig) >= 2)
+			used->m[
+				first_key_off
+				+ char_to_key_index(codes.el[i].orig[1])
+			] = 1;
+		else
+			memset(used->m + first_key_off, 1, MAPPABLE_CHAR_COUNT);
 	}
 }
 
@@ -465,14 +449,11 @@ void get_free_kanji_codes(struct short_code_array *codes)
 	}
 }
 
-static void append_copied_mapping(
-	struct key_mapping_array *codes, const struct romazi_entry *src)
+static void append_mapping(char const *orig, char const *conv)
 {
-	GROW_ARRAY_BY(*codes, 1);
-	strncpy(codes->el[codes->cnt - 1].orig, src->orig,
-		sizeof(codes->el[0].orig));
-	strncpy(codes->el[codes->cnt - 1].conv, src->conv,
-		sizeof(codes->el[0].conv));
+	GROW_ARRAY_BY(codes, 1);
+	strncpy(codes.el[codes.cnt - 1].orig, orig, sizeof(codes.el[0].orig));
+	strncpy(codes.el[codes.cnt - 1].conv, conv, sizeof(codes.el[0].conv));
 }
 
 void hiragana_to_katakana(char *conv)
@@ -493,23 +474,98 @@ void hiragana_to_katakana(char *conv)
 	}
 }
 
-void get_romazi_codes(struct key_mapping_array *codes)
+void init_romazi_config_for_cli_flags(struct romazi_config *config)
 {
-	size_t i;
-	for (i = 0; i < ROMAZI_NR; i++) {
+	if (!bytes_are_zero(config, sizeof(*config)))
+		BUG("romazi_config not initialized to zero bytes");
+
+	config->include_kanji_numerals = 1;
+	config->classic_wo = 1;
+}
+
+int parse_romazi_flags(
+	int *argc, char const *const **argv, struct romazi_config *config)
+{
+	if (!strcmp((*argv)[0], "--no-classic-wo")) {
+		config->classic_wo = 0;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+	if (!strcmp((*argv)[0], "--hiragana-wo-key") && *argc > 1 &&
+		   strlen((*argv)[1]) == 1) {
+		config->hiragana_wo_key = (*argv)[1][0];
+		*argv += 2;
+		*argc -= 2;
+		return 1;
+	}
+	if (!strcmp((*argv)[0], "--no-kanji-nums")) {
+		config->include_kanji_numerals = 0;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+	return 0;
+}
+
+void init_romazi(struct romazi_config const *config)
+{
+	int32_t i;
+
+	DESTROY_ARRAY(codes);
+	DESTROY_ARRAY(target_strs);
+
+	for (i = 0; i < (sizeof(ROMAZI) / sizeof(*ROMAZI)); i++) {
 		char *orig;
 
 		if (ROMAZI[i].use_as_is)
-			append_copied_mapping(codes, &ROMAZI[i]);
+			append_mapping(ROMAZI[i].orig, ROMAZI[i].conv);
 		if (!ROMAZI[i].auto_katakana)
 			continue;
 
-		append_copied_mapping(codes, &ROMAZI[i]);
+		append_mapping(ROMAZI[i].orig, ROMAZI[i].conv);
 
-		for (orig = codes->el[codes->cnt - 1].orig; *orig; orig++) {
+		for (orig = codes.el[codes.cnt - 1].orig; *orig; orig++) {
 			if (*orig >= 'a' && *orig <= 'z')
 				*orig &= ~0x20;
 		}
-		hiragana_to_katakana(codes->el[codes->cnt - 1].conv);
+		hiragana_to_katakana(codes.el[codes.cnt - 1].conv);
+	}
+
+	if (config->include_kanji_numerals) {
+		append_mapping("!", "一");
+		append_mapping("@", "二");
+		append_mapping("#", "三");
+		append_mapping("$", "四");
+		append_mapping("%", "五");
+		append_mapping("^", "六");
+		append_mapping("&", "七");
+		append_mapping("*", "八");
+		append_mapping("(", "九");
+		append_mapping(")", "十");
+	}
+
+	if (config->hiragana_wo_key) {
+		Orig o = {0};
+		o[0] = config->hiragana_wo_key;
+		append_mapping(o, "を");
+	}
+
+	if (config->classic_wo) {
+		append_mapping("wo", "を");
+		append_mapping("WO", "ヲ");
+	}
+}
+
+void get_romazi_codes(struct key_mapping_array *codes_)
+{
+	uint32_t i;
+
+	verify_initialized();
+	for (i = 0; i < codes.cnt; i++)
+	{
+		GROW_ARRAY_BY(*codes_, 1);
+		memcpy(&codes_->el[codes_->cnt - 1], &codes.el[i],
+		       sizeof(*codes.el));
 	}
 }

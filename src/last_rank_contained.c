@@ -47,30 +47,41 @@ int print_last_rank_contained(char const *const *argv, int argc)
 {
 	struct kanji_distribution kanji_distribution = {0};
 	size_t i;
+	struct romazi_config romazi_config = {0};
 
 	memset(&flags, 0, sizeof(flags));
+	init_romazi_config_for_cli_flags(&romazi_config);
 
 	while (argc > 0 && argv[0][0] == '-') {
-		const char *arg = argv[0];
-		argc--;
-		argv++;
-		if (!strcmp(arg, "-s")) {
+		if (!strcmp(argv[0], "-s")) {
 			kanji_distribution.sort_each_line_by_rsc = 1;
-		} else if (!strcmp(arg, "-k")) {
+			argc--;
+			argv++;
+		} else if (!strcmp(argv[0], "-k")) {
 			flags.hide_kanji = 1;
-		} else if (!strcmp(arg, "-n")) {
+			argc--;
+			argv++;
+		} else if (!strcmp(argv[0], "-n")) {
 			flags.show_per_line_kanji_count = 1;
-		} else if (!strcmp(arg, "-c")) {
+			argc--;
+			argv++;
+		} else if (!strcmp(argv[0], "-c")) {
 			kanji_distribution.sort_each_line_by_rsc = 1;
 			flags.show_space_for_cutoff_points = 1;
-		} else if (!strcmp(arg, "--")) {
+			argc--;
+			argv++;
+		} else if (!strcmp(argv[0], "--")) {
+			argc--;
+			argv++;
 			break;
-		} else {
+		} else if (!parse_romazi_flags(&argc, &argv, &romazi_config)) {
 			xfprintf(err,
-				 "フラグを認識できませんでした：%s\n", arg);
+				 "フラグを認識できませんでした：%s\n", argv[0]);
 			return 3;
 		}
 	}
+
+	init_romazi(&romazi_config);
 
 	if (argc) {
 		int res = kanji_distribution_parse_user_cutoff(

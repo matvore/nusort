@@ -104,7 +104,14 @@ static struct {
 	"showing_space_for_potential_cutoff",
 	{"-c"},
 	0
-}
+},
+
+{
+	"no_hardcoded_kanji_numerals",
+	{"--no-kanji-nums"},
+	0
+},
+
 };
 
 int main(void)

@@ -156,7 +156,8 @@ int code_cmp(char const *a, char const *b)
 void mapping_populate(struct mapping *mapping)
 {
 	get_romazi_codes(&mapping->codes);
-	get_kanji_codes(&mapping->codes, mapping->ergonomic_sort);
+	if (mapping->include_kanji)
+		get_kanji_codes(&mapping->codes, mapping->ergonomic_sort);
 
 	QSORT(, mapping->codes.el, mapping->codes.cnt,
 	      code_cmp(mapping->codes.el[a].orig,

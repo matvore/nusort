@@ -207,6 +207,8 @@ do { \
 	(hashmap).bucket_cnt = 0; \
 } while (0)
 
+int bytes_are_zero(void const *, size_t);
+
 size_t find_hashmap_entry_impl(
 	void const *keys_, size_t key_size,
 	size_t bucket_cnt, void const *target_key_);

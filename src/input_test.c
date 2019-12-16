@@ -45,10 +45,19 @@ static void set_mapping(struct mapping *m, enum mapping_type type)
 int main(void)
 {
 	size_t test_i;
+	struct romazi_config romazi_config = {
+		.include_kanji_numerals = 1,
+		.classic_wo = 1,
+	};
+
+	init_romazi(&romazi_config);
+
 	for (test_i = 0; test_i < sizeof(test_cases) / sizeof(*test_cases);
 	     test_i++) {
 		char input_file[] = "/tmp/input_test_in_XXXXXX";
 		struct mapping mapping = {0};
+
+		mapping.include_kanji = 1;
 
 		start_test(__FILE__, test_cases[test_i].name);
 

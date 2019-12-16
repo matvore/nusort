@@ -6,6 +6,7 @@
 struct mapping {
 	struct key_mapping_array codes;
 	unsigned ergonomic_sort : 1;
+	unsigned include_kanji : 1;
 };
 
 int code_cmp(char const *a, char const *b);

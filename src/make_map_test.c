@@ -31,5 +31,25 @@ int main(void)
 	}
 	end_test_expected_content_in_file();
 
+	start_test(__FILE__, "no_classic_wo");
+	{
+		char const *argv[] = {"--no-classic-wo"};
+		xfprintf(err, "exit code: %d\n", make_map(argv, 1));
+	}
+	end_test_expected_content_in_file();
+
+	start_test(__FILE__, "hiragana_wo_key");
+	{
+		char const *argv[] = {"--hiragana-wo-key", "="};
+		xfprintf(err, "exit code: %d\n", make_map(argv, 2));
+	}
+	end_test_expected_content_in_file();
+
+	start_test(__FILE__, "no_kanji");
+	{
+		char const *argv[] = {"--no-kanji"};
+		xfprintf(err, "exit code: %d\n", make_map(argv, 1));
+	}
+	end_test_expected_content_in_file();
 	return 0;
 }
