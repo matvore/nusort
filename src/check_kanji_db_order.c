@@ -328,7 +328,7 @@ int check_kanji_db_order(char const *const *argv, int argc)
 
 	QSORT(, sort_infos.el, sort_infos.cnt,
 	      strcmp(sort_infos.el[a].c, sort_infos.el[b].c) < 0);
-	xfprintf(err, "%ld字の並べ替えキーを読み込み済み\n", sort_infos.cnt);
+	xfprintf(err, "%zu字の並べ替えキーを読み込み済み\n", sort_infos.cnt);
 
 	if (!res)
 		res = check_order();

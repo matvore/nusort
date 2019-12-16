@@ -11,13 +11,13 @@ int main(void)
 	{
 		ssize_t index;
 		BSEARCH_INDEX(index, size, , arr[index] - 5);
-		xfprintf(out, "%ld ", index);
+		xfprintf(out, "%zu ", index);
 
 		BSEARCH_INDEX(index, size, , arr[index] - 15);
-		xfprintf(out, "%ld ", index);
+		xfprintf(out, "%zu ", index);
 
 		BSEARCH_INDEX(index, size, , arr[index] - 20);
-		xfprintf(out, "%ld ", index);
+		xfprintf(out, "%zu ", index);
 	}
 	end_test("0 2 4 ");
 
@@ -25,13 +25,13 @@ int main(void)
 	{
 		ssize_t index;
 		BSEARCH_INDEX(index, size, , arr[index] - 1);
-		xfprintf(out, "%ld ", ~index);
+		xfprintf(out, "%zu ", ~index);
 
 		BSEARCH_INDEX(index, size, , arr[index] - 16);
-		xfprintf(out, "%ld ", ~index);
+		xfprintf(out, "%zu ", ~index);
 
 		BSEARCH_INDEX(index, size, , arr[index] - 25);
-		xfprintf(out, "%ld ", ~index);
+		xfprintf(out, "%zu ", ~index);
 	}
 	end_test("0 3 5 ");
 }

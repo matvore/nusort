@@ -125,12 +125,12 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 				first_key_i);
 
 		if (line_stats == NULL)
-			BUG("kanji_distributionで行が見つかりません：%ld",
+			BUG("kanji_distributionで行が見つかりません：%zd",
 			    first_key_i);
 
 		next_code_i = codes_consumed[first_key_i]++;
 		if (next_code_i >= line_stats->e_nr)
-			BUG("kanji_distributionの１打鍵目が'%ld'のコード数が"
+			BUG("kanji_distributionの１打鍵目が'%zd'のコード数が"
 			    "足りません", first_key_i);
 		GROW_ARRAY_BY(*m, 1);
 		memcpy(m->el[m->cnt - 1].orig, free_kanji_codes.el[free_code],
