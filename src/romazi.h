@@ -31,10 +31,11 @@ void get_free_kanji_codes(struct short_code_array *codes);
 
 /* ヌル終端の入力コード */
 typedef char Orig[4];
+typedef char Conv[7];
 
 struct key_mapping {
 	Orig orig;
-	char conv[7];
+	Conv conv;
 };
 
 struct key_mapping_array {
@@ -42,6 +43,8 @@ struct key_mapping_array {
 	size_t cnt;
 	size_t alloc;
 };
+
+void hiragana_to_katakana(char *conv);
 
 void get_romazi_codes(struct key_mapping_array *codes);
 

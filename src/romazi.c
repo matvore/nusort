@@ -475,7 +475,7 @@ static void append_copied_mapping(
 		sizeof(codes->el[0].conv));
 }
 
-static void hiragana_to_katakana(char *conv)
+void hiragana_to_katakana(char *conv)
 {
 	while (*conv) {
 		uint16_t low_2_bytes =
