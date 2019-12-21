@@ -15,6 +15,8 @@ struct romazi_entry {
 	unsigned auto_katakana : 1;
 };
 
+#define COMBINING_DAKUTEN "\xe3\x82\x99"
+
 struct romazi_entry ROMAZI[] = {
 	{"j",	"っ",	1, 1},
 	{"f",	"ん",	1, 1},
@@ -252,12 +254,6 @@ struct romazi_entry ROMAZI[] = {
 	{"xxd",	"ゑ",	1, 1},
 	{"xxk",	"ゐ",	1, 1},
 	{"xxl",	"を",	1, 1},
-	{"xxc",	"ゑ゙",	1, 0},
-	{"xx,",	"ゐ゙",	1, 0},
-	{"xx.",	"を゙",	1, 0},
-	{"XXC",	"ヹ",	1, 0},
-	{"XX,",	"ヸ",	1, 0},
-	{"XX.",	"ヺ",	1, 0},
 	{"ra",	"ら",	1, 1},
 	{"ri",	"り",	1, 1},
 	{"ru",	"る",	1, 1},
@@ -555,6 +551,15 @@ void init_romazi(struct romazi_config const *config)
 		append_mapping("wo", "を");
 		append_mapping("WO", "ヲ");
 	}
+
+	append_mapping("xxj", "わ" COMBINING_DAKUTEN);
+	append_mapping("xxc", "ゑ" COMBINING_DAKUTEN);
+	append_mapping("xx,", "ゐ" COMBINING_DAKUTEN);
+	append_mapping("xx.", "を" COMBINING_DAKUTEN);
+	append_mapping("XXJ", "ヷ");
+	append_mapping("XXC", "ヹ");
+	append_mapping("XX,", "ヸ");
+	append_mapping("XX.", "ヺ");
 }
 
 void get_romazi_codes(struct key_mapping_array *codes_)
