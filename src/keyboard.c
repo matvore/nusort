@@ -48,7 +48,7 @@ struct keyboard_slice {
 	unsigned len : 16;
 };
 
-static struct keyboard_slice ki_to_slice(key_index_t ki)
+static struct keyboard_slice ki_to_slice(int ki)
 {
 	struct keyboard_slice s;
 
@@ -65,7 +65,7 @@ static struct keyboard_slice ki_to_slice(key_index_t ki)
 	return s;
 }
 
-static void write_cell(key_index_t ki, char const *str, size_t len)
+static void write_cell(KeyIndex ki, char const *str, size_t len)
 {
 	struct keyboard_slice s = ki_to_slice(ki);
 	char *keyboard_p = keyboard + s.offset;
@@ -76,7 +76,7 @@ static void write_cell(key_index_t ki, char const *str, size_t len)
 
 void keyboard_update(struct mapping const *mapping, char const *prefix)
 {
-	key_index_t ki;
+	KeyIndex ki;
 	Orig full_code;
 	size_t missing_char_index = strlen(prefix);
 
@@ -109,8 +109,8 @@ void keyboard_update(struct mapping const *mapping, char const *prefix)
 		}
 		if (str_bytes == 6) {
 			/* 入力文字列がカナ２個です。*/
-			key_index_t non_shifted = ki % KANJI_KEY_COUNT;
-			key_index_t shifted = non_shifted + KANJI_KEY_COUNT;
+			int non_shifted = ki % KANJI_KEY_COUNT;
+			int shifted = non_shifted + KANJI_KEY_COUNT;
 			write_cell(shifted, m->conv, 3);
 			write_cell(non_shifted, m->conv + 3, 3);
 			continue;
