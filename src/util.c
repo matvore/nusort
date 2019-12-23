@@ -76,6 +76,13 @@ void xfputs(char const *s, FILE *stream)
 		BUG("fputsから規定に反する戻り値");
 }
 
+void xfwrite(void const *buf, size_t size, FILE *stream)
+{
+	errno = 0;
+	if (!fwrite(buf, size, 1, stream))
+		DIE(1, "fwrite");
+}
+
 void xfclose(FILE *stream)
 {
 	if (!fclose(stream))
@@ -143,7 +150,7 @@ void _Noreturn die(
 	char const *preamble = "致命的なエラー";
 	va_list argp;
 
-	if (show_errno)
+	if (show_errno && errno)
 		perror(preamble);
 	else
 		fprintf(stderr, "%s\n", preamble);

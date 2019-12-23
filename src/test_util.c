@@ -14,6 +14,7 @@ static FILE *test_output_pipe_read;
 static pthread_t test_output_processor;
 static const char *test_source_file;
 static const char *test_name;
+static int flags;
 
 static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 {
@@ -62,7 +63,7 @@ static void *start_output_processor(void *unused)
 	int b;
 
 	while ((b = xfgetc(test_output_pipe_read)) != EOF) {
-		if (b)
+		if (b || !(flags & CONFIG_TESTS_IGNORE_NULL_BYTES))
 			xfputc(b, output);
 	}
 
@@ -71,6 +72,8 @@ static void *start_output_processor(void *unused)
 
 	return NULL;
 }
+
+void config_tests(int flags_) { flags = flags_; }
 
 void start_test(const char *source_file, const char *name)
 {

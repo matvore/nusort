@@ -51,6 +51,7 @@ int main(void)
 	};
 
 	init_romazi(&romazi_config);
+	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
 
 	for (test_i = 0; test_i < sizeof(test_cases) / sizeof(*test_cases);
 	     test_i++) {

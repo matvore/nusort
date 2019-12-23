@@ -15,6 +15,7 @@ int xfgetc(FILE *stream);
 char *xfgets(char *s, int size, FILE *stream);
 void xfputs(char const *s, FILE *stream);
 void xfclose(FILE *stream);
+void xfwrite(void const *, size_t, FILE *);
 
 __attribute__((format (printf, 2, 3)))
 int xfprintf(FILE *stream, const char *format, ...);

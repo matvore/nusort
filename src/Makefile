@@ -18,9 +18,11 @@ CFLAGS = \
 all: test nusort
 
 SHARED_OBJS = \
+	chars.o \
 	check_kanji_db_order.o \
 	commands.o \
 	free_kanji_keys.o \
+	h2k.o \
 	input.o \
 	input_impl.o \
 	kanji_db.o \
@@ -34,6 +36,7 @@ SHARED_OBJS = \
 	util.o
 
 HDRS = \
+	chars.h \
 	commands.h \
 	input_impl.h \
 	kanji_db.h \
@@ -59,6 +62,7 @@ test: \
 	bsearch_test \
 	check_kanji_db_order_test \
 	hashmap_test \
+	h2k_test \
 	input_test \
 	keyboard_test \
 	last_rank_contained_test \

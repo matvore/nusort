@@ -15,6 +15,7 @@ int main(void)
 	};
 
 	init_romazi(&romazi_config);
+	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
 
 	start_test(__FILE__, "default_view");
 	{
