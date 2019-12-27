@@ -75,5 +75,45 @@ int main(void)
 	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
 		 "exit code: 200\n");
 
+	start_test("init_returns_1_on_success");
+	{
+		struct romazi_config config = {
+			.hiragana_wo_key = '\'',
+		};
+		xfprintf(err, "status: %d",
+			 init_romazi_and_return_status(&config));
+	}
+	end_test("status: 1");
+
+	start_test("do_not_allow_overlap_with_one_wo_key");
+	{
+		struct romazi_config config = {
+			.hiragana_wo_key = 'k',
+		};
+		xfprintf(err, "status: %d",
+			 init_romazi_and_return_status(&config));
+	}
+	end_test("ダブっている入力コードがあります。\nstatus: 0");
+
+	start_test("do_not_allow_overlap_with_one_wo_key_2");
+	{
+		struct romazi_config config = {
+			.hiragana_wo_key = 'x',
+		};
+		xfprintf(err, "status: %d",
+			 init_romazi_and_return_status(&config));
+	}
+	end_test("ダブっている入力コードがあります。\nstatus: 0");
+
+	start_test("do_not_allow_overlap_with_one_wo_key_3");
+	{
+		struct romazi_config config = {
+			.hiragana_wo_key = 'p',
+		};
+		xfprintf(err, "status: %d",
+			 init_romazi_and_return_status(&config));
+	}
+	end_test("ダブっている入力コードがあります。\nstatus: 0");
+
 	return 0;
 }

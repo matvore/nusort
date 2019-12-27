@@ -1,5 +1,5 @@
 #include "romazi.h"
-
+#include "streams.h"
 #include "util.h"
 
 #include <arpa/inet.h>
@@ -504,7 +504,7 @@ int parse_romazi_flags(
 	return 0;
 }
 
-void init_romazi(struct romazi_config const *config)
+int init_romazi_and_return_status(struct romazi_config const *config)
 {
 	int32_t i;
 
@@ -560,6 +560,22 @@ void init_romazi(struct romazi_config const *config)
 	append_mapping("XXC", "ヹ");
 	append_mapping("XX,", "ヸ");
 	append_mapping("XX.", "ヺ");
+
+	for (i = 0; i < codes.cnt; i++) {
+		if (codes.el[i].orig[0] == config->hiragana_wo_key &&
+		    strcmp("を", codes.el[i].conv)) {
+			xfputs("ダブっている入力コードがあります。\n", err);
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+void init_romazi(struct romazi_config const *config)
+{
+	if (!init_romazi_and_return_status(config))
+		DIE(0, "ローマ字入力コードの生成に失敗しました。");
 }
 
 void get_romazi_codes(struct key_mapping_array *codes_)
