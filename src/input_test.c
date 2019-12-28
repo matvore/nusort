@@ -1,6 +1,7 @@
 #include "commands.h"
 #include "input_impl.h"
 #include "mapping.h"
+#include "streams.h"
 #include "test_util.h"
 #include "util.h"
 

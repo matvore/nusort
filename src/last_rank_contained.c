@@ -1,5 +1,6 @@
 #include "commands.h"
 #include "kanji_distribution.h"
+#include "streams.h"
 #include "util.h"
 
 /* コマンドフラグ */

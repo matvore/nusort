@@ -1,5 +1,5 @@
-#include "commands.h"
 #include "rank_coverage.h"
+#include "streams.h"
 #include "test_util.h"
 
 #include <stddef.h>

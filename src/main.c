@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "streams.h"
 
 #include <stdio.h>
 #include <stdlib.h>

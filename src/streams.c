@@ -1,3 +1,3 @@
-#include "commands.h"
+#include <stdio.h>
 
 FILE *out, *err, *in;

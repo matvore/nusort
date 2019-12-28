@@ -4,6 +4,7 @@
 #include "commands.h"
 #include "kana_stats_util.h"
 #include "romazi.h"
+#include "streams.h"
 #include "util.h"
 
 /* 未サポート: e3 82 9[9a] (composed 濁点＋半濁点 ) */

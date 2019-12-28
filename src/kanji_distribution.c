@@ -2,6 +2,7 @@
 
 #include "commands.h"
 #include "rank_coverage.h"
+#include "streams.h"
 #include "util.h"
 
 static int first_key(

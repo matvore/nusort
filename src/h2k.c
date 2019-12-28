@@ -1,6 +1,7 @@
 #include "chars.h"
 #include "commands.h"
 #include "romazi.h"
+#include "streams.h"
 #include "util.h"
 
 static int is_complete_utf8(char first_char, int size)

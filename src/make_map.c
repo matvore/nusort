@@ -1,5 +1,6 @@
 #include "commands.h"
 #include "mapping.h"
+#include "streams.h"
 #include "util.h"
 
 int make_map(char const *const *argv, int argc) {

@@ -1,6 +1,7 @@
 #include "commands.h"
 
 #include "romazi.h"
+#include "streams.h"
 #include "util.h"
 
 int free_kanji_keys(char const *const *argv, int argc)

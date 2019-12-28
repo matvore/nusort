@@ -20,7 +20,6 @@ all: test nusort
 SHARED_OBJS = \
 	chars.o \
 	check_kanji_db_order.o \
-	commands.o \
 	free_kanji_keys.o \
 	h2k.o \
 	input.o \
@@ -35,6 +34,7 @@ SHARED_OBJS = \
 	mapping.o \
 	rank_coverage.o \
 	romazi.o \
+	streams.o \
 	util.o
 
 HDRS = \
@@ -48,6 +48,7 @@ HDRS = \
 	mapping.h \
 	rank_coverage.h \
 	romazi.h \
+	streams.h \
 	test_util.h \
 	util.h
 

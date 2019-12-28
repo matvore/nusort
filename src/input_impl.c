@@ -3,6 +3,7 @@
 #include "keyboard.h"
 #include "mapping.h"
 #include "romazi.h"
+#include "streams.h"
 #include "util.h"
 
 #include <errno.h>

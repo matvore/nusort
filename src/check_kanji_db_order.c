@@ -5,6 +5,7 @@
 
 #include "commands.h"
 #include "kanji_db.h"
+#include "streams.h"
 #include "util.h"
 
 static const char *ADOBE_JAPAN = "\tkRSAdobe_Japan1_6";

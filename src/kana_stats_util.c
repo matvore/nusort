@@ -4,6 +4,7 @@
 
 #include "commands.h"
 #include "kana_stats_util.h"
+#include "streams.h"
 #include "util.h"
 
 #define LEFT_COLUMN_WIDTH 7

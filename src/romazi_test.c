@@ -1,5 +1,6 @@
 #include "commands.h"
 #include "romazi.h"
+#include "streams.h"
 #include "test_util.h"
 #include "util.h"
 
