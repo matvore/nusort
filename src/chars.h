@@ -1,6 +1,8 @@
 #ifndef CHARS_H
 #define CHARS_H
 
+#define COMBINING_DAKUTEN "\xe3\x82\x99"
+
 /*
  * 平仮名範囲の全コードポイントが片仮名範囲の全コードポイントと一対一関係。他に
  * も片仮名っぽいコードポイントもあるけれど（例：ヺ）、片仮名範囲外にある。

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "chars.h"
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"

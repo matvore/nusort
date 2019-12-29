@@ -36,7 +36,7 @@ static void collect_potential_mappings(struct stats_map *out)
 		 * 濁点を必要とする仮名をサポートしない。その字は実際ではあまり
 		 * 使われない。
 		 */
-		if (!strncmp(conv + 3, "\xe3\x82\x99", 3))
+		if (!strncmp(conv + 3, COMBINING_DAKUTEN, 3))
 			continue;
 
 		GROW_ARRAY_BY(*out, 1);
