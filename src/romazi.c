@@ -1,12 +1,11 @@
-#include "romazi.h"
-#include "streams.h"
-#include "util.h"
-
-#include <arpa/inet.h>
-#include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "romazi.h"
+#include "streams.h"
+#include "util.h"
 
 struct romazi_entry {
 	const char *orig;
@@ -294,8 +293,8 @@ static KeyIndex char_to_key_index(char ch)
 {
 	KeyIndex key_index;
 
-	assert(ch < sizeof(char_to_key_index_map));
-	assert(ch > 0);
+	if (ch >= sizeof(char_to_key_index_map) || ch <= 0)
+		BUG("%d", (int) ch);
 
 	if (char_to_key_index_map[0])
 		return char_to_key_index_map[(int) ch];
