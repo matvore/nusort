@@ -75,13 +75,24 @@ static void *start_output_processor(void *unused)
 
 void config_tests(int flags_) { flags = flags_; }
 
-void start_test(const char *source_file, const char *name)
+void set_test_source_file(char const *fn) {
+	if (!fn || !strlen(fn))
+		BUG("test_source_file が無効です");
+	if (test_source_file)
+		BUG("test_source_file が期に設定されています。");
+	test_source_file = fn;
+}
+
+void start_test(const char *name)
 {
 	int test_output_pipe[2];
 	if (actual_fn != NULL)
 		BUG("既にテストが実行中です。");
-	xasprintf(&actual_fn, "%s.%s.testout", source_file, name);
-	xfprintf(stderr, "テスト：(%s) %s\n", source_file, name);
+	if (!test_source_file)
+		BUG("test_source_file が設定されていない。start_testを呼ぶ前に"
+		    "設定してください。");
+	xasprintf(&actual_fn, "%s.%s.testout", test_source_file, name);
+	xfprintf(stderr, "テスト：(%s) %s\n", test_source_file, name);
 
 	if (pipe(test_output_pipe))
 		DIE(1, "pipe");
@@ -93,7 +104,6 @@ void start_test(const char *source_file, const char *name)
 			   NULL))
 		DIE(1, "pthread_create");
 
-	test_source_file = source_file;
 	test_name = name;
 }
 
@@ -107,7 +117,6 @@ static void end_test_common(void)
 	errno = pthread_join(test_output_processor, NULL);
 	if (errno)
 		DIE(1, "pthread_join");
-	test_source_file = NULL;
 	test_name = NULL;
 }
 

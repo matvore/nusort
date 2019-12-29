@@ -117,11 +117,14 @@ static struct {
 int main(void)
 {
 	size_t test_i;
+
+	set_test_source_file(__FILE__);
+
 	for (test_i = 0; test_i < sizeof(test_cases) / sizeof(*test_cases);
 	     test_i++) {
 		int arg_count, exit_code;
 
-		start_test(__FILE__, test_cases[test_i].name);
+		start_test(test_cases[test_i].name);
 
 		for (arg_count = 0; test_cases[test_i].args[arg_count];
 		     arg_count++) {}

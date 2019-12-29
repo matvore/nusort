@@ -6,7 +6,9 @@
 
 int main(void)
 {
-	start_test(__FILE__, "check_kanji_db_order_test_quiet");
+	set_test_source_file(__FILE__);
+
+	start_test("check_kanji_db_order_test_quiet");
 	{
 		const char *argv[] = {"-q"};
 		int exit = check_kanji_db_order(argv, 1);

@@ -20,6 +20,8 @@ int main(void)
 {
 	int test_i;
 
+	set_test_source_file(__FILE__);
+
 	for (test_i = 0; test_i < sizeof(test_cases) / sizeof(*test_cases);
 	     test_i++) {
 		char input_file[] = "/tmp/input_test_in_XXXXXX";
@@ -28,7 +30,7 @@ int main(void)
 		store_in_tmp_file(test_cases[test_i].in, input_file);
 		in = xfopen(input_file, "r");
 
-		start_test(__FILE__, test_cases[test_i].name);
+		start_test(test_cases[test_i].name);
 		exit_code = h2k(0, 0);
 		if (exit_code)
 			xfprintf(out, "non-zero exit: %d\n", exit_code);

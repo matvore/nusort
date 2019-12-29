@@ -15,9 +15,11 @@ int main(void)
 	};
 
 	init_romazi(&romazi_config);
+
+	set_test_source_file(__FILE__);
 	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
 
-	start_test(__FILE__, "default_view");
+	start_test("default_view");
 	{
 		struct mapping m = {0};
 		m.include_kanji = 1;
@@ -29,7 +31,7 @@ int main(void)
 	}
 	end_test_expected_content_in_file();
 
-	start_test(__FILE__, "first_key_typed");
+	start_test("first_key_typed");
 	{
 		struct mapping m = {0};
 		m.include_kanji = 1;

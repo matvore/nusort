@@ -5,13 +5,15 @@
 
 int main(void)
 {
-	start_test(__FILE__, "free_kanji_keys_output");
+	set_test_source_file(__FILE__);
+
+	start_test("free_kanji_keys_output");
 	{
 		free_kanji_keys(NULL, 0);
 	}
 	end_test_expected_content_in_file();
 
-	start_test(__FILE__, "hiragana_to_katakana");
+	start_test("hiragana_to_katakana");
 	{
 		struct {
 			Conv input;
@@ -40,14 +42,14 @@ int main(void)
 	}
 	end_test("");
 
-	start_test(__FILE__, "free_kanji_keys_no_kanji_numerals");
+	start_test("free_kanji_keys_no_kanji_numerals");
 	{
 		char const *args[] = {"--no-kanji-nums"};
 		free_kanji_keys(args, 1);
 	}
 	end_test_expected_content_in_file();
 
-	start_test(__FILE__, "free_kanji_keys_missing_wo_key_arg");
+	start_test("free_kanji_keys_missing_wo_key_arg");
 	{
 		char const *args[] = {"--hiragana-wo-key", "?"};
 		/* 引数の数 (argc) が足りないため、「?」を解析しないべき。*/
@@ -56,7 +58,7 @@ int main(void)
 	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
 		 "exit code: 200\n");
 
-	start_test(__FILE__, "free_kanji_keys_wo_key_arg_too_short");
+	start_test("free_kanji_keys_wo_key_arg_too_short");
 	{
 		char const *args[] = {"--hiragana-wo-key", ""};
 		xfprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));
@@ -64,7 +66,7 @@ int main(void)
 	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
 		 "exit code: 200\n");
 
-	start_test(__FILE__, "free_kanji_keys_wo_key_arg_too_long");
+	start_test("free_kanji_keys_wo_key_arg_too_long");
 	{
 		char const *args[] = {"--hiragana-wo-key", "xy"};
 		xfprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));

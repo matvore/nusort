@@ -12,7 +12,9 @@ static void add(int rank)
 
 int main(void)
 {
-	start_test(__FILE__, "trivial");
+	set_test_source_file(__FILE__);
+
+	start_test("trivial");
 	{
 		size_t i;
 
@@ -22,7 +24,7 @@ int main(void)
 	}
 	end_test("32767 32767 32767 32767 32767 32767 32767 32767 32767 0 ");
 
-	start_test(__FILE__, "half_fits");
+	start_test("half_fits");
 	{
 		size_t i;
 		rank_coverage_reset(2, 2);
@@ -31,7 +33,7 @@ int main(void)
 	}
 	end_test("32767 0 0 0 ");
 
-	start_test(__FILE__, "too_much_capacity");
+	start_test("too_much_capacity");
 	{
 		rank_coverage_reset(5, 3);
 		add(1);
@@ -41,7 +43,7 @@ int main(void)
 	}
 	end_test("32767 32767 1 1 ");
 
-	start_test(__FILE__, "too_much_capacity_reversed");
+	start_test("too_much_capacity_reversed");
 	{
 		rank_coverage_reset(5, 3);
 		add(12);
@@ -51,7 +53,7 @@ int main(void)
 	}
 	end_test("32767 32767 2 1 ");
 
-	start_test(__FILE__, "insufficient_capacity");
+	start_test("insufficient_capacity");
 	{
 		rank_coverage_reset(10, 3);
 		add(2);
@@ -61,7 +63,7 @@ int main(void)
 	}
 	end_test("32767 32767 0 -1 ");
 
-	start_test(__FILE__, "sufficient_capacity");
+	start_test("sufficient_capacity");
 	{
 		rank_coverage_reset(9, 3);
 		add(10);
@@ -71,7 +73,7 @@ int main(void)
 	}
 	end_test("32767 32767 1 0 ");
 
-	start_test(__FILE__, "first_key");
+	start_test("first_key");
 	{
 		rank_coverage_reset(1261, 40);
 		add(1547);	add(2651);	add(3868);	add(839);

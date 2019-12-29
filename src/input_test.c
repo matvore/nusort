@@ -51,6 +51,8 @@ int main(void)
 	};
 
 	init_romazi(&romazi_config);
+
+	set_test_source_file(__FILE__);
 	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
 
 	for (test_i = 0; test_i < sizeof(test_cases) / sizeof(*test_cases);
@@ -60,7 +62,7 @@ int main(void)
 
 		mapping.include_kanji = 1;
 
-		start_test(__FILE__, test_cases[test_i].name);
+		start_test(test_cases[test_i].name);
 
 		store_in_tmp_file(test_cases[test_i].in, input_file);
 

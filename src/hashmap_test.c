@@ -18,7 +18,9 @@ struct string_hashmap {
 
 int main(void)
 {
-	start_test(__FILE__, "finds_unused_bucket");
+	set_test_source_file(__FILE__);
+
+	start_test("finds_unused_bucket");
 	{
 		struct int_hashmap h = {0};
 		int key;
@@ -34,7 +36,7 @@ int main(void)
 	}
 	end_test("0 0 ");
 
-	start_test(__FILE__, "filling_up_all_buckets");
+	start_test("filling_up_all_buckets");
 	{
 		struct int_hashmap h = {0};
 		int key;
@@ -72,7 +74,7 @@ int main(void)
 	}
 	end_test("0 0 0 0 0 ");
 
-	start_test(__FILE__, "nonconsecutive_buckets");
+	start_test("nonconsecutive_buckets");
 	{
 		struct int_hashmap h = {0};
 		int key;
@@ -98,7 +100,7 @@ int main(void)
 	end_test("<0 0><0 0><30 900><0 0><0 0><0 0><10 100><0 0><0 0>"
 		 "<0 0><0 0><0 0><0 0><0 0><0 0><0 0>");
 
-	start_test(__FILE__, "zero_out_bytes_in_free");
+	start_test("zero_out_bytes_in_free");
 	{
 		struct int_hashmap h = {0};
 		int key;
@@ -116,7 +118,7 @@ int main(void)
 	}
 	end_test("1 1 0");
 
-	start_test(__FILE__, "finds_existing_key");
+	start_test("finds_existing_key");
 	{
 		struct int_hashmap h = {0};
 		int key;
@@ -144,7 +146,7 @@ int main(void)
 	}
 	end_test("<33 42><-101 99>");
 
-	start_test(__FILE__, "string_hashmap");
+	start_test("string_hashmap");
 	{
 		struct string_hashmap h = {0};
 		char key[8];
