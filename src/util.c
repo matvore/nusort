@@ -85,7 +85,7 @@ void xfwrite(void const *buf, size_t size, FILE *stream)
 
 void xfclose_impl(FILE *stream)
 {
-	if (!fclose(stream))
+	if (!stream || !fclose(stream))
 		return;
 	perror("警告: fclose が失敗しました");
 }

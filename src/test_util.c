@@ -21,19 +21,20 @@ static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 {
 	FILE *act = xfopen(actual_fn, "r");
 	FILE *exp = fopen(expected_fn, "r");
+	int failed = 0;
 	int exp_opened = !!exp;
 
 	if (!exp_opened) {
 		report_fopen_failure(expected_fn);
-		goto failure;
+		failed = 1;
 	}
 
-	while (1) {
+	while (!failed) {
 		int expc = xfgetc(exp);
 		int actc = xfgetc(act);
 
 		if (expc != actc)
-			goto failure;
+			failed = 1;
 
 		if (expc == EOF)
 			break;
@@ -42,20 +43,19 @@ static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 	XFCLOSE(exp);
 	XFCLOSE(act);
 
-	return;
+	if (!failed)
+		return;
 
-failure:
 	if (exp_opened)
-		xfprintf(stderr, "出力が違います。"
+		xfprintf(stdout, "出力が違います。"
 				 "詳細はこれを実行してください：\n"
 				 "	diff %s %s\n",
 			 expected_fn, actual_fn);
 	if (can_fix_with_cp)
-		xfprintf(stderr, "出力ファイルを更新するには、"
+		xfprintf(stdout, "出力ファイルを更新するには、"
 				 "これを実行してください：\n"
 				 "	cp %s %s\n",
 			 actual_fn, expected_fn);
-	exit(99);
 }
 
 static void *start_output_processor(void *unused)
@@ -120,7 +120,7 @@ static void end_test_common(void)
 {
 	if (flags & CONFIG_TESTS_STDIN_FROM_FILE) {
 		if (xfgetc(in) != -1)
-			DIE(0, "入力が最後まで読み込まれていない");
+			xfputs("入力が最後まで読み込まれていない", stdout);
 		XFCLOSE(in);
 	}
 

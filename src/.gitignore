@@ -2,3 +2,4 @@ nusort
 *.o
 *.testout
 *_test_bin
+test_errors/*

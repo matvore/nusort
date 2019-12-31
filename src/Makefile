@@ -60,7 +60,9 @@ nusort: $(SHARED_OBJS) main.o
 
 %_test: %_test.o $(SHARED_OBJS) test_util.o
 	$(CC) $(CFLAGS) -o $@_bin $^
-	./$@_bin
+	@mkdir -p test_errors
+	./$@_bin >test_errors/$@
+	diff /dev/null test_errors/$@
 
 test: \
 	bsearch_test \
@@ -78,4 +80,5 @@ test: \
 
 clean:
 	rm -f *_test_bin *.testout *.o
+	rm -rf test_errors
 	rm -f nusort
