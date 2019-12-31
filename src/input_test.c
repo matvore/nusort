@@ -70,8 +70,7 @@ int main(void)
 		in = xfopen(input_file, "r");
 		set_mapping(&mapping, test_cases[test_i].mapping_type);
 		input_impl(&mapping);
-		xfclose(in);
-		in = stdin;
+		XFCLOSE(in);
 
 		end_test_expected_content_in_file();
 

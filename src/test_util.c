@@ -39,8 +39,8 @@ static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 			break;
 	}
 
-	xfclose(exp);
-	xfclose(act);
+	XFCLOSE(exp);
+	XFCLOSE(act);
 
 	return;
 

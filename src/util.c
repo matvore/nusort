@@ -83,7 +83,7 @@ void xfwrite(void const *buf, size_t size, FILE *stream)
 		DIE(1, "fwrite");
 }
 
-void xfclose(FILE *stream)
+void xfclose_impl(FILE *stream)
 {
 	if (!fclose(stream))
 		return;

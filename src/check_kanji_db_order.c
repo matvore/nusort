@@ -325,7 +325,7 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	strncpy(last_si()->c, "⺍", sizeof(last_si()->c));
 	add_key(0x1e, 0x00);
 
-	xfclose(db_stream);
+	XFCLOSE(db_stream);
 
 	QSORT(, sort_infos.el, sort_infos.cnt,
 	      strcmp(sort_infos.el[a].c, sort_infos.el[b].c) < 0);

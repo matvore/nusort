@@ -14,7 +14,6 @@ FILE *xfdopen(int fd, char const *mode);
 int xfgetc(FILE *stream);
 char *xfgets(char *s, int size, FILE *stream);
 void xfputs(char const *s, FILE *stream);
-void xfclose(FILE *stream);
 void xfwrite(void const *, size_t, FILE *);
 
 __attribute__((format (printf, 2, 3)))
@@ -32,8 +31,9 @@ void _Noreturn die(
 
 #define DIE(show_err, ...) die(show_err, __FILE__, __LINE__, __VA_ARGS__);
 
+void xfclose_impl(FILE *);
 #define XFCLOSE(s) do { \
-	xfclose(s); \
+	xfclose_impl(s); \
 	(s) = NULL; \
 } while (0)
 
