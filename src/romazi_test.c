@@ -4,6 +4,17 @@
 #include "test_util.h"
 #include "util.h"
 
+static void show_code_for_orig(
+	struct key_mapping_array const *mapping, char const *orig)
+{
+	int i;
+	for (i = 0; i < mapping->cnt; i++) {
+		struct key_mapping *m = mapping->el + i;
+		if (!strcmp(orig, m->orig))
+			xfprintf(out, "%s->%s\n", m->orig, m->conv);
+	}
+}
+
 int main(void)
 {
 	set_test_source_file(__FILE__);
@@ -114,6 +125,50 @@ int main(void)
 			 init_romazi_and_return_status(&config));
 	}
 	end_test("ダブっている入力コードがあります。\nstatus: 0");
+
+	start_test("include_hya_hyu_hyo");
+	{
+		struct romazi_config config = {0};
+		struct key_mapping_array mapping = {0};
+
+		init_romazi(&config);
+		get_romazi_codes(&mapping);
+
+		show_code_for_orig(&mapping, "hya");
+		show_code_for_orig(&mapping, "HYA");
+		show_code_for_orig(&mapping, "hyu");
+		show_code_for_orig(&mapping, "HYU");
+		show_code_for_orig(&mapping, "HYO");
+		show_code_for_orig(&mapping, "HYI");
+		show_code_for_orig(&mapping, "HYE");
+
+		DESTROY_ARRAY(mapping);
+	}
+	end_test("hya->ひゃ\nHYA->ヒャ\nhyu->ひゅ\nHYU->ヒュ\nHYO->ヒョ\n"
+		 "HYI->ヒィ\nHYE->ヒェ\n");
+
+	start_test("include_hya_hyu_hyo");
+	{
+		struct romazi_config config = {0};
+		struct key_mapping_array mapping = {0};
+
+		init_romazi(&config);
+		get_romazi_codes(&mapping);
+
+		show_code_for_orig(&mapping, "dya");
+		show_code_for_orig(&mapping, "DYA");
+		show_code_for_orig(&mapping, "dyu");
+		show_code_for_orig(&mapping, "DYU");
+		show_code_for_orig(&mapping, "dyo");
+		show_code_for_orig(&mapping, "DYO");
+		show_code_for_orig(&mapping, "DYI");
+		show_code_for_orig(&mapping, "dyi");
+		show_code_for_orig(&mapping, "DYE");
+
+		DESTROY_ARRAY(mapping);
+	}
+	end_test("dya->ぢゃ\nDYA->ヂャ\ndyu->ぢゅ\nDYU->ヂュ\ndyo->ぢょ\n"
+		 "DYO->ヂョ\nDYI->ヂィ\ndyi->ぢぃ\nDYE->ヂェ\n");
 
 	return 0;
 }

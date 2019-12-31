@@ -335,11 +335,6 @@ int init_romazi_and_return_status(struct romazi_config const *config)
 	append_mapping("BWU", "ヴ");
 	append_mapping("BWE", "ヴェ");
 	append_mapping("BWO", "ヴォ");
-	append_mapping("DYA", "ヂャ");
-	append_mapping("DYI", "ヂィ");
-	append_mapping("DYU", "ヂュ");
-	append_mapping("DYE", "ヂェ");
-	append_mapping("DYO", "ヂョ");
 	append_mapping("TSA", "ツァ");
 	append_mapping("TSI", "ツィ");
 	append_mapping("TSE", "ツェ");
@@ -371,11 +366,6 @@ int init_romazi_and_return_status(struct romazi_config const *config)
 	append_mapping("HWI", "フィ");
 	append_mapping("HWE", "フェ");
 	append_mapping("HWO", "フォ");
-	append_mapping("HYA", "ヒャ");
-	append_mapping("HYI", "ヒィ");
-	append_mapping("HYU", "ヒュ");
-	append_mapping("HYE", "ヒェ");
-	append_mapping("HYO", "ヒョ");
 	append_mapping("XA",  "ァ");
 	append_mapping("XI",  "ィ");
 	append_mapping("XU",  "ゥ");
@@ -500,7 +490,9 @@ int init_romazi_and_return_status(struct romazi_config const *config)
 	append_secondary_i_retsu_mappings('s', "し");
 	append_secondary_i_retsu_mappings('z', "じ");
 	append_secondary_i_retsu_mappings('t', "ち");
+	append_secondary_i_retsu_mappings('d', "ぢ");
 	append_secondary_i_retsu_mappings('n', "に");
+	append_secondary_i_retsu_mappings('h', "ひ");
 	append_secondary_i_retsu_mappings('b', "び");
 	append_secondary_i_retsu_mappings('p', "ぴ");
 	append_secondary_i_retsu_mappings('m', "み");
