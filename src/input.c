@@ -1,11 +1,11 @@
+#include <errno.h>
+#include <termios.h>
+#include <unistd.h>
+
 #include "commands.h"
 #include "input_impl.h"
 #include "mapping.h"
 #include "util.h"
-
-#include <errno.h>
-#include <termios.h>
-#include <unistd.h>
 
 static void check_term_op(int res)
 {
@@ -28,9 +28,13 @@ int input(char const *const *argv, int argc)
 {
 	struct mapping mapping = {0};
 	struct termios orig_termios;
+	struct romazi_config romazi_config = {0};
 	int res;
 
+	init_romazi(&romazi_config);
+
 	mapping.ergonomic_sort = 1;
+	mapping.include_kanji = 1;
 	mapping_populate(&mapping);
 
 	check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));
