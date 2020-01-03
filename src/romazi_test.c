@@ -17,6 +17,19 @@ static void show_code_for_orig(
 	}
 }
 
+static void print_code_length(
+	struct key_mapping_array const *mapping, const char *conv)
+{
+	int i;
+	for (i = 0; i < mapping->cnt; i++) {
+		if (strcmp(mapping->el[i].conv, conv))
+			continue;
+
+		xfprintf(out, "「%s」入力コードの長さ: %zu\n",
+			 conv, strlen(mapping->el[i].orig));
+	}
+}
+
 int main(void)
 {
 	set_test_source_file(__FILE__);
@@ -146,6 +159,64 @@ int main(void)
 	}
 	end_test("dya->ぢゃ\nDYA->ヂャ\ndyu->ぢゅ\nDYU->ヂュ\ndyo->ぢょ\n"
 		 "DYO->ヂョ\nDYI->ヂィ\ndyi->ぢぃ\nDYE->ヂェ\n");
+
+	start_test("optimize_keystrokes");
+	{
+		struct romazi_config config = { .optimize_keystrokes = 1 };
+		struct key_mapping_array mapping = {0};
+
+		init_romazi(&config);
+		get_romazi_codes(&mapping);
+
+		print_code_length(&mapping, "た");
+		print_code_length(&mapping, "し");
+		print_code_length(&mapping, "は");
+		print_code_length(&mapping, "な");
+		print_code_length(&mapping, "に");
+		print_code_length(&mapping, "の");
+		print_code_length(&mapping, "い");
+		print_code_length(&mapping, "れ");
+		print_code_length(&mapping, "る");
+		print_code_length(&mapping, "と");
+		print_code_length(&mapping, "タ");
+		print_code_length(&mapping, "シ");
+		print_code_length(&mapping, "ハ");
+		print_code_length(&mapping, "ナ");
+		print_code_length(&mapping, "ニ");
+		print_code_length(&mapping, "ノ");
+		print_code_length(&mapping, "イ");
+		print_code_length(&mapping, "レ");
+		print_code_length(&mapping, "ル");
+		print_code_length(&mapping, "ト");
+
+		print_code_length(&mapping, "あ");
+		print_code_length(&mapping, "う");
+		print_code_length(&mapping, "え");
+		print_code_length(&mapping, "お");
+		print_code_length(&mapping, "ア");
+		print_code_length(&mapping, "ウ");
+		print_code_length(&mapping, "エ");
+		print_code_length(&mapping, "オ");
+
+		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&mapping));
+
+		DESTROY_ARRAY(mapping);
+	}
+	end_test_expected_content_in_file();
+
+	start_test("parse_optimize_keystroke_flag");
+	{
+		int argc = 1;
+		char const *argv[] = {"--romazi-optimize-keystrokes", "END"};
+		char const *const *argv_ptr = argv;
+
+		struct romazi_config config = {0};
+		if (!parse_romazi_flags(&argc, &argv_ptr, &config))
+			xfputs("解析に失敗\n", out);
+		xfprintf(out, "%s %d %d\n",
+			 argv_ptr[0], argc, config.optimize_keystrokes);
+	}
+	end_test("END 0 1\n");
 
 	return 0;
 }

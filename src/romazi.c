@@ -246,6 +246,12 @@ int parse_romazi_flags(
 		(*argc)--;
 		return 1;
 	}
+	if (!strcmp((*argv)[0], "--romazi-optimize-keystrokes")) {
+		config->optimize_keystrokes = 1;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
 	return 0;
 }
 
@@ -275,6 +281,16 @@ static void append_secondary_i_retsu_mappings(char orig0, char const *kana)
 	o[2] = 'o';
 	memcpy(c + 3, "ょ", 3);
 	append_mapping_auto_katakana(o, c);
+}
+
+static void append_optimized(
+	struct romazi_config const *config,
+	char const *norm_orig, char const *opt_orig, char const *conv)
+{
+	if (config->optimize_keystrokes)
+		append_mapping_auto_katakana(opt_orig, conv);
+	else
+		append_mapping_auto_katakana(norm_orig, conv);
 }
 
 void init_romazi(struct romazi_config const *config)
@@ -389,92 +405,92 @@ void init_romazi(struct romazi_config const *config)
 
 	append_mapping(&codes, "-", "ー");
 
-	append_mapping_auto_katakana("j",   "っ");
-	append_mapping_auto_katakana("f",   "ん");
-	append_mapping_auto_katakana("a",   "あ");
-	append_mapping_auto_katakana("i",   "い");
-	append_mapping_auto_katakana("u",   "う");
-	append_mapping_auto_katakana("e",   "え");
-	append_mapping_auto_katakana("o",   "お");
-	append_mapping_auto_katakana("ka",  "か");
-	append_mapping_auto_katakana("ki",  "き");
-	append_mapping_auto_katakana("ku",  "く");
-	append_mapping_auto_katakana("ke",  "け");
-	append_mapping_auto_katakana("ko",  "こ");
-	append_mapping_auto_katakana(",a",  "ゕ");
-	append_mapping_auto_katakana(",e",  "ゖ");
-	append_mapping_auto_katakana("ga",  "が");
-	append_mapping_auto_katakana("gi",  "ぎ");
-	append_mapping_auto_katakana("gu",  "ぐ");
-	append_mapping_auto_katakana("ge",  "げ");
-	append_mapping_auto_katakana("go",  "ご");
-	append_mapping_auto_katakana("sa",  "さ");
-	append_mapping_auto_katakana("si",  "し");
-	append_mapping_auto_katakana("su",  "す");
-	append_mapping_auto_katakana("se",  "せ");
-	append_mapping_auto_katakana("so",  "そ");
-	append_mapping_auto_katakana("za",  "ざ");
-	append_mapping_auto_katakana("zi",  "じ");
-	append_mapping_auto_katakana("zu",  "ず");
-	append_mapping_auto_katakana("ze",  "ぜ");
-	append_mapping_auto_katakana("zo",  "ぞ");
-	append_mapping_auto_katakana("ta",  "た");
-	append_mapping_auto_katakana("ti",  "ち");
-	append_mapping_auto_katakana("tu",  "つ");
-	append_mapping_auto_katakana("te",  "て");
-	append_mapping_auto_katakana("to",  "と");
-	append_mapping_auto_katakana("da",  "だ");
-	append_mapping_auto_katakana("di",  "ぢ");
-	append_mapping_auto_katakana("du",  "づ");
-	append_mapping_auto_katakana("de",  "で");
-	append_mapping_auto_katakana("do",  "ど");
-	append_mapping_auto_katakana("na",  "な");
-	append_mapping_auto_katakana("ni",  "に");
-	append_mapping_auto_katakana("nu",  "ぬ");
-	append_mapping_auto_katakana("ne",  "ね");
-	append_mapping_auto_katakana("no",  "の");
-	append_mapping_auto_katakana("ha",  "は");
-	append_mapping_auto_katakana("hi",  "ひ");
-	append_mapping_auto_katakana("hu",  "ふ");
-	append_mapping_auto_katakana("he",  "へ");
-	append_mapping_auto_katakana("ho",  "ほ");
-	append_mapping_auto_katakana("ba",  "ば");
-	append_mapping_auto_katakana("bi",  "び");
-	append_mapping_auto_katakana("bu",  "ぶ");
-	append_mapping_auto_katakana("be",  "べ");
-	append_mapping_auto_katakana("bo",  "ぼ");
-	append_mapping_auto_katakana("pa",  "ぱ");
-	append_mapping_auto_katakana("pi",  "ぴ");
-	append_mapping_auto_katakana("pu",  "ぷ");
-	append_mapping_auto_katakana("pe",  "ぺ");
-	append_mapping_auto_katakana("po",  "ぽ");
-	append_mapping_auto_katakana("ma",  "ま");
-	append_mapping_auto_katakana("mi",  "み");
-	append_mapping_auto_katakana("mu",  "む");
-	append_mapping_auto_katakana("me",  "め");
-	append_mapping_auto_katakana("mo",  "も");
-	append_mapping_auto_katakana("ya",  "や");
-	append_mapping_auto_katakana("yu",  "ゆ");
-	append_mapping_auto_katakana("yo",  "よ");
-	append_mapping_auto_katakana("ra",  "ら");
-	append_mapping_auto_katakana("ri",  "り");
-	append_mapping_auto_katakana("ru",  "る");
-	append_mapping_auto_katakana("re",  "れ");
-	append_mapping_auto_katakana("ro",  "ろ");
-	append_mapping_auto_katakana("wa",  "わ");
-	append_mapping_auto_katakana("xxa", "ぁ");
-	append_mapping_auto_katakana("xxi", "ぃ");
-	append_mapping_auto_katakana("xxu", "ぅ");
-	append_mapping_auto_katakana("xxe", "ぇ");
-	append_mapping_auto_katakana("xxo", "ぉ");
-	append_mapping_auto_katakana("xx7", "ゃ");
-	append_mapping_auto_katakana("xx8", "ゅ");
-	append_mapping_auto_katakana("xx9", "ょ");
-	append_mapping_auto_katakana("xxd", "ゑ");
-	append_mapping_auto_katakana("xxk", "ゐ");
-	append_mapping_auto_katakana("xxl", "を");
-	append_mapping_auto_katakana("xxw", "ゎ");
-	append_mapping_auto_katakana("xxv", "ゔ");
+	append_optimized(config,     "a",  ";a", "あ");
+	append_mapping_auto_katakana("i",        "い");
+	append_optimized(config,     "u",  ";u", "う");
+	append_optimized(config,     "e",  ";e", "え");
+	append_optimized(config,     "o",  ";o", "お");
+	append_mapping_auto_katakana("ka",       "か");
+	append_mapping_auto_katakana("ki",       "き");
+	append_mapping_auto_katakana("ku",       "く");
+	append_mapping_auto_katakana("ke",       "け");
+	append_mapping_auto_katakana("ko",       "こ");
+	append_mapping_auto_katakana(",a",       "ゕ");
+	append_mapping_auto_katakana(",e",       "ゖ");
+	append_mapping_auto_katakana("ga",       "が");
+	append_mapping_auto_katakana("gi",       "ぎ");
+	append_mapping_auto_katakana("gu",       "ぐ");
+	append_mapping_auto_katakana("ge",       "げ");
+	append_mapping_auto_katakana("go",       "ご");
+	append_mapping_auto_katakana("sa",       "さ");
+	append_optimized(config,     "si", "f",  "し");
+	append_mapping_auto_katakana("su",       "す");
+	append_mapping_auto_katakana("se",       "せ");
+	append_mapping_auto_katakana("so",       "そ");
+	append_mapping_auto_katakana("za",       "ざ");
+	append_mapping_auto_katakana("zi",       "じ");
+	append_mapping_auto_katakana("zu",       "ず");
+	append_mapping_auto_katakana("ze",       "ぜ");
+	append_mapping_auto_katakana("zo",       "ぞ");
+	append_optimized(config,     "ta", "a",  "た");
+	append_mapping_auto_katakana("ti",       "ち");
+	append_mapping_auto_katakana("tu",       "つ");
+	append_optimized(config,     "j",  "t;", "っ");
+	append_optimized(config,     "te", "u",  "て");
+	append_optimized(config,     "to", "q",  "と");
+	append_mapping_auto_katakana("da",       "だ");
+	append_mapping_auto_katakana("di",       "ぢ");
+	append_mapping_auto_katakana("du",       "づ");
+	append_mapping_auto_katakana("de",       "で");
+	append_mapping_auto_katakana("do",       "ど");
+	append_optimized(config,     "na", "o",  "な");
+	append_optimized(config,     "ni", "e",  "に");
+	append_mapping_auto_katakana("nu",       "ぬ");
+	append_mapping_auto_katakana("ne",       "ね");
+	append_optimized(config,     "no", "j",  "の");
+	append_optimized(config,     "ha", "l",  "は");
+	append_mapping_auto_katakana("hi",       "ひ");
+	append_mapping_auto_katakana("hu",       "ふ");
+	append_mapping_auto_katakana("he",       "へ");
+	append_mapping_auto_katakana("ho",       "ほ");
+	append_mapping_auto_katakana("ba",       "ば");
+	append_mapping_auto_katakana("bi",       "び");
+	append_mapping_auto_katakana("bu",       "ぶ");
+	append_mapping_auto_katakana("be",       "べ");
+	append_mapping_auto_katakana("bo",       "ぼ");
+	append_mapping_auto_katakana("pa",       "ぱ");
+	append_mapping_auto_katakana("pi",       "ぴ");
+	append_mapping_auto_katakana("pu",       "ぷ");
+	append_mapping_auto_katakana("pe",       "ぺ");
+	append_mapping_auto_katakana("po",       "ぽ");
+	append_mapping_auto_katakana("ma",       "ま");
+	append_mapping_auto_katakana("mi",       "み");
+	append_mapping_auto_katakana("mu",       "む");
+	append_mapping_auto_katakana("me",       "め");
+	append_mapping_auto_katakana("mo",       "も");
+	append_mapping_auto_katakana("ya",       "や");
+	append_mapping_auto_katakana("yu",       "ゆ");
+	append_mapping_auto_katakana("yo",       "よ");
+	append_mapping_auto_katakana("ra",       "ら");
+	append_mapping_auto_katakana("ri",       "り");
+	append_optimized(config,     "ru", "v",  "る");
+	append_optimized(config,     "re", "c",  "れ");
+	append_mapping_auto_katakana("ro",       "ろ");
+	append_mapping_auto_katakana("wa",       "わ");
+	append_mapping_auto_katakana("xxl",      "を");
+	append_optimized(config,     "f",  ";n", "ん");
+	append_mapping_auto_katakana("xxa",      "ぁ");
+	append_mapping_auto_katakana("xxi",      "ぃ");
+	append_mapping_auto_katakana("xxu",      "ぅ");
+	append_mapping_auto_katakana("xxe",      "ぇ");
+	append_mapping_auto_katakana("xxo",      "ぉ");
+	append_mapping_auto_katakana("xx7",      "ゃ");
+	append_mapping_auto_katakana("xx8",      "ゅ");
+	append_mapping_auto_katakana("xx9",      "ょ");
+	append_mapping_auto_katakana("xxd",      "ゑ");
+	append_mapping_auto_katakana("xxk",      "ゐ");
+	append_mapping_auto_katakana("xxw",      "ゎ");
+	append_mapping_auto_katakana("xxv",      "ゔ");
 
 	append_secondary_i_retsu_mappings('k', "き");
 	append_secondary_i_retsu_mappings('g', "ぎ");

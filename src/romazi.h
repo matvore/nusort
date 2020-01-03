@@ -43,6 +43,12 @@ struct romazi_config {
 	unsigned include_kanji_numerals : 1;
 	/* wo=を と WO=ヲ のコードを生成する。*/
 	unsigned classic_wo : 1;
+	/*
+	 * 頻繁に使う仮名を一打鍵で入力できるようにして、あ行の「い」以外と
+	 * 「っ」と「ん」を二打鍵コードに変え、ローマ字に普段使わないキー
+	 * （例えば「Q」と「V」）を一打鍵のローマ字に使います。
+	 */
+	unsigned optimize_keystrokes : 1;
 };
 
 void init_romazi_config_for_cli_flags(struct romazi_config *config);
