@@ -54,5 +54,14 @@ int main(void)
 		xfprintf(err, "exit code: %d\n", make_map(argv, 1));
 	}
 	end_test_expected_content_in_file();
+
+	start_test("conflict_in_romazi_map");
+	{
+		char const *argv[] = {"--hiragana-wo-key", "w",
+				      "--no-classic-wo"};
+		xfprintf(err, "exit code: %d\n", make_map(argv, 3));
+	}
+	end_test("コード衝突: w->を と wa->わ\n"
+		 "exit code: 11\n");
 	return 0;
 }

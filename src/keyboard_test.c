@@ -25,7 +25,8 @@ int main(void)
 		struct mapping m = {0};
 		m.include_kanji = 1;
 		m.ergonomic_sort = 1;
-		mapping_populate(&m);
+		if (!mapping_populate(&m))
+			DIE(0, "mapping_populate");
 		keyboard_update(&m, "");
 		keyboard_write(out);
 		mapping_destroy(&m);
@@ -37,7 +38,8 @@ int main(void)
 		struct mapping m = {0};
 		m.include_kanji = 1;
 		m.ergonomic_sort = 1;
-		mapping_populate(&m);
+		if (!mapping_populate(&m))
+			DIE(0, "mapping_populate");
 		keyboard_update(&m, "/");
 		keyboard_write(out);
 		mapping_destroy(&m);

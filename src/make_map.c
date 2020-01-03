@@ -32,7 +32,8 @@ int make_map(char const *const *argv, int argc) {
 	}
 
 	init_romazi(&romazi_config);
-	mapping_populate(&mapping);
+	if (!mapping_populate(&mapping))
+		return 11;
 
 	for (i = 0; i < mapping.codes.cnt; i++)
 		xfprintf(out, "%s\t%s\n",

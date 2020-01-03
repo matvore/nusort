@@ -35,7 +35,8 @@ int input(char const *const *argv, int argc)
 
 	mapping.ergonomic_sort = 1;
 	mapping.include_kanji = 1;
-	mapping_populate(&mapping);
+	if (!mapping_populate(&mapping))
+		return 250;
 
 	check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));
 	customize_term_attributes(orig_termios);

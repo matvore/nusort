@@ -1,7 +1,10 @@
+#include <string.h>
+
 #include "mapping.h"
 
 #include "kanji_distribution.h"
 #include "romazi.h"
+#include "streams.h"
 #include "util.h"
 
 static int is_alt_hands(char const *a)
@@ -142,26 +145,13 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 	DESTROY_ARRAY(free_kanji_codes);
 }
 
-int code_cmp(char const *a, char const *b)
-{
-	size_t a_len = strlen(a);
-	size_t b_len = strlen(b);
-
-	if (a_len != b_len)
-		return a_len < b_len ? -1 : 1;
-
-	return strcmp(a, b);
-}
-
-void mapping_populate(struct mapping *mapping)
+int mapping_populate(struct mapping *mapping)
 {
 	get_romazi_codes(&mapping->codes);
 	if (mapping->include_kanji)
 		get_kanji_codes(&mapping->codes, mapping->ergonomic_sort);
 
-	QSORT(, mapping->codes.el, mapping->codes.cnt,
-	      code_cmp(mapping->codes.el[a].orig,
-		       mapping->codes.el[b].orig) < 0);
+	return sort_and_validate_no_conflicts(&mapping->codes);
 }
 
 void mapping_destroy(struct mapping *mapping)

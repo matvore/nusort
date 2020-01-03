@@ -10,8 +10,10 @@ static void show_code_for_orig(
 	int i;
 	for (i = 0; i < mapping->cnt; i++) {
 		struct key_mapping *m = mapping->el + i;
-		if (!strcmp(orig, m->orig))
-			xfprintf(out, "%s->%s\n", m->orig, m->conv);
+		if (!strcmp(orig, m->orig)) {
+			print_mapping(m, out);
+			xfputc('\n', out);
+		}
 	}
 }
 
@@ -86,45 +88,20 @@ int main(void)
 	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
 		 "exit code: 200\n");
 
-	start_test("init_returns_1_on_success");
+	start_test("set_hiragana_wo_key");
 	{
 		struct romazi_config config = {
 			.hiragana_wo_key = '\'',
 		};
-		xfprintf(err, "status: %d",
-			 init_romazi_and_return_status(&config));
-	}
-	end_test("status: 1");
+		struct key_mapping_array mapping = {0};
 
-	start_test("do_not_allow_overlap_with_one_wo_key");
-	{
-		struct romazi_config config = {
-			.hiragana_wo_key = 'k',
-		};
-		xfprintf(err, "status: %d",
-			 init_romazi_and_return_status(&config));
-	}
-	end_test("ダブっている入力コードがあります。\nstatus: 0");
+		init_romazi(&config);
+		get_romazi_codes(&mapping);
+		show_code_for_orig(&mapping, "'");
 
-	start_test("do_not_allow_overlap_with_one_wo_key_2");
-	{
-		struct romazi_config config = {
-			.hiragana_wo_key = 'x',
-		};
-		xfprintf(err, "status: %d",
-			 init_romazi_and_return_status(&config));
+		DESTROY_ARRAY(mapping);
 	}
-	end_test("ダブっている入力コードがあります。\nstatus: 0");
-
-	start_test("do_not_allow_overlap_with_one_wo_key_3");
-	{
-		struct romazi_config config = {
-			.hiragana_wo_key = 'p',
-		};
-		xfprintf(err, "status: %d",
-			 init_romazi_and_return_status(&config));
-	}
-	end_test("ダブっている入力コードがあります。\nstatus: 0");
+	end_test("'->を\n");
 
 	start_test("include_hya_hyu_hyo");
 	{

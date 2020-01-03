@@ -183,19 +183,12 @@ void get_free_kanji_codes(struct short_code_array *codes)
 	}
 }
 
-static void append_mapping(char const *orig, char const *conv)
-{
-	GROW_ARRAY_BY(codes, 1);
-	strncpy(codes.el[codes.cnt - 1].orig, orig, sizeof(codes.el[0].orig));
-	strncpy(codes.el[codes.cnt - 1].conv, conv, sizeof(codes.el[0].conv));
-}
-
 static void append_mapping_auto_katakana(char const *orig, char const *conv)
 {
 	char *r;
 
-	append_mapping(orig, conv);
-	append_mapping(orig, conv);
+	append_mapping(&codes, orig, conv);
+	append_mapping(&codes, orig, conv);
 
 	for (r = codes.el[codes.cnt - 1].orig; *r; r++) {
 		if (*r >= 'a' && *r <= 'z')
@@ -284,119 +277,117 @@ static void append_secondary_i_retsu_mappings(char orig0, char const *kana)
 	append_mapping_auto_katakana(o, c);
 }
 
-int init_romazi_and_return_status(struct romazi_config const *config)
+void init_romazi(struct romazi_config const *config)
 {
-	int32_t i;
-
 	DESTROY_ARRAY(codes);
 	DESTROY_ARRAY(target_strs);
 
 #ifdef ROMAZI_F_KEY_KATAKANA
-	append_mapping("FA",	"ファ");
-	append_mapping("FI",	"フィ");
-	append_mapping("FE",	"フェ");
-	append_mapping("FO",	"フォ");
-	append_mapping("FYA",	"フャ");
-	append_mapping("FYU",	"フュ");
-	append_mapping("FYO",	"フョ");
+	append_mapping(&codes, "FA",	"ファ");
+	append_mapping(&codes, "FI",	"フィ");
+	append_mapping(&codes, "FE",	"フェ");
+	append_mapping(&codes, "FO",	"フォ");
+	append_mapping(&codes, "FYA",	"フャ");
+	append_mapping(&codes, "FYU",	"フュ");
+	append_mapping(&codes, "FYO",	"フョ");
 #endif
 
 #ifdef ROMAZI_J_KEY_KATAKANA
-	append_mapping("JA",	"ジャ");
-	append_mapping("JI",	"ジ");
-	append_mapping("JU",	"ジュ");
-	append_mapping("JE",	"ジェ");
-	append_mapping("JO",	"ジョ");
-	append_mapping("JYA",	"ジャ");
-	append_mapping("JYI",	"ジィ");
-	append_mapping("JYU",	"ジュ");
-	append_mapping("JYE",	"ジェ");
-	append_mapping("JYO",	"ジョ");
+	append_mapping(&codes, "JA",	"ジャ");
+	append_mapping(&codes, "JI",	"ジ");
+	append_mapping(&codes, "JU",	"ジュ");
+	append_mapping(&codes, "JE",	"ジェ");
+	append_mapping(&codes, "JO",	"ジョ");
+	append_mapping(&codes, "JYA",	"ジャ");
+	append_mapping(&codes, "JYI",	"ジィ");
+	append_mapping(&codes, "JYU",	"ジュ");
+	append_mapping(&codes, "JYE",	"ジェ");
+	append_mapping(&codes, "JYO",	"ジョ");
 #endif
 
 #ifdef ROMAZI_V_KEY_KATAKANA
-	append_mapping("VA",	"ヴァ");
-	append_mapping("VI",	"ヴィ");
-	append_mapping("VU",	"ヴ");
-	append_mapping("VE",	"ヴェ");
-	append_mapping("VO",	"ヴォ");
-	append_mapping("VYA",	"ヴャ");
-	append_mapping("VYI",	"ヴィ");
-	append_mapping("VYU",	"ヴュ");
-	append_mapping("VYE",	"ヴェ");
-	append_mapping("VYO",	"ヴョ");
+	append_mapping(&codes, "VA",	"ヴァ");
+	append_mapping(&codes, "VI",	"ヴィ");
+	append_mapping(&codes, "VU",	"ヴ");
+	append_mapping(&codes, "VE",	"ヴェ");
+	append_mapping(&codes, "VO",	"ヴォ");
+	append_mapping(&codes, "VYA",	"ヴャ");
+	append_mapping(&codes, "VYI",	"ヴィ");
+	append_mapping(&codes, "VYU",	"ヴュ");
+	append_mapping(&codes, "VYE",	"ヴェ");
+	append_mapping(&codes, "VYO",	"ヴョ");
 #endif
 
-	append_mapping("BW7", "ヴャ");
-	append_mapping("BW8", "ヴュ");
-	append_mapping("BW9", "ヴョ");
-	append_mapping("BWA", "ヴァ");
-	append_mapping("BWI", "ヴィ");
-	append_mapping("BWU", "ヴ");
-	append_mapping("BWE", "ヴェ");
-	append_mapping("BWO", "ヴォ");
-	append_mapping("TSA", "ツァ");
-	append_mapping("TSI", "ツィ");
-	append_mapping("TSE", "ツェ");
-	append_mapping("TSO", "ツォ");
-	append_mapping("THA", "テャ");
-	append_mapping("THI", "ティ");
-	append_mapping("THU", "テュ");
-	append_mapping("THE", "テェ");
-	append_mapping("THO", "テョ");
-	append_mapping("DHA", "デャ");
-	append_mapping("DHI", "ディ");
-	append_mapping("DHU", "デュ");
-	append_mapping("DHE", "デェ");
-	append_mapping("DHO", "デョ");
-	append_mapping("TWA", "トァ");
-	append_mapping("TWI", "トィ");
-	append_mapping("TWU", "トゥ");
-	append_mapping("TWE", "トェ");
-	append_mapping("TWO", "トォ");
-	append_mapping("DWA", "ドァ");
-	append_mapping("DWI", "ドィ");
-	append_mapping("DWU", "ドゥ");
-	append_mapping("DWE", "ドェ");
-	append_mapping("DWO", "ドォ");
-	append_mapping("HW7", "フャ");
-	append_mapping("HW8", "フュ");
-	append_mapping("HW9", "フョ");
-	append_mapping("HWA", "ファ");
-	append_mapping("HWI", "フィ");
-	append_mapping("HWE", "フェ");
-	append_mapping("HWO", "フォ");
-	append_mapping("XA",  "ァ");
-	append_mapping("XI",  "ィ");
-	append_mapping("XU",  "ゥ");
-	append_mapping("XE",  "ェ");
-	append_mapping("XO",  "ォ");
-	append_mapping("YE",  "イェ");
-	append_mapping("GHA", "ジャ");
-	append_mapping("GHI", "ジィ");
-	append_mapping("GHU", "ジュ");
-	append_mapping("GHE", "ジェ");
-	append_mapping("GHO", "ジョ");
-	append_mapping("GWA", "グァ");
-	append_mapping("GWI", "グィ");
-	append_mapping("GWU", "グゥ");
-	append_mapping("GWE", "グェ");
-	append_mapping("GWO", "グォ");
-	append_mapping("KWA", "クァ");
-	append_mapping("KWI", "クィ");
-	append_mapping("KWU", "クゥ");
-	append_mapping("KWE", "クェ");
-	append_mapping("KWO", "クォ");
-	append_mapping("TSU", "ツ");
-	append_mapping("WI",  "ウィ");
-	append_mapping("WE",  "ウェ");
-	append_mapping("WHA", "ウァ");
-	append_mapping("WHI", "ウィ");
-	append_mapping("WHU", "ウゥ");
-	append_mapping("WHE", "ウェ");
-	append_mapping("WHO", "ウォ");
+	append_mapping(&codes, "BW7", "ヴャ");
+	append_mapping(&codes, "BW8", "ヴュ");
+	append_mapping(&codes, "BW9", "ヴョ");
+	append_mapping(&codes, "BWA", "ヴァ");
+	append_mapping(&codes, "BWI", "ヴィ");
+	append_mapping(&codes, "BWU", "ヴ");
+	append_mapping(&codes, "BWE", "ヴェ");
+	append_mapping(&codes, "BWO", "ヴォ");
+	append_mapping(&codes, "TSA", "ツァ");
+	append_mapping(&codes, "TSI", "ツィ");
+	append_mapping(&codes, "TSE", "ツェ");
+	append_mapping(&codes, "TSO", "ツォ");
+	append_mapping(&codes, "THA", "テャ");
+	append_mapping(&codes, "THI", "ティ");
+	append_mapping(&codes, "THU", "テュ");
+	append_mapping(&codes, "THE", "テェ");
+	append_mapping(&codes, "THO", "テョ");
+	append_mapping(&codes, "DHA", "デャ");
+	append_mapping(&codes, "DHI", "ディ");
+	append_mapping(&codes, "DHU", "デュ");
+	append_mapping(&codes, "DHE", "デェ");
+	append_mapping(&codes, "DHO", "デョ");
+	append_mapping(&codes, "TWA", "トァ");
+	append_mapping(&codes, "TWI", "トィ");
+	append_mapping(&codes, "TWU", "トゥ");
+	append_mapping(&codes, "TWE", "トェ");
+	append_mapping(&codes, "TWO", "トォ");
+	append_mapping(&codes, "DWA", "ドァ");
+	append_mapping(&codes, "DWI", "ドィ");
+	append_mapping(&codes, "DWU", "ドゥ");
+	append_mapping(&codes, "DWE", "ドェ");
+	append_mapping(&codes, "DWO", "ドォ");
+	append_mapping(&codes, "HW7", "フャ");
+	append_mapping(&codes, "HW8", "フュ");
+	append_mapping(&codes, "HW9", "フョ");
+	append_mapping(&codes, "HWA", "ファ");
+	append_mapping(&codes, "HWI", "フィ");
+	append_mapping(&codes, "HWE", "フェ");
+	append_mapping(&codes, "HWO", "フォ");
+	append_mapping(&codes, "XA",  "ァ");
+	append_mapping(&codes, "XI",  "ィ");
+	append_mapping(&codes, "XU",  "ゥ");
+	append_mapping(&codes, "XE",  "ェ");
+	append_mapping(&codes, "XO",  "ォ");
+	append_mapping(&codes, "YE",  "イェ");
+	append_mapping(&codes, "GHA", "ジャ");
+	append_mapping(&codes, "GHI", "ジィ");
+	append_mapping(&codes, "GHU", "ジュ");
+	append_mapping(&codes, "GHE", "ジェ");
+	append_mapping(&codes, "GHO", "ジョ");
+	append_mapping(&codes, "GWA", "グァ");
+	append_mapping(&codes, "GWI", "グィ");
+	append_mapping(&codes, "GWU", "グゥ");
+	append_mapping(&codes, "GWE", "グェ");
+	append_mapping(&codes, "GWO", "グォ");
+	append_mapping(&codes, "KWA", "クァ");
+	append_mapping(&codes, "KWI", "クィ");
+	append_mapping(&codes, "KWU", "クゥ");
+	append_mapping(&codes, "KWE", "クェ");
+	append_mapping(&codes, "KWO", "クォ");
+	append_mapping(&codes, "TSU", "ツ");
+	append_mapping(&codes, "WI",  "ウィ");
+	append_mapping(&codes, "WE",  "ウェ");
+	append_mapping(&codes, "WHA", "ウァ");
+	append_mapping(&codes, "WHI", "ウィ");
+	append_mapping(&codes, "WHU", "ウゥ");
+	append_mapping(&codes, "WHE", "ウェ");
+	append_mapping(&codes, "WHO", "ウォ");
 
-	append_mapping("-", "ー");
+	append_mapping(&codes, "-", "ー");
 
 	append_mapping_auto_katakana("j",   "っ");
 	append_mapping_auto_katakana("f",   "ん");
@@ -499,52 +490,36 @@ int init_romazi_and_return_status(struct romazi_config const *config)
 	append_secondary_i_retsu_mappings('r', "り");
 
 	if (config->include_kanji_numerals) {
-		append_mapping("!", "一");
-		append_mapping("@", "二");
-		append_mapping("#", "三");
-		append_mapping("$", "四");
-		append_mapping("%", "五");
-		append_mapping("^", "六");
-		append_mapping("&", "七");
-		append_mapping("*", "八");
-		append_mapping("(", "九");
-		append_mapping(")", "十");
+		append_mapping(&codes, "!", "一");
+		append_mapping(&codes, "@", "二");
+		append_mapping(&codes, "#", "三");
+		append_mapping(&codes, "$", "四");
+		append_mapping(&codes, "%", "五");
+		append_mapping(&codes, "^", "六");
+		append_mapping(&codes, "&", "七");
+		append_mapping(&codes, "*", "八");
+		append_mapping(&codes, "(", "九");
+		append_mapping(&codes, ")", "十");
 	}
 
 	if (config->hiragana_wo_key) {
 		Orig o = {0};
 		o[0] = config->hiragana_wo_key;
-		append_mapping(o, "を");
+		append_mapping(&codes, o, "を");
 	}
 
 	if (config->classic_wo) {
 		append_mapping_auto_katakana("wo", "を");
 	}
 
-	append_mapping("xxj", "わ" COMBINING_DAKUTEN);
-	append_mapping("xxc", "ゑ" COMBINING_DAKUTEN);
-	append_mapping("xx,", "ゐ" COMBINING_DAKUTEN);
-	append_mapping("xx.", "を" COMBINING_DAKUTEN);
-	append_mapping("XXJ", "ヷ");
-	append_mapping("XXC", "ヹ");
-	append_mapping("XX,", "ヸ");
-	append_mapping("XX.", "ヺ");
-
-	for (i = 0; i < codes.cnt; i++) {
-		if (codes.el[i].orig[0] == config->hiragana_wo_key &&
-		    strcmp("を", codes.el[i].conv)) {
-			xfputs("ダブっている入力コードがあります。\n", err);
-			return 0;
-		}
-	}
-
-	return 1;
-}
-
-void init_romazi(struct romazi_config const *config)
-{
-	if (!init_romazi_and_return_status(config))
-		DIE(0, "ローマ字入力コードの生成に失敗しました。");
+	append_mapping(&codes, "xxj", "わ" COMBINING_DAKUTEN);
+	append_mapping(&codes, "xxc", "ゑ" COMBINING_DAKUTEN);
+	append_mapping(&codes, "xx,", "ゐ" COMBINING_DAKUTEN);
+	append_mapping(&codes, "xx.", "を" COMBINING_DAKUTEN);
+	append_mapping(&codes, "XXJ", "ヷ");
+	append_mapping(&codes, "XXC", "ヹ");
+	append_mapping(&codes, "XX,", "ヸ");
+	append_mapping(&codes, "XX.", "ヺ");
 }
 
 void get_romazi_codes(struct key_mapping_array *codes_)

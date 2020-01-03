@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <sys/types.h>
 
+#include "mapping_util.h"
+
 #define KANJI_KEY_COUNT 40
 #define MAPPABLE_CHAR_COUNT (KANJI_KEY_COUNT * 2)
 
@@ -29,21 +31,6 @@ struct short_code_array {
 
 void get_free_kanji_codes(struct short_code_array *codes);
 
-/* ヌル終端の入力コード */
-typedef char Orig[4];
-typedef char Conv[7];
-
-struct key_mapping {
-	Orig orig;
-	Conv conv;
-};
-
-struct key_mapping_array {
-	struct key_mapping *el;
-	size_t cnt;
-	size_t alloc;
-};
-
 void hiragana_to_katakana(char *conv);
 
 struct romazi_config {
@@ -67,9 +54,6 @@ void init_romazi_config_for_cli_flags(struct romazi_config *config);
  */
 int parse_romazi_flags(
 	int *argc, char const *const **argv, struct romazi_config *config);
-
-/* 失敗のときは詳細を標準エラーに出力して、０を返す。*/
-int init_romazi_and_return_status(struct romazi_config const *config);
 
 /* init_romazi_and_return_status を呼び、失敗のときはプロセスを終了する. */
 void init_romazi(struct romazi_config const *);

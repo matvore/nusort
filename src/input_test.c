@@ -31,7 +31,8 @@ static void set_mapping(struct mapping *m, enum mapping_type type)
 	switch (type) {
 		case ERGONOMIC_SORT:
 			m->ergonomic_sort = 1;
-			mapping_populate(m);
+			if (!mapping_populate(m))
+				DIE(0, "mapping_populate");
 			break;
 		case HAS_XYZ:
 			GROW_ARRAY_BY(m->codes, 1);

@@ -32,6 +32,7 @@ SHARED_OBJS = \
 	last_rank_contained.o \
 	make_map.o \
 	mapping.o \
+	mapping_util.o \
 	rank_coverage.o \
 	romazi.o \
 	streams.o \
@@ -46,6 +47,7 @@ HDRS = \
 	kanji_distribution.h \
 	keyboard.h \
 	mapping.h \
+	mapping_util.h \
 	rank_coverage.h \
 	romazi.h \
 	streams.h \
@@ -75,6 +77,7 @@ test: \
 	keyboard_test \
 	last_rank_contained_test \
 	make_map_test \
+	mapping_util_test \
 	rank_coverage_test \
 	romazi_test
 
