@@ -134,6 +134,8 @@ static void end_test_common(void)
 	test_name = NULL;
 }
 
+static void store_in_tmp_file(char const *str, char *tmp_file_template);
+
 void end_test(const char *expected)
 {
 	char expected_fn[] = "/tmp/expected-XXXXXX";
@@ -155,7 +157,7 @@ void end_test_expected_content_in_file(void)
 	FREE(actual_fn);
 }
 
-void store_in_tmp_file(char const *str, char *tmp_file_template)
+static void store_in_tmp_file(char const *str, char *tmp_file_template)
 {
 	int fd = mkstemp(tmp_file_template);
 	size_t str_size = strlen(str);
@@ -170,4 +172,11 @@ void store_in_tmp_file(char const *str, char *tmp_file_template)
 
 	if (close(fd) == -1)
 		DIE(1, "一時ファイルの %s を閉じる", tmp_file_template);
+}
+
+FILE *open_tmp_file_containing(char const *str)
+{
+	char fn[] = "/tmp/nusort_test_tmp_XXXXXX";
+	store_in_tmp_file(str, fn);
+	return xfopen(fn, "r");
 }

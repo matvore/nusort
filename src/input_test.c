@@ -59,16 +59,14 @@ int main(void)
 
 	for (test_i = 0; test_i < sizeof(test_cases) / sizeof(*test_cases);
 	     test_i++) {
-		char input_file[] = "/tmp/input_test_in_XXXXXX";
 		struct mapping mapping = {0};
 
 		mapping.include_kanji = 1;
 
 		start_test(test_cases[test_i].name);
 
-		store_in_tmp_file(test_cases[test_i].in, input_file);
+		in = open_tmp_file_containing(test_cases[test_i].in);
 
-		in = xfopen(input_file, "r");
 		set_mapping(&mapping, test_cases[test_i].mapping_type);
 		input_impl(&mapping);
 		XFCLOSE(in);
