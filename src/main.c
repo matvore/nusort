@@ -27,7 +27,7 @@ int main(int argc, const char **argv)
 	if (argc >= 2 && !strcmp(argv[1], "h2k"))
 		return h2k(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "input"))
-		return input(argv + 2, argc - 2);
+		return input(argv + 2, argc - 2, /*set_raw_mode=*/1);
 	if (argc >= 2 && !strcmp(argv[1], "kana_stats"))
 		return kana_stats(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "check_kanji_db_order"))
