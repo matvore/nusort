@@ -56,7 +56,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 		check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));
 		customize_term_attributes(orig_termios);
 	}
-	res = input_impl(&mapping);
+	res = input_impl(&mapping, out, out);
 	if (set_raw_mode)
 		check_term_op(tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios));
 

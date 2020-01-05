@@ -60,7 +60,7 @@ int main(void)
 
 		append_mapping(&m, "xyz", "あ");
 		in = open_tmp_file_containing("x!");
-		xfprintf(out, "exit code: %d\n", input_impl(&m));
+		xfprintf(out, "exit code: %d\n", input_impl(&m, out, NULL));
 		XFCLOSE(in);
 		DESTROY_ARRAY(m);
 	}
@@ -89,6 +89,48 @@ int main(void)
 		XFCLOSE(in);
 	}
 	end_test_expected_content_in_file();
+
+	start_test("show_pending_conversion");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "mo", "も");
+
+		in = open_tmp_file_containing("m");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+
+		DESTROY_ARRAY(m);
+	}
+	end_test("<m>\n"
+		 "exit code: 0\n");
+
+	start_test("show_already_converted");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "ki", "き");
+
+		in = open_tmp_file_containing("ki");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+
+		DESTROY_ARRAY(m);
+	}
+	end_test("<k>\n"
+		 "き\n"
+		 "exit code: 0\n");
+
+	start_test("accumulates_multiple_converted");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "ro", "ろ");
+		append_mapping(&m, "pa", "ぱ");
+		sort_and_validate_no_conflicts(&m);
+
+		in = open_tmp_file_containing("ropa");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+
+		DESTROY_ARRAY(m);
+	}
+	end_test("<r>\nろ\nろ<p>\nろぱ\n"
+		 "exit code: 0\n");
 
 	return 0;
 }
