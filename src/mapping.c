@@ -145,17 +145,12 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 	DESTROY_ARRAY(free_kanji_codes);
 }
 
-int mapping_populate(struct mapping *mapping)
+int mapping_populate(
+	struct mapping_config const *config, struct key_mapping_array *mapping)
 {
-	get_romazi_codes(&mapping->codes);
-	if (mapping->include_kanji)
-		get_kanji_codes(&mapping->codes, mapping->ergonomic_sort);
+	get_romazi_codes(mapping);
+	if (config->include_kanji)
+		get_kanji_codes(mapping, config->ergonomic_sort);
 
-	return sort_and_validate_no_conflicts(&mapping->codes);
-}
-
-void mapping_destroy(struct mapping *mapping)
-{
-	DESTROY_ARRAY(mapping->codes);
-	memset(mapping, 0, sizeof(*mapping));
+	return sort_and_validate_no_conflicts(mapping);
 }

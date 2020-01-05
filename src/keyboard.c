@@ -73,7 +73,8 @@ static void write_cell(KeyIndex ki, char const *str, size_t len)
 	memset(keyboard_p + len, 0, s.len - len);
 }
 
-void keyboard_update(struct mapping const *mapping, char const *prefix)
+void keyboard_update(
+	struct key_mapping_array const *mapping, char const *prefix)
 {
 	KeyIndex ki;
 	Orig full_code;
@@ -96,7 +97,7 @@ void keyboard_update(struct mapping const *mapping, char const *prefix)
 
 		full_code[missing_char_index] = KEY_INDEX_TO_CHAR_MAP[ki];
 
-		BSEARCH(m, mapping->codes.el, mapping->codes.cnt,
+		BSEARCH(m, mapping->el, mapping->cnt,
 			code_cmp(m->orig, full_code));
 
 		if (!m)

@@ -27,9 +27,10 @@ static void customize_term_attributes(struct termios t)
 
 int input(char const *const *argv, int argc, int set_raw_mode)
 {
-	struct mapping mapping = {0};
+	struct mapping_config mapping_config = {0};
 	struct termios orig_termios;
 	struct romazi_config romazi_config = {0};
+	struct key_mapping_array mapping = {0};
 	int res;
 
 	init_romazi_config_for_cli_flags(&romazi_config);
@@ -44,9 +45,9 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 
 	init_romazi(&romazi_config);
 
-	mapping.ergonomic_sort = 1;
-	mapping.include_kanji = 1;
-	if (!mapping_populate(&mapping))
+	mapping_config.ergonomic_sort = 1;
+	mapping_config.include_kanji = 1;
+	if (!mapping_populate(&mapping_config, &mapping))
 		return 250;
 
 	if (set_raw_mode) {
@@ -57,7 +58,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 	if (set_raw_mode)
 		check_term_op(tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios));
 
-	mapping_destroy(&mapping);
+	DESTROY_ARRAY(mapping);
 
 	return res;
 }

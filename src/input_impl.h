@@ -1,3 +1,3 @@
-#include "mapping.h"
+#include "mapping_util.h"
 
-int input_impl(struct mapping const *mapping);
+int input_impl(struct key_mapping_array const *);

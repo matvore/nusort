@@ -22,27 +22,31 @@ int main(void)
 
 	start_test("default_view");
 	{
-		struct mapping m = {0};
-		m.include_kanji = 1;
-		m.ergonomic_sort = 1;
-		if (!mapping_populate(&m))
+		struct mapping_config config = {
+			.include_kanji = 1,
+			.ergonomic_sort = 1,
+		};
+		struct key_mapping_array m = {0};
+		if (!mapping_populate(&config, &m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m, "");
 		keyboard_write(out);
-		mapping_destroy(&m);
+		DESTROY_ARRAY(m);
 	}
 	end_test_expected_content_in_file();
 
 	start_test("first_key_typed");
 	{
-		struct mapping m = {0};
-		m.include_kanji = 1;
-		m.ergonomic_sort = 1;
-		if (!mapping_populate(&m))
+		struct mapping_config config = {
+			.include_kanji = 1,
+			.ergonomic_sort = 1,
+		};
+		struct key_mapping_array m = {0};
+		if (!mapping_populate(&config, &m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m, "/");
 		keyboard_write(out);
-		mapping_destroy(&m);
+		DESTROY_ARRAY(m);
 	}
 	end_test_expected_content_in_file();
 }

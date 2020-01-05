@@ -1,3 +1,6 @@
+#ifndef MAPPING_UTIL_H
+#define MAPPING_UTIL_H
+
 #include <stdio.h>
 
 /* ヌル終端の入力コード */
@@ -36,3 +39,5 @@ void print_mapping(struct key_mapping const *, FILE *);
  * ではない値を返す。
  */
 int sort_and_validate_no_conflicts(struct key_mapping_array *);
+
+#endif

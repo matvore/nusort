@@ -50,13 +50,13 @@ int main(void)
 
 	start_test("possible_code_requires_two_more_chars");
 	{
-		struct mapping m = {0};
+		struct key_mapping_array m = {0};
 
-		append_mapping(&m.codes, "xyz", "あ");
+		append_mapping(&m, "xyz", "あ");
 		in = open_tmp_file_containing("x!");
 		xfprintf(out, "exit code: %d\n", input_impl(&m));
 		XFCLOSE(in);
-		mapping_destroy(&m);
+		DESTROY_ARRAY(m);
 	}
 	end_test_expected_content_in_file();
 

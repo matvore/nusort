@@ -11,7 +11,7 @@
 #include <string.h>
 
 static int is_code_prefix(
-	struct mapping const *mapping,
+	struct key_mapping_array const *mapping,
 	Orig const so_far_input)
 {
 	size_t so_far_len = strlen(so_far_input);
@@ -23,8 +23,8 @@ static int is_code_prefix(
 		ssize_t extended_i;
 		extended_input[try_i] = 1;
 
-		BSEARCH_INDEX(extended_i, mapping->codes.cnt,,
-			      code_cmp(mapping->codes.el[extended_i].orig,
+		BSEARCH_INDEX(extended_i, mapping->cnt,,
+			      code_cmp(mapping->el[extended_i].orig,
 				       extended_input));
 
 		if (extended_i >= 0)
@@ -32,10 +32,10 @@ static int is_code_prefix(
 			    so_far_input);
 		extended_i = ~extended_i;
 
-		if (extended_i >= mapping->codes.cnt)
+		if (extended_i >= mapping->cnt)
 			continue;
 
-		if (strncmp(mapping->codes.el[extended_i].orig, so_far_input,
+		if (strncmp(mapping->el[extended_i].orig, so_far_input,
 			    so_far_len))
 			continue;
 
@@ -47,20 +47,20 @@ static int is_code_prefix(
 	return 0;
 }
 
-static int is_done(struct mapping const *mapping, Orig const so_far_input)
+static int is_done(
+	struct key_mapping_array const *mapping, Orig const so_far_input)
 {
 	struct key_mapping const *m;
 
 	if (strlen(so_far_input) == sizeof(Orig) - 1)
 		return 1;
 
-	BSEARCH(m, mapping->codes.el, mapping->codes.cnt,
-		code_cmp(m->orig, so_far_input));
+	BSEARCH(m, mapping->el, mapping->cnt, code_cmp(m->orig, so_far_input));
 
 	return !!m;
 }
 
-int input_impl(struct mapping const *mapping)
+int input_impl(struct key_mapping_array const *mapping)
 {
 	Orig so_far_input = {0};
 
