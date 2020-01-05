@@ -73,6 +73,7 @@ test: \
 	h2k_test \
 	input_test \
 	kana_stats_test \
+	kanji_db_test \
 	kana_stats_util_test \
 	keyboard_test \
 	last_rank_contained_test \

@@ -44,3 +44,5 @@ size_t kanji_db_nr(void);
 
 /* 返された配列は codepoint によって並べ替え済みです。*/
 struct kanji_entry const *kanji_db(void);
+
+struct kanji_entry const *kanji_db_lookup(char const *kanji);

@@ -55,16 +55,6 @@ static void get_top_keys(struct kanji_distribution *kd)
 	}
 }
 
-static struct kanji_entry const *first_kanji_in_rsc(void)
-{
-	struct kanji_entry const *cutoff = NULL;
-	BSEARCH(cutoff, kanji_db(), kanji_db_nr(),
-		strcmp(cutoff->c, "一"));
-	if (!cutoff)
-		BUG("「一」が漢字データベースで見つかりませんでした。");
-	return cutoff;
-}
-
 static int is_better_cutoff(
 	const struct kanji_entry *best, const struct kanji_entry *candidate)
 {
@@ -151,7 +141,9 @@ static void common_init(struct kanji_distribution *kd)
 	kd->target_rank = resorted.el[kd->total_chars]->ranking;
 	DESTROY_ARRAY(resorted);
 
-	kd->line_stats[0].cutoff = first_kanji_in_rsc();
+	kd->line_stats[0].cutoff = kanji_db_lookup("一");
+	if (!kd->line_stats[0].cutoff)
+		BUG("「一」が漢字データベースで見つかりませんでした。");
 }
 
 void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd)
@@ -197,10 +189,7 @@ int kanji_distribution_parse_user_cutoff(
 	}
 
 	for (i = 0; i < argc; i++) {
-		const struct kanji_entry *cutoff = NULL;
-
-		BSEARCH(cutoff, kanji_db(), kanji_db_nr(),
-			strcmp(cutoff->c, argv[i]));
+		const struct kanji_entry *cutoff = kanji_db_lookup(argv[i]);
 
 		if (!cutoff) {
 			xfprintf(err,

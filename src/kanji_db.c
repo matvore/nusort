@@ -337,12 +337,12 @@ static struct kanji_entry kanji[] = {
 	{"刹",  2488, 0},
 	{"刺",   959, 0},
 	{"刻",   992, 0},
-	{"剃",  2354, 1},
+	{"前",    41, 1},
+	{"剃",  2354, 0},
 	{"則",   835, 0},
 	{"削",   568, 0},
 	{"剋",  3600, 0},
 	{"剌",  3591, 0},
-	{"前",    41, 0},
 	{"剖",  2335, 1},
 	{"剛",  1615, 0},
 	{"剣",  1158, 0},
@@ -4073,4 +4073,11 @@ struct kanji_entry const *kanji_db(void)
 		sorted = 1;
 	}
 	return kanji;
+}
+
+struct kanji_entry const *kanji_db_lookup(char const *kanji)
+{
+	struct kanji_entry const *e = NULL;
+	BSEARCH(e, kanji_db(), kanji_db_nr(), strcmp(e->c, kanji));
+	return e;
 }
