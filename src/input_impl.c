@@ -1,3 +1,4 @@
+#include "chars.h"
 #include "commands.h"
 #include "input_impl.h"
 #include "keyboard.h"
@@ -107,7 +108,13 @@ int input_impl(struct key_mapping_array const *mapping,
 		} else if (!pressed_bs) {
 			so_far_input[strlen(so_far_input)] = ch;
 		} else if (converted.cnt) {
-			converted.cnt -= 3;
+			if (is_complete_utf8(converted.el[converted.cnt-1], 1))
+				converted.cnt--;
+			else if (is_complete_utf8(converted.el[converted.cnt-2],
+						  2))
+				converted.cnt -= 2;
+			else
+				converted.cnt -= 3;
 			memset(converted.el + converted.cnt, 0, 3);
 			did_delete_conv = 1;
 		}

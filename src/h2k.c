@@ -4,22 +4,6 @@
 #include "streams.h"
 #include "util.h"
 
-static int is_complete_utf8(char first_char, int size)
-{
-	switch (size) {
-	case 1:
-		return !(first_char & 0x80);
-	case 2:
-		return 0xc0 == (first_char & 0xe0);
-	case 3:
-		return 0xe0 == (first_char & 0xf0);
-	case 4:
-		return 1;
-	default:
-		BUG("size が無効です");
-	}
-}
-
 int h2k(char const *const *argv, int argc)
 {
 	char buf[4] = {0};

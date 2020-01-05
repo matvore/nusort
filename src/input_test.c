@@ -262,5 +262,45 @@ int main(void)
 	}
 	end_test("<k>\nkッ\nexit code: 0\n");
 
+	start_test("delete_converted_ascii_char");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "ka", "か");
+		in = open_tmp_file_containing("kr\b");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		DESTROY_ARRAY(m);
+	}
+	end_test("<k>\nkr\nk\nexit code: 0\n");
+
+	start_test("delete_converted_ascii_char_with_prior_kana_char");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "ka", "か");
+		in = open_tmp_file_containing("kakr\b");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		DESTROY_ARRAY(m);
+	}
+	end_test("<k>\nか\nか<k>\nかkr\nかk\nexit code: 0\n");
+
+	start_test("delete_converted_ascii_char_with_prior_kana_char_2");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "ka", "か");
+		in = open_tmp_file_containing("kakb\b");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		DESTROY_ARRAY(m);
+	}
+	end_test("<k>\nか\nか<k>\nかkb\nかk\nexit code: 0\n");
+
+	start_test("delete_converted_2_byte_char");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "dmf", "é");
+		in = open_tmp_file_containing("dmf\b");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		DESTROY_ARRAY(m);
+	}
+	end_test("<d>\n<dm>\né\n\nexit code: 0\n");
+
 	return 0;
 }

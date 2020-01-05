@@ -17,4 +17,6 @@
 
 int codepoint_range(char const *c);
 
+int is_complete_utf8(char first_char, int size);
+
 #endif
