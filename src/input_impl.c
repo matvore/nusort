@@ -53,20 +53,23 @@ struct {
 	size_t alloc;
 } converted = {0};
 
+static void append_to_converted(char const *s, int len)
+{
+	GROW_ARRAY_BY(converted, len);
+	memcpy(converted.el + converted.cnt - len, s, len);
+}
+
 static int is_done(
 	struct key_mapping_array const *mapping, Orig const so_far_input)
 {
 	struct key_mapping const *m;
-	size_t orig_converted_len = converted.cnt;
 
 	BSEARCH(m, mapping->el, mapping->cnt, code_cmp(m->orig, so_far_input));
 
 	if (!m)
 		return 0;
 
-	GROW_ARRAY_BY(converted, strlen(m->conv));
-
-	memcpy(converted.el + orig_converted_len, m->conv, strlen(m->conv));
+	append_to_converted(m->conv, strlen(m->conv));
 
 	return 1;
 }
@@ -109,22 +112,29 @@ int input_impl(struct key_mapping_array const *mapping,
 			did_delete_conv = 1;
 		}
 
-		if (is_done(mapping, so_far_input))
-			memset(&so_far_input, 0, sizeof(so_far_input));
+		while (1) {
+			if (is_done(mapping, so_far_input)) {
+				memset(&so_far_input, 0, sizeof(so_far_input));
+				break;
+			}
+			if (is_code_prefix(mapping, so_far_input))
+				break;
 
-		if (pending_out) {
-			if (converted.cnt)
-				xfwrite(converted.el, converted.cnt,
-					pending_out);
-			if (so_far_input[0] || did_delete_orig)
-				xfprintf(pending_out, "<%s>", so_far_input);
-			if (so_far_input[0] || did_delete_orig ||
-			    converted.cnt || did_delete_conv)
-				xfputc('\n', pending_out);
+			append_to_converted(so_far_input, 1);
+			memmove(so_far_input, so_far_input + 1,
+				sizeof(so_far_input) - 1);
 		}
 
-		if (!is_code_prefix(mapping, so_far_input))
-			xfputs("コードの始まりではない\n", out);
+		if (!pending_out)
+			continue;
+
+		if (converted.cnt)
+			xfwrite(converted.el, converted.cnt, pending_out);
+		if (so_far_input[0] || did_delete_orig)
+			xfprintf(pending_out, "<%s>", so_far_input);
+		if (so_far_input[0] || did_delete_orig ||
+		    converted.cnt || did_delete_conv)
+			xfputc('\n', pending_out);
 	}
 
 	DESTROY_ARRAY(converted);

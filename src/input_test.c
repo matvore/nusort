@@ -32,17 +32,6 @@ int main(void)
 	}
 	end_test_expected_content_in_file();
 
-	start_test("impossible_code");
-	{
-		char const *argv[] = {"-s"};
-		int argc = 1;
-		in = open_tmp_file_containing("kJ");
-		xfprintf(out, "exit code: %d\n",
-			 input(argv, argc, /*set_raw_mode=*/0));
-		XFCLOSE(in);
-	}
-	end_test_expected_content_in_file();
-
 	start_test("long_conv_strs");
 	{
 		char const *argv[] = {"-s"};
@@ -222,6 +211,56 @@ int main(void)
 		 "わわ<w>\n"
 		 "わわわ\n"
 		 "exit code: 0\n");
+
+	start_test("invalid_prefix_leaks_out_of_pending_conv");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "ma", "ま");
+		in = open_tmp_file_containing("x");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		DESTROY_ARRAY(m);
+	}
+	end_test("x\n"
+		 "exit code: 0\n");
+
+	start_test("invalid_prefix_leaks_one_char_at_a_time");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "ma", "ま");
+		append_mapping(&m, "xa", "ぁ");
+		in = open_tmp_file_containing("mx");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		DESTROY_ARRAY(m);
+	}
+	end_test("<m>\n"
+		 "m<x>\n"
+		 "exit code: 0\n");
+
+	start_test("invalid_prefix_leaks_two_chars_at_a_time");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "ma", "ま");
+		append_mapping(&m, "xa", "ぁ");
+		sort_and_validate_no_conflicts(&m);
+		in = open_tmp_file_containing("x?");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		DESTROY_ARRAY(m);
+	}
+	end_test("<x>\n"
+		 "x?\n"
+		 "exit code: 0\n");
+
+	start_test("leak_invalid_prefix_then_immediately_convert");
+	{
+		struct key_mapping_array m = {0};
+		append_mapping(&m, "ka", "か");
+		append_mapping(&m, "J", "ッ");
+		sort_and_validate_no_conflicts(&m);
+		in = open_tmp_file_containing("kJ");
+		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		DESTROY_ARRAY(m);
+	}
+	end_test("<k>\nkッ\nexit code: 0\n");
 
 	return 0;
 }
