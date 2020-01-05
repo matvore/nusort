@@ -78,6 +78,9 @@ int input_impl(struct key_mapping_array const *mapping,
 
 	while (1) {
 		int ch;
+		int did_delete_orig = 0;
+		int did_delete_conv = 0;
+		int pressed_bs = 0;
 
 		keyboard_update(mapping, so_far_input);
 		if (keyboard_out) {
@@ -91,7 +94,20 @@ int input_impl(struct key_mapping_array const *mapping,
 		if (ch == EOF || ch == 4 || ch == '\e')
 			break;
 
-		so_far_input[strlen(so_far_input)] = ch;
+		if (ch == '\b' || ch == 0x7f) {
+			pressed_bs = 1;
+			did_delete_orig = so_far_input[0] != 0;
+		}
+
+		if (did_delete_orig) {
+			so_far_input[strlen(so_far_input) - 1] = 0;
+		} else if (!pressed_bs) {
+			so_far_input[strlen(so_far_input)] = ch;
+		} else if (converted.cnt) {
+			converted.cnt -= 3;
+			memset(converted.el + converted.cnt, 0, 3);
+			did_delete_conv = 1;
+		}
 
 		if (is_done(mapping, so_far_input))
 			memset(&so_far_input, 0, sizeof(so_far_input));
@@ -100,9 +116,10 @@ int input_impl(struct key_mapping_array const *mapping,
 			if (converted.cnt)
 				xfwrite(converted.el, converted.cnt,
 					pending_out);
-			if (so_far_input[0])
+			if (so_far_input[0] || did_delete_orig)
 				xfprintf(pending_out, "<%s>", so_far_input);
-			if (so_far_input[0] || converted.cnt)
+			if (so_far_input[0] || did_delete_orig ||
+			    converted.cnt || did_delete_conv)
 				xfputc('\n', pending_out);
 		}
 
