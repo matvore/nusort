@@ -55,8 +55,8 @@ void init_romazi_config_for_cli_flags(struct romazi_config *config);
 
 /*
  * argcとargvの差す最初のフラグがローマ字に関するものの場合、CLI 引数を解析し
- * て、argcとargvを先にして、０ではない値を返す。フラグがローマ字フラグとして認
- * 識されない場合は０を返す。
+ * て、argcとargvを先に進めて、０ではない値を返す。フラグがローマ字フラグとし
+ * て認識されない場合は０を返す。
  */
 int parse_romazi_flags(
 	int *argc, char const *const **argv, struct romazi_config *config);

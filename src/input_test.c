@@ -23,27 +23,33 @@ int main(void)
 
 	start_test("first_key_k");
 	{
+		char const *argv[] = {"-s"};
+		int argc = 1;
 		in = open_tmp_file_containing("kj");
 		xfprintf(out, "exit code: %d\n",
-			 input(NULL, 0, /*set_raw_mode=*/0));
+			 input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
 	end_test_expected_content_in_file();
 
 	start_test("impossible_code");
 	{
+		char const *argv[] = {"-s"};
+		int argc = 1;
 		in = open_tmp_file_containing("kJ");
 		xfprintf(out, "exit code: %d\n",
-			 input(NULL, 0, /*set_raw_mode=*/0));
+			 input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
 	end_test_expected_content_in_file();
 
 	start_test("long_conv_strs");
 	{
+		char const *argv[] = {"-s"};
+		int argc = 1;
 		in = open_tmp_file_containing("tya" "HWI" "DWO" "WHO" "YE");
 		xfprintf(out, "exit code: %d\n",
-			 input(NULL, 0, /*set_raw_mode=*/0));
+			 input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
 	end_test_expected_content_in_file();
@@ -62,10 +68,22 @@ int main(void)
 
 	start_test("parse_romazi_flags_no_kanji_nums");
 	{
-		char const *argv[] = {"--no-kanji-nums"};
-		int argc = 1;
+		char const *argv[] = {"--no-kanji-nums", "-s"};
+		int argc = 2;
 
 		in = open_tmp_file_containing("");
+		xfprintf(out, "exit code: %d\n",
+			 input(argv, argc, /*set_raw_mode=*/0));
+		XFCLOSE(in);
+	}
+	end_test_expected_content_in_file();
+
+	start_test("exclude_kanji");
+	{
+		char const *argv[] = {"--no-kanji"};
+		int argc = 1;
+
+		in = open_tmp_file_containing("m");
 		xfprintf(out, "exit code: %d\n",
 			 input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);

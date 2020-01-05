@@ -145,6 +145,31 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 	DESTROY_ARRAY(free_kanji_codes);
 }
 
+void init_mapping_config_for_cli_flags(struct mapping_config *config)
+{
+	if (!bytes_are_zero(config, sizeof(*config)))
+		BUG("mapping_config not initialized to zero bytes");
+	config->include_kanji = 1;
+}
+
+int parse_mapping_flags(
+	int *argc, char const *const **argv, struct mapping_config *config)
+{
+	if (!strcmp((*argv)[0], "-s")) {
+		config->ergonomic_sort = 1;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+	if (!strcmp((*argv)[0], "--no-kanji")) {
+		config->include_kanji = 0;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+	return 0;
+}
+
 int mapping_populate(
 	struct mapping_config const *config, struct key_mapping_array *mapping)
 {

@@ -34,19 +34,21 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 	int res;
 
 	init_romazi_config_for_cli_flags(&romazi_config);
+	init_mapping_config_for_cli_flags(&mapping_config);
 
 	while (argc > 0 && argv[0][0] == '-') {
-		if (!parse_romazi_flags(&argc, &argv, &romazi_config)) {
-			xfprintf(err,
-				 "フラグを認識できませんでした：%s\n", argv[0]);
-			return 3;
-		}
+		if (parse_mapping_flags(&argc, &argv, &mapping_config))
+			continue;
+		if (parse_romazi_flags(&argc, &argv, &romazi_config))
+			continue;
+
+		xfprintf(err,
+			 "フラグを認識できませんでした：%s\n", argv[0]);
+		return 3;
 	}
 
 	init_romazi(&romazi_config);
 
-	mapping_config.ergonomic_sort = 1;
-	mapping_config.include_kanji = 1;
 	if (!mapping_populate(&mapping_config, &mapping))
 		return 250;
 
