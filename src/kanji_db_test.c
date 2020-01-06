@@ -75,4 +75,22 @@ int main(void)
 		xfprintf(out, "%d", cutoff_count);
 	}
 	end_test("1");
+
+	start_test("include_sude_no_tsukuri_and_munyou");
+	{
+		struct kanji_entry const *e = kanji_db_lookup("无");
+		if (!e)
+			xfprintf(out, "ない\n");
+		e = kanji_db_lookup("旡");
+		if (!e)
+			xfprintf(out, "ない\n");
+	}
+	end_test("");
+
+	start_test("sude_no_tsukuri_and_munyou_cutoff_type");
+	{
+		xfprintf(out, "%d\n", cutoff_type("无"));
+		xfprintf(out, "%d\n", cutoff_type("旡"));
+	}
+	end_test("2\n0\n");
 }
