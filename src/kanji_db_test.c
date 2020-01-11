@@ -93,4 +93,42 @@ int main(void)
 		xfprintf(out, "%d\n", cutoff_type("旡"));
 	}
 	end_test("2\n0\n");
+
+	start_test("kunshou_no_shou_has_correct_rad");
+	{
+		struct kanji_entry const *a = kanji_db_lookup("立");
+		struct kanji_entry const *b = kanji_db_lookup("章");
+		struct kanji_entry const *c = kanji_db_lookup("竹");
+
+		if (!a || !b || !c)
+			xfputs("ない\n", out);
+		else if (a->rsc_sort_key < b->rsc_sort_key &&
+			 b->rsc_sort_key < c->rsc_sort_key)
+			xfputs("ok\n", out);
+	}
+	end_test("ok\n");
+
+	start_test("kunshou_no_shou_is_after_simplified_dragon_with_diff_rsc");
+	{
+		struct kanji_entry const *a = kanji_db_lookup("竜");
+		struct kanji_entry const *b = kanji_db_lookup("章");
+
+		if (!a || !b)
+			xfputs("ない\n", out);
+		else if (a->rsc_sort_key < b->rsc_sort_key)
+			xfputs("ok\n", out);
+	}
+	end_test("ok\n");
+
+	start_test("u_7adf_is_same_rsc_as_kunshou_no_shou");
+	{
+		struct kanji_entry const *a = kanji_db_lookup("竟");
+		struct kanji_entry const *b = kanji_db_lookup("章");
+
+		if (!a || !b)
+			xfputs("ない\n", out);
+		else if (a->rsc_sort_key == b->rsc_sort_key)
+			xfputs("ok\n", out);
+	}
+	end_test("ok\n");
 }
