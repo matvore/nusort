@@ -92,7 +92,8 @@ void start_test(const char *name)
 	if (!test_source_file)
 		BUG("test_source_file が設定されていない。start_testを呼ぶ前に"
 		    "設定してください。");
-	xasprintf(&actual_fn, "%s.%s.testout", test_source_file, name);
+	xasprintf(&actual_fn, "actual_test_out/%s.%s.out",
+		  test_source_file, name);
 	xfprintf(stderr, "テスト：(%s) %s\n", test_source_file, name);
 
 	if (pipe(test_output_pipe))

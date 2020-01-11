@@ -83,6 +83,6 @@ test: \
 	romazi_test
 
 clean:
-	rm -f *_test_bin *.testout *.o
+	rm -f *_test_bin actual_test_out/*.out *.o
 	rm -rf test_errors
 	rm -f nusort
