@@ -4068,7 +4068,6 @@ struct kanji_entry const *kanji_db(void)
 			if (kanji[i].cutoff_type)
 				rsc_sort_key++;
 			kanji[i].rsc_sort_key = rsc_sort_key;
-			kanji[i].distinct_rsc_sort_key = i;
 		}
 		QSORT(, kanji, kanji_db_nr(),
 		      strcmp(kanji[a].c, kanji[b].c) < 0);
@@ -4084,8 +4083,24 @@ struct kanji_entry const *kanji_db_lookup(char const *kanji)
 	return e;
 }
 
+static int distinct_rsc_lt(
+	struct kanji_entry const *a,
+	struct kanji_entry const *b)
+{
+	if (a->rsc_sort_key != b->rsc_sort_key)
+		return a->rsc_sort_key < b->rsc_sort_key;
+
+	if (a->cutoff_type || b->cutoff_type) {
+		if (a->cutoff_type && b->cutoff_type)
+			BUG("共通の部首+画数キーの字では区切り字が二個ある: "
+			    "%s と %s", a->c, b->c);
+		return a->cutoff_type;
+	}
+
+	return strcmp(a->c, b->c) < 0;
+}
+
 void predictably_sort_by_rsc(struct kanji_entry const **e, size_t count)
 {
-	QSORT(, e, count,
-	      e[a]->distinct_rsc_sort_key < e[b]->distinct_rsc_sort_key);
+	QSORT(, e, count, distinct_rsc_lt(e[a], e[b]));
 }
