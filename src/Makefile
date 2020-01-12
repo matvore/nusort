@@ -74,6 +74,7 @@ test: \
 	input_test \
 	kana_stats_test \
 	kanji_db_test \
+	kanji_distribution_test \
 	kana_stats_util_test \
 	keyboard_test \
 	last_rank_contained_test \
