@@ -46,3 +46,9 @@ size_t kanji_db_nr(void);
 struct kanji_entry const *kanji_db(void);
 
 struct kanji_entry const *kanji_db_lookup(char const *kanji);
+
+/*
+ * 部首+画数順でべ替えますが、部首も画数も同一の２文字は必ず決まった順番に配置し
+ * ます。
+ */
+void predictably_sort_by_rsc(struct kanji_entry const **, size_t count);

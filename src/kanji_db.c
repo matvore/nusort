@@ -4083,3 +4083,9 @@ struct kanji_entry const *kanji_db_lookup(char const *kanji)
 	BSEARCH(e, kanji_db(), kanji_db_nr(), strcmp(e->c, kanji));
 	return e;
 }
+
+void predictably_sort_by_rsc(struct kanji_entry const **e, size_t count)
+{
+	QSORT(, e, count,
+	      e[a]->distinct_rsc_sort_key < e[b]->distinct_rsc_sort_key);
+}
