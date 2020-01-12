@@ -8,8 +8,6 @@
 #include "streams.h"
 #include "util.h"
 
-#define COMBINING_DAKUTEN "\xe3\x82\x99"
-
 const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT] = {
 	'1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
 	'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
