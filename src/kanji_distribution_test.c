@@ -35,14 +35,73 @@ int main(void)
 			.optimize_keystrokes = 1,
 		};
 		struct kanji_distribution kd = {0};
+		struct key_mapping_array romazi_m = {0};
 
 		init_romazi(&romazi_config);
 
+		get_romazi_codes(&romazi_m);
+
+		kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
 		for (key = 0; key < kd.line_stats_nr; key++)
 			validate_line(kd.line_stats + key);
+
+		kanji_distribution_destroy(&kd);
+		DESTROY_ARRAY(romazi_m);
+	}
+	end_test("");
+	start_test("can_generate_distribution_with_only_kanji");
+	{
+		struct kanji_distribution kd = {0};
+		struct key_mapping_array preexisting_m = {0};
+	
+		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
+		kanji_distribution_auto_pick_cutoff(&kd);
+		kanji_distribution_populate(&kd);
+		if (kd.total_chars != KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1))
+		        xfprintf(out, "%d\n", (int) kd.total_chars);
+	
+		kanji_distribution_destroy(&kd);
+	}
+	end_test("");
+	
+	start_test("can_generate_distribution_with_one_romazi");
+	{
+		struct kanji_distribution kd = {0};
+		struct key_mapping_array preexisting_m = {0};
+	
+		append_mapping(&preexisting_m, "ka", "か");
+	
+		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
+		kanji_distribution_auto_pick_cutoff(&kd);
+		kanji_distribution_populate(&kd);
+		if (kd.total_chars !=
+		    KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1) - 1)
+		        xfprintf(out, "%d\n", (int) kd.total_chars);
+	
+		kanji_distribution_destroy(&kd);
+		DESTROY_ARRAY(preexisting_m);
+	}
+	end_test("");
+	
+	start_test("can_generate_distribution_with_one_key_romazi");
+	{
+		struct kanji_distribution kd = {0};
+		struct key_mapping_array preexisting_m = {0};
+	
+		append_mapping(&preexisting_m, "a", "あ");
+	
+		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
+		kanji_distribution_auto_pick_cutoff(&kd);
+		kanji_distribution_populate(&kd);
+		if (kd.total_chars !=
+		    KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1) - KANJI_KEY_COUNT)
+			xfprintf(out, "%d\n", (int) kd.total_chars);
+	
+		kanji_distribution_destroy(&kd);
+		DESTROY_ARRAY(preexisting_m);
 	}
 	end_test("");
 }

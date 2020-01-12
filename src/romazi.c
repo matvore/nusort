@@ -28,7 +28,7 @@ static KeyIndex char_to_key_index_map[128];
  * 漢字とカナ入力で使わないキーはインデックスを持たない。そのキーの場合は、
  * -1を返す。
  */
-static KeyIndex char_to_key_index(char ch)
+KeyIndex char_to_key_index(char ch)
 {
 	KeyIndex key_index;
 
@@ -56,131 +56,12 @@ KeyIndex char_to_key_index_or_die(char ch)
 	return i;
 }
 
-struct {
-	char const **el;
-	size_t cnt;
-	size_t alloc;
-} target_strs;
-
 static struct key_mapping_array codes;
 
 static void verify_initialized(void)
 {
 	if (!codes.cnt)
 		BUG("must call init_romazi()");
-}
-
-int is_target_non_sorted_string(const char *s)
-{
-	const char **e;
-	if (!target_strs.cnt) {
-		size_t i;
-
-		verify_initialized();
-		for (i = 0; i < codes.cnt; i++) {
-			GROW_ARRAY_BY(target_strs, 1);
-			target_strs.el[i] = codes.el[i].conv;
-		}
-		QSORT(, target_strs.el, target_strs.cnt,
-		      strcmp(target_strs.el[a], target_strs.el[b]) < 0);
-	}
-	BSEARCH(e, target_strs.el, target_strs.cnt, strcmp(*e, s));
-	return !!e;
-}
-
-struct used_bit_map {
-	char m[MAPPABLE_CHAR_COUNT * MAPPABLE_CHAR_COUNT];
-};
-
-static int free_as_singleton_code(
-	const struct used_bit_map *used,
-	int key_code)
-{
-	size_t i;
-
-	for (i = key_code * MAPPABLE_CHAR_COUNT;
-			i < (key_code + 1) * MAPPABLE_CHAR_COUNT;
-			i++) {
-		if (used->m[i])
-			return 0;
-	}
-	return 1;
-}
-
-static void get_free_kanji_keys(struct used_bit_map *used)
-{
-	size_t i;
-
-	verify_initialized();
-	memset(used, 0, sizeof(*used));
-
-	for (i = 0; i < codes.cnt; i++) {
-		ssize_t first_key_off = char_to_key_index(codes.el[i].orig[0]);
-
-		if (first_key_off == -1)
-			continue;
-
-		first_key_off *= MAPPABLE_CHAR_COUNT;
-
-		if (strlen(codes.el[i].orig) >= 2)
-			used->m[
-				first_key_off
-				+ char_to_key_index(codes.el[i].orig[1])
-			] = 1;
-		else
-			memset(used->m + first_key_off, 1, MAPPABLE_CHAR_COUNT);
-	}
-}
-
-void get_free_kanji_keys_count(struct unused_kanji_keys *u)
-{
-	struct used_bit_map used;
-	size_t key1;
-
-	get_free_kanji_keys(&used);
-
-	memset(u, 0, sizeof(*u));
-	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
-		size_t key2;
-		size_t shifted_key1 = key1 + MAPPABLE_CHAR_COUNT / 2;
-
-		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
-			if (!used.m[key1 * MAPPABLE_CHAR_COUNT + key2])
-				u->count[key1]++;
-		}
-
-		if (free_as_singleton_code(&used, shifted_key1))
-			u->count[key1]++;
-	}
-}
-
-void get_free_kanji_codes(struct short_code_array *codes)
-{
-	struct used_bit_map used;
-	size_t key1;
-
-	get_free_kanji_keys(&used);
-
-	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
-		size_t key2;
-		size_t shifted_key1 = key1 + MAPPABLE_CHAR_COUNT / 2;
-
-		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
-			if (used.m[key1 * MAPPABLE_CHAR_COUNT + key2])
-				continue;
-			GROW_ARRAY_BY(*codes, 1);
-			codes->el[codes->cnt - 1][0] =
-				KEY_INDEX_TO_CHAR_MAP[key1];
-			codes->el[codes->cnt - 1][1] =
-				KEY_INDEX_TO_CHAR_MAP[key2];
-		}
-
-		if (free_as_singleton_code(&used, shifted_key1)) {
-			GROW_ARRAY_BY(*codes, 1);
-			codes->el[codes->cnt - 1][0] =
-				KEY_INDEX_TO_CHAR_MAP[shifted_key1];
-		}
-	}
 }
 
 static void append_mapping_auto_katakana(char const *orig, char const *conv)
@@ -296,7 +177,6 @@ static void append_optimized(
 void init_romazi(struct romazi_config const *config)
 {
 	DESTROY_ARRAY(codes);
-	DESTROY_ARRAY(target_strs);
 
 #ifdef ROMAZI_F_KEY_KATAKANA
 	append_mapping(&codes, "FA",	"ファ");

@@ -49,6 +49,7 @@ int print_last_rank_contained(char const *const *argv, int argc)
 	struct kanji_distribution kanji_distribution = {0};
 	size_t i;
 	struct romazi_config romazi_config = {0};
+	struct key_mapping_array romazi_m = {0};
 
 	memset(&flags, 0, sizeof(flags));
 	init_romazi_config_for_cli_flags(&romazi_config);
@@ -83,6 +84,9 @@ int print_last_rank_contained(char const *const *argv, int argc)
 	}
 
 	init_romazi(&romazi_config);
+	get_romazi_codes(&romazi_m);
+	kanji_distribution_set_preexisting_convs(
+		&kanji_distribution, &romazi_m);
 
 	if (argc) {
 		int res = kanji_distribution_parse_user_cutoff(
@@ -98,6 +102,9 @@ int print_last_rank_contained(char const *const *argv, int argc)
 	for (i = 0; i < kanji_distribution.line_stats_nr; i++)
 		print_line_stats(&kanji_distribution.line_stats[i]);
 	print_stats_summary(&kanji_distribution);
+
+	kanji_distribution_destroy(&kanji_distribution);
+	DESTROY_ARRAY(romazi_m);
 
 	return 0;
 }

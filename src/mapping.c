@@ -93,25 +93,25 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 	size_t codes_consumed[KANJI_KEY_COUNT] = {0};
 
 	struct kanji_distribution kd = {0};
-	struct short_code_array free_kanji_codes = {0};
 
+	kanji_distribution_set_preexisting_convs(&kd, m);
 	kanji_distribution_auto_pick_cutoff(&kd);
 	kanji_distribution_populate(&kd);
-	get_free_kanji_codes(&free_kanji_codes);
 
 	/*
-	 * この時点で、free_kanji_codesが既に１打鍵目を共有するコード群ごとに
-	 * 使用頻度に基づいて並べ替え済みです。
+	 * この時点で、kd.unused_kanji_origsが既に１打鍵目を共有する
+	 * コード群ごとに使用頻度に基づいて並べ替え済みです。
 	 * 更にコードを打ちやすい順に並べ替えれば、以降の論理の流れでよく使う漢
 	 * 字は打ちやすいコードに割り当てられます。
 	 */
 	if (ergonomic_sort)
-		QSORT(, free_kanji_codes.el, free_kanji_codes.cnt,
-		      ergonomic_lt(free_kanji_codes.el[a],
-				   free_kanji_codes.el[b]));
+		QSORT(, kd.unused_kanji_origs.el, kd.unused_kanji_origs.cnt,
+		      ergonomic_lt(kd.unused_kanji_origs.el[a],
+				   kd.unused_kanji_origs.el[b]));
 
-	for (free_code = 0; free_code < free_kanji_codes.cnt; free_code++) {
-		char first_key_ch = free_kanji_codes.el[free_code][0];
+	for (free_code = 0; free_code < kd.unused_kanji_origs.cnt;
+	     free_code++) {
+		char first_key_ch = kd.unused_kanji_origs.el[free_code][0];
 		ssize_t first_key_i = char_to_key_index_or_die(first_key_ch);
 		struct line_stats *line_stats;
 		size_t next_code_i;
@@ -136,13 +136,13 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 			BUG("kanji_distributionの１打鍵目が'%zd'のコード数が"
 			    "足りません", first_key_i);
 		GROW_ARRAY_BY(*m, 1);
-		memcpy(m->el[m->cnt - 1].orig, free_kanji_codes.el[free_code],
-		       2);
+		memcpy(m->el[m->cnt - 1].orig,
+		       kd.unused_kanji_origs.el[free_code], 2);
 		strncpy(m->el[m->cnt - 1].conv, line_stats->e[next_code_i]->c,
 			sizeof(m->el->conv));
 	}
 
-	DESTROY_ARRAY(free_kanji_codes);
+	kanji_distribution_destroy(&kd);
 }
 
 void init_mapping_config_for_cli_flags(struct mapping_config *config)

@@ -1,14 +1,15 @@
 #include "commands.h"
-
+#include "kanji_distribution.h"
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
 
 int free_kanji_keys(char const *const *argv, int argc)
 {
-	struct short_code_array codes = {0};
 	size_t i;
 	struct romazi_config romazi_config = {0};
+	struct key_mapping_array romazi_m = {0};
+	struct kanji_distribution kd = {0};
 
 	init_romazi_config_for_cli_flags(&romazi_config);
 
@@ -25,11 +26,15 @@ int free_kanji_keys(char const *const *argv, int argc)
 	}
 
 	init_romazi(&romazi_config);
-	get_free_kanji_codes(&codes);
-	for (i = 0; i < codes.cnt; i++)
-		xfprintf(out, "%.2s\n", codes.el[i]);
+	get_romazi_codes(&romazi_m);
+	kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
+	
+	for (i = 0; i < kd.unused_kanji_origs.cnt; i++)
+		xfprintf(out, "%.2s\n", kd.unused_kanji_origs.el[i]);
 
-	free(codes.el);
+	DESTROY_ARRAY(romazi_m);
+	kanji_distribution_destroy(&kd);
+
 	return 0;
 }
 
