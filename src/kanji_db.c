@@ -4059,21 +4059,48 @@ size_t kanji_db_nr(void)
 	return sizeof(kanji) / sizeof(*kanji);
 }
 
+static void verify_codepoint_sorted(void)
+{
+	size_t i;
+	uint16_t rsc_sort_key = 0;
+
+	if (sorted)
+		return;
+
+	for (i = 0; i < kanji_db_nr(); i++) {
+		if (kanji[i].cutoff_type)
+			rsc_sort_key++;
+		kanji[i].rsc_sort_key = rsc_sort_key;
+	}
+	QSORT(, kanji, kanji_db_nr(),
+	      strcmp(kanji[a].c, kanji[b].c) < 0);
+	sorted = 1;
+}
+
 struct kanji_entry const *kanji_db(void)
 {
-	if (!sorted) {
-		size_t i;
-		uint16_t rsc_sort_key = 0;
-		for (i = 0; i < kanji_db_nr(); i++) {
-			if (kanji[i].cutoff_type)
-				rsc_sort_key++;
-			kanji[i].rsc_sort_key = rsc_sort_key;
-		}
-		QSORT(, kanji, kanji_db_nr(),
-		      strcmp(kanji[a].c, kanji[b].c) < 0);
-		sorted = 1;
-	}
+	verify_codepoint_sorted();
 	return kanji;
+}
+
+uint16_t *rsc_sorted;
+
+static int distinct_rsc_lt(
+	struct kanji_entry const *, struct kanji_entry const *);
+
+uint16_t const *kanji_db_rsc_sorted(void)
+{
+	verify_codepoint_sorted();
+	if (!rsc_sorted) {
+		uint16_t i;
+		rsc_sorted = xcalloc(kanji_db_nr(), sizeof(*rsc_sorted));
+		for (i = 0; i < kanji_db_nr(); i++)
+			rsc_sorted[i] = i;
+		QSORT(, rsc_sorted, kanji_db_nr(),
+		      distinct_rsc_lt(kanji + rsc_sorted[a],
+				      kanji + rsc_sorted[b]));
+	}
+	return rsc_sorted;
 }
 
 struct kanji_entry const *kanji_db_lookup(char const *kanji)

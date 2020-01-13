@@ -131,4 +131,18 @@ int main(void)
 			xfputs("ok\n", out);
 	}
 	end_test("ok\n");
+
+	start_test("rsc_sorted_has_ascending_rsc_sort_key");
+	{
+		int k;
+		struct kanji_entry const *db = kanji_db();
+		uint16_t const *rsc = kanji_db_rsc_sorted();
+
+		for (k = 1; k < kanji_db_nr(); k++) {
+			if (db[rsc[k]].rsc_sort_key <
+			    db[rsc[k - 1]].rsc_sort_key)
+				xfprintf(out, "%s", db[rsc[k]].c);
+		}
+	}
+	end_test("");
 }

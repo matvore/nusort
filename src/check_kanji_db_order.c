@@ -232,30 +232,27 @@ static void output_db_line(
 
 static int check_order(void)
 {
-	struct kanji_entry const **k = xcalloc(kanji_db_nr(), sizeof(*k));
 	size_t i;
 	struct sort_key key = {0, 0};
 	int res = 0;
 	struct sort_info *prev_si = NULL;
-
-	for (i = 0; i < kanji_db_nr(); i++)
-		k[i] = kanji_db() + i;
-
-	predictably_sort_by_rsc(k, kanji_db_nr());
+	struct kanji_entry const *k = kanji_db();
+	uint16_t const *rsc = kanji_db_rsc_sorted();
 
 	for (i = 0; i < kanji_db_nr(); i++) {
 		struct sort_key smallest_matching = {0xff, 0xff};
 		struct sort_info *si;
 		size_t ki;
+		struct kanji_entry const *ke = k + rsc[i];
 
 		BSEARCH(si, sort_infos.el, sort_infos.cnt,
-			strcmp(si->c, k[i]->c));
+			strcmp(si->c, ke->c));
 
 		if (!si) {
 			xfprintf(err,
 				 "Unihanで並べ替えキーが見つかり"
 				 "ませんでした: %s\n",
-				 k[i]->c);
+				 ke->c);
 			res = 30;
 			break;
 		}
@@ -267,22 +264,20 @@ static int check_order(void)
 				smallest_matching = si->k[ki];
 		}
 		if (smallest_matching.rad == 0xff) {
-			xfprintf(err, "err: %s\n", k[i]->c);
+			xfprintf(err, "err: %s\n", ke->c);
 			res = 31;
 			break;
 		}
 		key = smallest_matching;
 		if (!quiet) {
 			if (!db_out)
-				output_char_line(k[i], si);
+				output_char_line(ke, si);
 			else
-				output_db_line(k[i], prev_si, si);
+				output_db_line(ke, prev_si, si);
 		}
 
 		prev_si = si;
 	}
-
-	free(k);
 
 	return res;
 }

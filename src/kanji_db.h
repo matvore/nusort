@@ -33,6 +33,12 @@ size_t kanji_db_nr(void);
 /* 返された配列は codepoint によって並べ替え済みです。*/
 struct kanji_entry const *kanji_db(void);
 
+/*
+ * 返された配列は kanji_db に対するインデックスであって rsc によって並べ替え
+ * 済みです。
+ */
+uint16_t const *kanji_db_rsc_sorted(void);
+
 struct kanji_entry const *kanji_db_lookup(char const *kanji);
 
 /*
