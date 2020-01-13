@@ -39,6 +39,9 @@ struct kanji_entry const *kanji_db(void);
  */
 uint16_t const *kanji_db_rsc_sorted(void);
 
+/* e の kanji_db_rsc_sorted 中のインデックスを返す。*/
+uint16_t kanji_db_rsc_index(struct kanji_entry const *e);
+
 struct kanji_entry const *kanji_db_lookup(char const *kanji);
 
 /*

@@ -4085,22 +4085,42 @@ struct kanji_entry const *kanji_db(void)
 
 uint16_t *rsc_sorted;
 
-static int distinct_rsc_lt(
+static int distinct_rsc_cmp(
 	struct kanji_entry const *, struct kanji_entry const *);
+
+static void verify_rsc_sorted(void)
+{
+	uint16_t i;
+
+	if (rsc_sorted)
+		return;
+
+	verify_codepoint_sorted();
+
+	rsc_sorted = xcalloc(kanji_db_nr(), sizeof(*rsc_sorted));
+	for (i = 0; i < kanji_db_nr(); i++)
+		rsc_sorted[i] = i;
+	QSORT(, rsc_sorted, kanji_db_nr(),
+	      distinct_rsc_cmp(kanji + rsc_sorted[a],
+			       kanji + rsc_sorted[b]) < 0);
+}
 
 uint16_t const *kanji_db_rsc_sorted(void)
 {
-	verify_codepoint_sorted();
-	if (!rsc_sorted) {
-		uint16_t i;
-		rsc_sorted = xcalloc(kanji_db_nr(), sizeof(*rsc_sorted));
-		for (i = 0; i < kanji_db_nr(); i++)
-			rsc_sorted[i] = i;
-		QSORT(, rsc_sorted, kanji_db_nr(),
-		      distinct_rsc_lt(kanji + rsc_sorted[a],
-				      kanji + rsc_sorted[b]));
-	}
+	verify_rsc_sorted();
 	return rsc_sorted;
+}
+
+uint16_t kanji_db_rsc_index(struct kanji_entry const *e)
+{
+	ssize_t index;
+	verify_codepoint_sorted();
+	verify_rsc_sorted();
+	BSEARCH_INDEX(index, kanji_db_nr(), ,
+		      distinct_rsc_cmp(kanji + rsc_sorted[index], e));
+	if (index < 0)
+		BUG("%s が配列で見つからない", e->c);
+	return index;
 }
 
 struct kanji_entry const *kanji_db_lookup(char const *kanji)
@@ -4110,24 +4130,27 @@ struct kanji_entry const *kanji_db_lookup(char const *kanji)
 	return e;
 }
 
-static int distinct_rsc_lt(
+static int distinct_rsc_cmp(
 	struct kanji_entry const *a,
 	struct kanji_entry const *b)
 {
+	if (a == b)
+		return 0;
+
 	if (a->rsc_sort_key != b->rsc_sort_key)
-		return a->rsc_sort_key < b->rsc_sort_key;
+		return a->rsc_sort_key < b->rsc_sort_key ? -1 : 1;
 
 	if (a->cutoff_type || b->cutoff_type) {
 		if (a->cutoff_type && b->cutoff_type)
 			BUG("共通の部首+画数キーの字では区切り字が二個ある: "
 			    "%s と %s", a->c, b->c);
-		return a->cutoff_type;
+		return a->cutoff_type ? -1 : 1;
 	}
 
-	return strcmp(a->c, b->c) < 0;
+	return strcmp(a->c, b->c);
 }
 
 void predictably_sort_by_rsc(struct kanji_entry const **e, size_t count)
 {
-	QSORT(, e, count, distinct_rsc_lt(e[a], e[b]));
+	QSORT(, e, count, distinct_rsc_cmp(e[a], e[b]) < 0);
 }

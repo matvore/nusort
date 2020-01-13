@@ -145,4 +145,21 @@ int main(void)
 		}
 	}
 	end_test("");
+
+	start_test("can_find_rsc_sorted_index");
+	{
+		xfprintf(
+			out, "%s",
+			kanji_db()[
+				kanji_db_rsc_sorted()[
+					kanji_db_rsc_index(
+						kanji_db_lookup("一"))]].c);
+		xfprintf(
+			out, "%s",
+			kanji_db()[
+				kanji_db_rsc_sorted()[
+					kanji_db_rsc_index(
+						kanji_db_lookup("楽"))]].c);
+	}
+	end_test("一楽");
 }
