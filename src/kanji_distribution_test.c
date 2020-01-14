@@ -52,9 +52,7 @@ int main(void)
 		struct kanji_distribution kd = {0};
 		struct key_mapping_array romazi_m = {0};
 
-		init_romazi(&romazi_config);
-
-		get_romazi_codes(&romazi_m);
+		get_romazi_codes(&romazi_config, &romazi_m);
 
 		kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
 		kanji_distribution_auto_pick_cutoff(&kd);
@@ -148,8 +146,7 @@ int main(void)
 		struct kanji_distribution kd = {0};
 		int line;
 
-		init_romazi(&romazi_config);
-		get_romazi_codes(&romazi_m);
+		get_romazi_codes(&romazi_config, &romazi_m);
 
 		kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
 		kanji_distribution_auto_pick_cutoff(&kd);

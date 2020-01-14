@@ -173,7 +173,6 @@ int parse_mapping_flags(
 int mapping_populate(
 	struct mapping_config const *config, struct key_mapping_array *mapping)
 {
-	get_romazi_codes(mapping);
 	if (config->include_kanji)
 		get_kanji_codes(mapping, config->ergonomic_sort);
 

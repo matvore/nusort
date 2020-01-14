@@ -83,8 +83,7 @@ int print_last_rank_contained(char const *const *argv, int argc)
 		}
 	}
 
-	init_romazi(&romazi_config);
-	get_romazi_codes(&romazi_m);
+	get_romazi_codes(&romazi_config, &romazi_m);
 	kanji_distribution_set_preexisting_convs(
 		&kanji_distribution, &romazi_m);
 

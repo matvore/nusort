@@ -15,8 +15,6 @@ int main(void)
 		.classic_wo = 1,
 	};
 
-	init_romazi(&romazi_config);
-
 	set_test_source_file(__FILE__);
 	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
 
@@ -27,6 +25,7 @@ int main(void)
 			.ergonomic_sort = 1,
 		};
 		struct key_mapping_array m = {0};
+		get_romazi_codes(&romazi_config, &m);
 		if (!mapping_populate(&config, &m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m, "");
@@ -42,6 +41,7 @@ int main(void)
 			.ergonomic_sort = 1,
 		};
 		struct key_mapping_array m = {0};
+		get_romazi_codes(&romazi_config, &m);
 		if (!mapping_populate(&config, &m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m, "/");

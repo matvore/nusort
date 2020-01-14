@@ -26,9 +26,7 @@ static void collect_potential_mappings(struct stats_map *out)
 	struct romazi_config romazi_config = {0};
 	int i;
 
-	init_romazi(&romazi_config);
-
-	get_romazi_codes(&input_mapping);
+	get_romazi_codes(&romazi_config, &input_mapping);
 
 	for (i = 0; i < input_mapping.cnt; i++) {
 		char const *conv = input_mapping.el[i].conv;

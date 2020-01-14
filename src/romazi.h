@@ -46,9 +46,7 @@ void init_romazi_config_for_cli_flags(struct romazi_config *config);
 int parse_romazi_flags(
 	int *argc, char const *const **argv, struct romazi_config *config);
 
-/* init_romazi_and_return_status を呼び、失敗のときはプロセスを終了する. */
-void init_romazi(struct romazi_config const *);
-
-void get_romazi_codes(struct key_mapping_array *codes_);
+void get_romazi_codes(
+	struct romazi_config const *, struct key_mapping_array *);
 
 #endif

@@ -28,7 +28,7 @@ int make_map(char const *const *argv, int argc) {
 		goto cleanup;
 	}
 
-	init_romazi(&romazi_config);
+	get_romazi_codes(&romazi_config, &mapping);
 	if (!mapping_populate(&mapping_config, &mapping)) {
 		res = 11;
 		goto cleanup;

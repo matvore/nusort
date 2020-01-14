@@ -47,7 +47,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 		return 3;
 	}
 
-	init_romazi(&romazi_config);
+	get_romazi_codes(&romazi_config, &mapping);
 
 	if (!mapping_populate(&mapping_config, &mapping))
 		return 250;

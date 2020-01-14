@@ -108,8 +108,7 @@ int main(void)
 		};
 		struct key_mapping_array mapping = {0};
 
-		init_romazi(&config);
-		get_romazi_codes(&mapping);
+		get_romazi_codes(&config, &mapping);
 		show_code_for_orig(&mapping, "'");
 
 		DESTROY_ARRAY(mapping);
@@ -121,8 +120,7 @@ int main(void)
 		struct romazi_config config = {0};
 		struct key_mapping_array mapping = {0};
 
-		init_romazi(&config);
-		get_romazi_codes(&mapping);
+		get_romazi_codes(&config, &mapping);
 
 		show_code_for_orig(&mapping, "hya");
 		show_code_for_orig(&mapping, "HYA");
@@ -142,8 +140,7 @@ int main(void)
 		struct romazi_config config = {0};
 		struct key_mapping_array mapping = {0};
 
-		init_romazi(&config);
-		get_romazi_codes(&mapping);
+		get_romazi_codes(&config, &mapping);
 
 		show_code_for_orig(&mapping, "dya");
 		show_code_for_orig(&mapping, "DYA");
@@ -165,8 +162,7 @@ int main(void)
 		struct romazi_config config = { .optimize_keystrokes = 1 };
 		struct key_mapping_array mapping = {0};
 
-		init_romazi(&config);
-		get_romazi_codes(&mapping);
+		get_romazi_codes(&config, &mapping);
 
 		print_code_length(&mapping, "た");
 		print_code_length(&mapping, "し");
