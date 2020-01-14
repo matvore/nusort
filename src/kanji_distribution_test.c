@@ -3,6 +3,21 @@
 #include "test_util.h"
 #include "util.h"
 
+static int is_in_mapping(
+	struct kanji_distribution const *kd, struct kanji_entry const *ke)
+{
+	int line;
+	for (line = 0; line < kd->line_stats_nr; line++) {
+		int ke_i;
+		for (ke_i = 0; ke_i < kd->line_stats[line].e_nr; ke_i++) {
+			if (kd->line_stats[line].e[ke_i] == ke)
+				return 1;
+		}
+	}
+
+	return 0;
+}
+
 static void validate_line(struct line_stats const *ls)
 {
 	int e;
@@ -121,6 +136,43 @@ int main(void)
 	
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
+	}
+	end_test("");
+
+	start_test("does_not_pass_up_distinct_but_uncommon_kugiri_ji");
+	{
+		struct key_mapping_array romazi_m = {0};
+		struct romazi_config romazi_config = {
+			.optimize_keystrokes = 1,
+		};
+		struct kanji_distribution kd = {0};
+		int line;
+
+		init_romazi(&romazi_config);
+		get_romazi_codes(&romazi_m);
+
+		kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
+		kanji_distribution_auto_pick_cutoff(&kd);
+		kanji_distribution_populate(&kd);
+
+		for (line = 0; line < kd.line_stats_nr; line++) {
+			struct kanji_entry const *k =
+				kd.line_stats[line].cutoff;
+			uint16_t rsc_index = kanji_db_rsc_index(k);
+			int orig_co_type = k->cutoff_type;
+
+			while (rsc_index > 0) {
+				k = kanji_db() +
+					kanji_db_rsc_sorted()[--rsc_index];
+				if (is_in_mapping(&kd, k))
+					break;
+				if (k->cutoff_type > orig_co_type)
+					xfprintf(out, "%s", k->c);
+			}
+		}
+
+		kanji_distribution_destroy(&kd);
+		DESTROY_ARRAY(romazi_m);
 	}
 	end_test("");
 }
