@@ -155,14 +155,14 @@ static int is_better_cutoff(
 	return best->ranking > candidate->ranking;
 }
 
-static size_t find_best_cutoff(
+static unsigned find_best_cutoff_for_rank_target(
 	int *cumulative_offset,
-	size_t start_from_kanji,
+	unsigned start_from_kanji,
 	struct kanji_distribution const *kd)
 {
-	size_t ki;
+	unsigned ki;
 	int best_offset;
-	ssize_t best_ki = -1;
+	long best_ki = -1;
 
 	for (ki = start_from_kanji; ki < kd->available.cnt; ki++) {
 		int next_offset;
@@ -216,6 +216,21 @@ void kanji_distribution_set_preexisting_convs(
 
 	Conv *preexisting_convs = xcalloc(m->cnt, sizeof(Conv));
 
+	if (!kd->rsc_range_end)
+		kd->rsc_range_end = kanji_db_nr();
+	if (kd->rsc_range_end > kanji_db_nr())
+		DIE(0, "rsc_range_end が範囲外: %d", kd->rsc_range_end);
+	if (kd->rsc_range_end < kanji_db_nr()) {
+		struct kanji_entry const *end =
+			kanji_from_rsc_index(kd->rsc_range_end);
+		if (!end->cutoff_type)
+			DIE(0, "rsc_range_end の該当する字が区切り字ではない: "
+			    "%s (%d)", end->c, kd->rsc_range_end);
+	}
+	if (kd->rsc_range_start > kd->rsc_range_end)
+		DIE(0, "start > end: %d > %d",
+		    kd->rsc_range_start, kd->rsc_range_end);
+
 	fill_used_bit_map(m, &used);
 
 	fill_unused_kanji_orig_cnts(kd, &used);
@@ -233,7 +248,13 @@ void kanji_distribution_set_preexisting_convs(
 
 	for (i = 0; i < kanji_db_nr(); i++) {
 		const struct kanji_entry *e = kanji_db() + i;
+		unsigned rsc_index = kanji_db_rsc_index(e);
 		Conv *prec = NULL;
+
+		if (rsc_index >= kd->rsc_range_end)
+			continue;
+		if (rsc_index < kd->rsc_range_start)
+			continue;
 
 		BSEARCH(prec, preexisting_convs, m->cnt, strcmp(*prec, e->c));
 
@@ -250,35 +271,56 @@ void kanji_distribution_set_preexisting_convs(
 	      kd->available.el[a]->ranking < kd->available.el[b]->ranking);
 
 	if (kd->available.cnt <= kd->total_chars)
-		DIE(0, "マッピングに使える漢字が足りない: %zu <= %d",
-		    kd->available.cnt, kd->total_chars);
+		kd->target_rank = 0xffff;
+	else
+		kd->target_rank = kd->available.el[kd->total_chars]->ranking;
 
-	kd->target_rank = kd->available.el[kd->total_chars]->ranking;
+	kd->line_stats[0].cutoff = kanji_from_rsc_index(kd->rsc_range_start);
+	if (!kd->line_stats[0].cutoff->cutoff_type)
+		DIE(0, "rsc_range_start の該当する字が区切り字ではない: "
+		    "%s (%d)",
+		    kd->line_stats[0].cutoff->c, kd->rsc_range_start);
+}
 
-	kd->line_stats[0].cutoff = kanji_db_lookup("一");
-	if (!kd->line_stats[0].cutoff)
-		DIE(0, "「一」が漢字データベースで見つかりませんでした。");
+static unsigned find_best_cutoff_for_assigning_all_kanji(
+	unsigned start_from_kanji,
+	struct kanji_distribution const *kd)
+{
+	unsigned ki = start_from_kanji + KANJI_KEY_COUNT;
+
+	if (ki >= kd->available.cnt)
+		return kd->available.cnt;
+
+	while (!kd->available.el[ki]->cutoff_type)
+		ki--;
+
+	return ki;
 }
 
 void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd)
 {
 	int cumulative_offset = 0;
-	size_t ki = 0;
-	size_t cutoff_kanji_count;
+	int line;
+	unsigned ki = 0;
 
 	predictably_sort_by_rsc(kd->available.el, kd->available.cnt);
-	for (cutoff_kanji_count = 1;
-	     cutoff_kanji_count < kd->line_stats_nr;
-	     cutoff_kanji_count++) {
-		rank_coverage_reset(
-			kd->target_rank,
-			kd->line_stats[cutoff_kanji_count - 1].available);
+	for (line = 1; line < kd->line_stats_nr; line++) {
+		if (kd->available.cnt <= kd->total_chars) {
+			ki = find_best_cutoff_for_assigning_all_kanji(ki, kd);
+			if (ki == kd->available.cnt)
+				break;
+		} else {
+			rank_coverage_reset(
+				kd->target_rank,
+				kd->line_stats[line - 1].available);
+			ki = find_best_cutoff_for_rank_target(
+				&cumulative_offset, ki, kd);
+		}
 
-		ki = find_best_cutoff(&cumulative_offset, ki, kd);
-
-		kd->line_stats[cutoff_kanji_count].cutoff =
-			kd->available.el[ki];
+		kd->line_stats[line].cutoff = kd->available.el[ki];
 	}
+
+	kd->line_stats_nr = line;
 }
 
 int kanji_distribution_parse_user_cutoff(

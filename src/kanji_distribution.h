@@ -33,6 +33,12 @@ struct kanji_distribution {
 	size_t line_stats_nr;
 	struct line_stats line_stats[KANJI_KEY_COUNT];
 
+	/*
+	 * 部首+画数順の範囲内の漢字だけをマッピングに入れるように [start, end)
+	 * に設定します。
+	 */
+	uint16_t rsc_range_start, rsc_range_end;
+
 	struct {
 		struct kanji_entry const **el;
 		size_t cnt;
@@ -48,13 +54,14 @@ struct kanji_distribution {
 };
 
 /*
-Usage:
-  1. memset to 0
-  2. kanji_distribution_set_preexisting_convs を呼び出す
-  3. kanji_distribution_auto_pick_cutoff 又は _parse_user_cutoff を呼び出す
-  4. populate を呼び出す
-  5. kanji_distribution_destroy を呼び出す
-*/
+ * モジュールの用法:
+ *   1. kanji_distribution ストラクトを０に memset する
+ *   2. rsc 範囲を縮める場合 kd.start と kd.end を設定します
+ *   3. kanji_distribution_set_preexisting_convs を呼び出す
+ *   4. kanji_distribution_auto_pick_cutoff 又は _parse_user_cutoff を呼び出す
+ *   5. populate を呼び出す
+ *   6. kanji_distribution_destroy を呼び出す
+ */
 
 /*
  * 既存のマッピングを設定します。設定すると入力コードとダブらないようにしたり、
