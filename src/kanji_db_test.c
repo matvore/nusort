@@ -202,4 +202,14 @@ int main(void)
 			xfputs("失敗", out);
 	}
 	end_test("");
+
+	start_test("radicals_have_right_cutoff_type");
+	{
+		struct kanji_entry const *e;
+
+		e = kanji_db_lookup("皿");
+		if (e->cutoff_type != 2)
+			xfputs(e->c, out);
+	}
+	end_test("");
 }
