@@ -165,7 +165,10 @@ static size_t find_best_cutoff(
 	ssize_t best_ki = -1;
 
 	for (ki = start_from_kanji; ki < kd->available.cnt; ki++) {
-		int next_offset = rank_coverage_add_kanji(
+		int next_offset;
+		if (kd->available.el[ki]->ranking == 0xffff)
+			continue;
+		next_offset = rank_coverage_add_kanji(
 			kd->available.el[ki]->ranking);
 		if (!kd->available.el[ki + 1]->cutoff_type)
 			continue;
@@ -231,9 +234,6 @@ void kanji_distribution_set_preexisting_convs(
 	for (i = 0; i < kanji_db_nr(); i++) {
 		const struct kanji_entry *e = kanji_db() + i;
 		Conv *prec = NULL;
-
-		if (e->ranking == 0xffff)
-			continue;
 
 		BSEARCH(prec, preexisting_convs, m->cnt, strcmp(*prec, e->c));
 
