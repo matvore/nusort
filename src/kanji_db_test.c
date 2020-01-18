@@ -18,6 +18,18 @@ static void print_if_cutoff(char const *k)
 		xfprintf(out, "%s\n", k);
 }
 
+static void verify_rsc_order(char const *a, char const *b, char const *c)
+{
+	struct kanji_entry const *k1 = kanji_db_lookup(a);
+	struct kanji_entry const *k2 = kanji_db_lookup(b);
+	struct kanji_entry const *k3 = kanji_db_lookup(c);
+	if (k1->rsc_sort_key >= k2->rsc_sort_key ||
+	    k3->rsc_sort_key <= k2->rsc_sort_key)
+		xfprintf(out, "%d, %d, %d\n",
+			 k1->rsc_sort_key, k2->rsc_sort_key,
+			 k3->rsc_sort_key);
+}
+
 int main(void)
 {
 	set_test_source_file(__FILE__);
@@ -162,4 +174,32 @@ int main(void)
 						kanji_db_lookup("楽"))]].c);
 	}
 	end_test("一楽");
+
+	start_test("has_mu_radical");
+	{
+		struct kanji_entry const *mu = kanji_db_lookup("厶");
+		if (!mu)
+			xfputs("ない\n", out);
+	}
+	end_test("");
+
+	start_test("mottomo_has_iwaku_radical");
+	{
+		verify_rsc_order("日", "最", "月");
+	}
+	end_test("");
+
+	start_test("okasu_has_iwaku_radical");
+	{
+		verify_rsc_order("日", "冒", "月");
+	}
+	end_test("");
+
+	start_test("tooth_shintaiji_is_tooth_radicalits_own_radical");
+	{
+		if (kanji_db_lookup("齒")->rsc_sort_key >
+		    kanji_db_lookup("歯")->rsc_sort_key)
+			xfputs("失敗", out);
+	}
+	end_test("");
 }
