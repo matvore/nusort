@@ -29,6 +29,6 @@ int is_complete_utf8(char first_char, int size)
 	case 4:
 		return 1;
 	default:
-		BUG("size が無効です");
+		DIE(0, "size が無効です");
 	}
 }

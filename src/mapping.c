@@ -25,7 +25,7 @@ static int ergonomic_lt(const char *a, const char *b)
 	int column_val_a, column_val_b;
 
 	if (!strncmp(a, b, 2))
-		BUG("２つのキーコードが同値であるのは疑しい: %.2s", a);
+		DIE(0, "２つのキーコードが同値であるのは疑しい: %.2s", a);
 
 	if (fir_key_i_a != fir_key_i_b)
 		return fir_key_i_a < fir_key_i_b;
@@ -52,8 +52,8 @@ static int ergonomic_lt(const char *a, const char *b)
 	/* 1. prefer shorter input codes */
 	if (!a[1] || !b[1]) {
 		if (!a[1] && !b[1])
-			BUG("最初のキーが同じのに、２個のコード両方が１打鍵: "
-			    "%.2s %.2s?", a, b);
+			DIE(0, "最初のキーが同じのに、２個のコード両方が"
+			    "１打鍵: %.2s %.2s?", a, b);
 		return !a[1];
 	}
 
@@ -82,7 +82,7 @@ static int ergonomic_lt(const char *a, const char *b)
 	column_val_a = COLUMN_VALUE[sec_key_i_a % 10];
 	column_val_b = COLUMN_VALUE[sec_key_i_b % 10];
 	if (column_val_a == column_val_b) {
-		BUG("列が違うはずけれど、一緒でした: %.2s と %.2s", a, b);
+		DIE(0, "列が違うはずけれど、一緒でした: %.2s と %.2s", a, b);
 	}
 	return column_val_a < column_val_b;
 }
@@ -128,12 +128,12 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 				first_key_i);
 
 		if (line_stats == NULL)
-			BUG("kanji_distributionで行が見つかりません：%zd",
+			DIE(0, "kanji_distributionで行が見つかりません：%zd",
 			    first_key_i);
 
 		next_code_i = codes_consumed[first_key_i]++;
 		if (next_code_i >= line_stats->e_nr)
-			BUG("kanji_distributionの１打鍵目が'%zd'のコード数が"
+			DIE(0, "kanji_distributionの１打鍵目が'%zd'のコード数が"
 			    "足りません", first_key_i);
 		GROW_ARRAY_BY(*m, 1);
 		memcpy(m->el[m->cnt - 1].orig,
@@ -148,7 +148,7 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 void init_mapping_config_for_cli_flags(struct mapping_config *config)
 {
 	if (!bytes_are_zero(config, sizeof(*config)))
-		BUG("mapping_config not initialized to zero bytes");
+		DIE(0, "mapping_config not initialized to zero bytes");
 	config->include_kanji = 1;
 }
 

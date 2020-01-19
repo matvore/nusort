@@ -116,6 +116,6 @@ void keyboard_update(
 			continue;
 		}
 
-		BUG("conv が長すぎます");
+		DIE(0, "conv が長すぎます");
 	}
 }

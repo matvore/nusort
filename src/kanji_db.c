@@ -4120,7 +4120,7 @@ uint16_t kanji_db_rsc_index(struct kanji_entry const *e)
 	BSEARCH_INDEX(index, kanji_db_nr(), ,
 		      distinct_rsc_cmp(kanji + rsc_sorted[index], e));
 	if (index < 0)
-		BUG("%s が配列で見つからない", e->c);
+		DIE(0, "%s が配列で見つからない", e->c);
 	return index;
 }
 
@@ -4143,7 +4143,7 @@ static int distinct_rsc_cmp(
 
 	if (a->cutoff_type || b->cutoff_type) {
 		if (a->cutoff_type && b->cutoff_type)
-			BUG("共通の部首+画数キーの字では区切り字が二個ある: "
+			DIE(0, "共通の部首+画数キーの字では区切り字が二個ある: "
 			    "%s と %s", a->c, b->c);
 		return a->cutoff_type ? -1 : 1;
 	}

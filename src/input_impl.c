@@ -29,7 +29,7 @@ static int is_code_prefix(
 				       extended_input));
 
 		if (extended_i >= 0)
-			BUG("一致するコードはあるはずありません：%s",
+			DIE(0, "一致するコードはあるはずありません：%s",
 			    so_far_input);
 		extended_i = ~extended_i;
 

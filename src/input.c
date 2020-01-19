@@ -16,7 +16,7 @@ static void check_term_op(int res)
 	if (res == -1)
 		DIE(1, "ターミナルの属性を設定する際にエラーが発生しました。");
 
-	BUG("規定に反する戻り値");
+	DIE(0, "規定に反する戻り値");
 }
 
 static void customize_term_attributes(struct termios t)

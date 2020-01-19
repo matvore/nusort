@@ -57,7 +57,7 @@ static uint64_t kata_count_of(struct stats_map const *stats, char const *hira)
 	BSEARCH(kata_entry, stats->el, stats->cnt,
 		strcmp(kata_entry->kana, kata));
 	if (!kata_entry)
-		BUG("%s （%sを片仮名にした）のための入力コードがない",
+		DIE(0, "%s （%sを片仮名にした）のための入力コードがない",
 		    kata, hira);
 
 	return kata_entry->count;
@@ -108,7 +108,7 @@ int kana_stats(char const *const *argv, int argc)
 			hira_total++;
 			break;
 		default:
-			BUG("仮名のはずなのに仮名範囲外：%s", entry->kana);
+			DIE(0, "仮名のはずなのに仮名範囲外：%s", entry->kana);
 		}
 	}
 
@@ -130,7 +130,7 @@ int kana_stats(char const *const *argv, int argc)
 			kata_count = i_entry->count;
 			break;
 		default:
-			BUG("仮名のはずなのに仮名範囲外：%s", i_entry->kana);
+			DIE(0, "仮名のはずなのに仮名範囲外：%s", i_entry->kana);
 		}
 
 		if (!hira_count && !kata_count)

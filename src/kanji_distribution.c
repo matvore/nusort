@@ -21,7 +21,7 @@ static void fill_used_bit_map(
 	size_t i;
 
 	if (!bytes_are_zero(used, sizeof(*used)))
-		BUG("!bytes_are_zero");
+		DIE(0, "!bytes_are_zero");
 
 	for (i = 0; i < m->cnt; i++) {
 		ssize_t first_key_off = char_to_key_index(m->el[i].orig[0]);
@@ -48,7 +48,7 @@ static void fill_unused_kanji_orig_cnts(
 
 	if (!bytes_are_zero(kd->unused_kanji_orig_cnts,
 			    sizeof(kd->unused_kanji_orig_cnts)))
-		BUG("!bytes_are_zero");
+		DIE(0, "!bytes_are_zero");
 
 	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
 		size_t key2;
@@ -71,7 +71,7 @@ static void fill_unused_kanji_origs(
 
 	if (!bytes_are_zero(&kd->unused_kanji_origs,
 			    sizeof(kd->unused_kanji_origs)))
-		BUG("!bytes_are_zero");
+		DIE(0, "!bytes_are_zero");
 
 	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
 		size_t key2;
@@ -229,7 +229,7 @@ void kanji_distribution_set_preexisting_convs(
 	      strcmp(preexisting_convs[a], preexisting_convs[b]) < 0);
 
 	if (!bytes_are_zero(&kd->available, sizeof(kd->available)))
-		BUG("!bytes_are_zero");
+		DIE(0, "!bytes_are_zero");
 
 	for (i = 0; i < kanji_db_nr(); i++) {
 		const struct kanji_entry *e = kanji_db() + i;
@@ -250,14 +250,14 @@ void kanji_distribution_set_preexisting_convs(
 	      kd->available.el[a]->ranking < kd->available.el[b]->ranking);
 
 	if (kd->available.cnt <= kd->total_chars)
-		BUG("マッピングに使える漢字が足りない: %zu <= %d",
+		DIE(0, "マッピングに使える漢字が足りない: %zu <= %d",
 		    kd->available.cnt, kd->total_chars);
 
 	kd->target_rank = kd->available.el[kd->total_chars]->ranking;
 
 	kd->line_stats[0].cutoff = kanji_db_lookup("一");
 	if (!kd->line_stats[0].cutoff)
-		BUG("「一」が漢字データベースで見つかりませんでした。");
+		DIE(0, "「一」が漢字データベースで見つかりませんでした。");
 }
 
 void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd)

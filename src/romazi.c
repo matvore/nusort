@@ -31,7 +31,7 @@ KeyIndex char_to_key_index(char ch)
 	KeyIndex key_index;
 
 	if (ch >= sizeof(char_to_key_index_map) || ch <= 0)
-		BUG("%d", (int) ch);
+		DIE(0, "%d", (int) ch);
 
 	if (char_to_key_index_map[0])
 		return char_to_key_index_map[(int) ch];
@@ -49,7 +49,7 @@ KeyIndex char_to_key_index_or_die(char ch)
 	KeyIndex i = char_to_key_index(ch);
 
 	if (i == -1)
-		BUG("char -> キーインデックスマップで見つからない： %c", ch);
+		DIE(0, "char -> キーインデックスマップで見つからない： %c", ch);
 
 	return i;
 }
@@ -90,7 +90,7 @@ void hiragana_to_katakana(char *conv)
 void init_romazi_config_for_cli_flags(struct romazi_config *config)
 {
 	if (!bytes_are_zero(config, sizeof(*config)))
-		BUG("romazi_config not initialized to zero bytes");
+		DIE(0, "romazi_config not initialized to zero bytes");
 
 	config->include_kanji_numerals = 1;
 	config->classic_wo = 1;

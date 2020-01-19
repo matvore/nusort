@@ -54,7 +54,7 @@ int xfgetc(FILE *stream)
 {
 	int c;
 	if (ferror(stream) != 0)
-		BUG("fgetc の前にファイルエラーが未処理です");
+		DIE(0, "fgetc の前にファイルエラーが未処理です");
 	c = fgetc(stream);
 	if (ferror(stream) != 0)
 		DIE(0, "fgetc");
@@ -75,7 +75,7 @@ void xfputs(char const *s, FILE *stream)
 	if (res == EOF)
 		DIE(1, "fputs");
 	if (res < 0)
-		BUG("fputsから規定に反する戻り値");
+		DIE(0, "fputsから規定に反する戻り値");
 }
 
 void xfwrite(void const *buf, size_t size, FILE *stream)
@@ -211,6 +211,6 @@ size_t find_hashmap_entry_impl(
 
 		i = (i + 1) % bucket_cnt;
 		if (i == key_hash)
-			BUG("hash map is already full");
+			DIE(0, "hash map is already full");
 	}
 }

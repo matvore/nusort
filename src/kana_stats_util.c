@@ -42,7 +42,7 @@ void print_kana_stats_line(
 	uint64_t hira_kata_count = hira_count + kata_count;
 
 	if (hira_kata_count > all_kana_count)
-		BUG("all_kana_count が低すぎます: %"PRIu64, all_kana_count);
+		DIE(0, "all_kana_count が低すぎます: %"PRIu64, all_kana_count);
 
 	xfputs(left_column, out);
 	while (left_column_str_width++ < LEFT_COLUMN_WIDTH)

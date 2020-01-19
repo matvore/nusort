@@ -94,14 +94,6 @@ static inline void qsort_push_frame(
 	}
 }
 
-#define BUG(...) \
-do { \
-	xfprintf(stderr, "BUG at (%s:%d)\n", __FILE__, __LINE__); \
-	xfprintf(stderr, __VA_ARGS__); \
-	xfputc('\n', stderr); \
-	exit(224); \
-} while(0)
-
 #define QSORT(p, el, cnt, lt) \
 do { \
 	struct qsort_frames f; \
@@ -182,7 +174,7 @@ do { \
 /* ハッシュマップを初期化して、バケツを bc 個作ります。 */
 #define INIT_HASHMAP(hashmap, bc) do { \
 	if ((hashmap).keys || (hashmap).values || (hashmap).bucket_cnt) \
-		BUG("hashmapのフィールドが０に設定されていない"); \
+		DIE(0, "hashmapのフィールドが０に設定されていない"); \
 	(hashmap).bucket_cnt = (bc); \
 	(hashmap).keys = \
 		xcalloc((hashmap).bucket_cnt, sizeof((hashmap).keys)); \
