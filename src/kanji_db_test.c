@@ -212,4 +212,10 @@ int main(void)
 			xfputs(e->c, out);
 	}
 	end_test("");
+
+	start_test("ataru_is_small_radical");
+	{
+		verify_rsc_order("少", "当", "尤");
+	}
+	end_test("");
 }
