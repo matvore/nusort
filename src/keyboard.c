@@ -39,7 +39,7 @@ size_t keyboard_size(void) { return sizeof(KEYBOARD); }
 
 void keyboard_write(FILE *stream)
 {
-	xfwrite(keyboard_bytes(), keyboard_size(), stream);
+	fwrite(keyboard_bytes(), keyboard_size(), 1, stream);
 }
 
 struct keyboard_slice {

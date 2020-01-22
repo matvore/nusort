@@ -88,7 +88,7 @@ static int add_key(int rad, int so)
 		}
 	}
 
-	xfprintf(err, "並べ替えキーが多すぎます\n");
+	fprintf(err, "並べ替えキーが多すぎます\n");
 	return 0;
 }
 
@@ -122,9 +122,9 @@ static int process_rsc_line(char const *line)
 		return 0;
 	switch (sscanf(line, "U+%5[0-9A-F]%n", codepoint_str, &prefix_len)) {
 	case 0:
-		xfprintf(err,
-			 "警告: 行の形式が間違っています：%s\n",
-			 line);
+		fprintf(err,
+			"警告: 行の形式が間違っています：%s\n",
+			line);
 		return 0;
 	case 1:
 		break;
@@ -148,8 +148,8 @@ static int process_rsc_line(char const *line)
 			       &rad, &so, &len)) {
 		case 0:
 		case 1:
-			xfprintf(err, "行の形式が間違っています: (列 %d)\n%s",
-				 (int)(cur - line), line);
+			fprintf(err, "行の形式が間違っています: (列 %d)\n%s",
+				(int)(cur - line), line);
 			return 11;
 		case 2:
 			break;
@@ -194,11 +194,11 @@ static void output_char_line(
 	const struct kanji_entry *k, const struct sort_info *si)
 {
 	size_t ki;
-	xfprintf(out, "%s\t", k->c);
+	fprintf(out, "%s\t", k->c);
 	for (ki = 0; ki < MAX_K && si->k[ki].rad; ki++)
-		xfprintf(out, "%02x%02x ",
-			 (int) si->k[ki].rad, (int) si->k[ki].strokes);
-	xfprintf(out, "\n");
+		fprintf(out, "%02x%02x ",
+			(int) si->k[ki].rad, (int) si->k[ki].strokes);
+	fprintf(out, "\n");
 }
 
 static int figure_cutoff_type(
@@ -249,7 +249,7 @@ static int check_order(void)
 			strcmp(si->c, ke->c));
 
 		if (!si) {
-			xfprintf(err,
+			fprintf(err,
 				 "Unihanで並べ替えキーが見つかり"
 				 "ませんでした: %s\n",
 				 ke->c);
@@ -264,7 +264,7 @@ static int check_order(void)
 				smallest_matching = si->k[ki];
 		}
 		if (smallest_matching.rad == 0xff) {
-			xfprintf(err, "err: %s\n", ke->c);
+			fprintf(err, "err: %s\n", ke->c);
 			res = 31;
 			break;
 		}
@@ -299,8 +299,8 @@ int check_kanji_db_order(char const *const *argv, int argc)
 		} else if (!strcmp(arg, "--")) {
 			break;
 		} else {
-			xfprintf(err, "フラグを認識できませんでした：%s\n",
-				 arg);
+			fprintf(err, "フラグを認識できませんでした：%s\n",
+				arg);
 			return 3;
 		}
 	}
@@ -308,7 +308,7 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	db_stream = xfopen(
 		"../third_party/Unihan_RadicalStrokeCounts.txt", "r");
 
-	while (!res && xfgets(line, sizeof(line), db_stream)) {
+	while (!res && fgets(line, sizeof(line), db_stream)) {
 		res = process_rsc_line(line);
 	}
 
@@ -323,7 +323,7 @@ int check_kanji_db_order(char const *const *argv, int argc)
 
 	QSORT(, sort_infos.el, sort_infos.cnt,
 	      strcmp(sort_infos.el[a].c, sort_infos.el[b].c) < 0);
-	xfprintf(err, "%zu字の並べ替えキーを読み込み済み\n", sort_infos.cnt);
+	fprintf(err, "%zu字の並べ替えキーを読み込み済み\n", sort_infos.cnt);
 
 	if (!res)
 		res = check_order();

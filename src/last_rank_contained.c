@@ -14,34 +14,34 @@ static void print_line_stats(const struct line_stats *s)
 {
 	size_t i;
 
-	xfprintf(out, "[ %s ] %c ", s->cutoff->c, s->key_ch);
+	fprintf(out, "[ %s ] %c ", s->cutoff->c, s->key_ch);
 
 	if (!flags.hide_kanji) {
 		for (i = 0; i < s->e_nr; i++) {
 			if (flags.show_space_for_cutoff_points &&
 			    i &&
 			    (s->e[i-1]->rsc_sort_key != s->e[i]->rsc_sort_key))
-				xfputc(' ', out);
+				fputc(' ', out);
 
-			xfputs(s->e[i]->c, out);
+			fputs(s->e[i]->c, out);
 		}
-		xfputc(' ', out);
+		fputc(' ', out);
 	}
 
-	xfprintf(out, "(%d . %d . %d",
+	fprintf(out, "(%d . %d . %d",
 		 s->last_char_rank, s->offset_to_target, s->cumulative_offset);
 	if (flags.show_per_line_kanji_count)
-		xfprintf(out, " . %d", s->e_nr);
+		fprintf(out, " . %d", s->e_nr);
 
-	xfprintf(out, ")\n");
+	fprintf(out, ")\n");
 }
 
 static void print_stats_summary(struct kanji_distribution *kd)
 {
-	xfprintf(out, "各行平均位: %.1f\n",
+	fprintf(out, "各行平均位: %.1f\n",
 		 (float) kd->total_rank / kd->line_stats_nr);
-	xfprintf(out, "目標位:  %d\n", kd->target_rank);
-	xfprintf(out, "合計漢字数:  %d\n", kd->total_chars);
+	fprintf(out, "目標位:  %d\n", kd->target_rank);
+	fprintf(out, "合計漢字数:  %d\n", kd->total_chars);
 }
 
 int print_last_rank_contained(char const *const *argv, int argc)
@@ -77,7 +77,7 @@ int print_last_rank_contained(char const *const *argv, int argc)
 			argv++;
 			break;
 		} else if (!parse_romazi_flags(&argc, &argv, &romazi_config)) {
-			xfprintf(err,
+			fprintf(err,
 				 "フラグを認識できませんでした：%s\n", argv[0]);
 			return 3;
 		}

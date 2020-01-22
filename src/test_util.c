@@ -17,6 +17,27 @@ static const char *test_source_file;
 static const char *test_name;
 static int flags;
 
+/*
+ * stderr 以外のストリームでエラーが発生した場合、テストの結果を信用できない
+ * ので失敗扱いになります。
+ *
+ * 標準出力に１バイトだけを書いてしまうとテストバイナリ全体が失敗したとみなさ
+ * れるので、stdout 以外のエラーを stdout に報告して大丈夫です。
+ */
+static int report_output_errors(
+	char const *stream_name, FILE *s, FILE *report_to)
+{
+	fflush(s);
+	if (!ferror(s))
+		return 0;
+
+	fprintf(report_to, "出力ストリームのエラービットがオンです: %s",
+		stream_name);
+	clearerr(s);
+
+	return 1;
+}
+
 static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 {
 	FILE *act = xfopen(actual_fn, "r");
@@ -30,8 +51,8 @@ static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 	}
 
 	while (!failed) {
-		int expc = xfgetc(exp);
-		int actc = xfgetc(act);
+		int expc = fgetc(exp);
+		int actc = fgetc(act);
 
 		if (expc != actc)
 			failed = 1;
@@ -47,15 +68,15 @@ static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 		return;
 
 	if (exp_opened)
-		xfprintf(stdout, "出力が違います。"
-				 "詳細はこれを実行してください：\n"
-				 "	diff %s %s\n",
-			 expected_fn, actual_fn);
+		printf("出力が違います。"
+		       "詳細はこれを実行してください：\n"
+		       "	diff %s %s\n",
+		       expected_fn, actual_fn);
 	if (can_fix_with_cp)
-		xfprintf(stdout, "出力ファイルを更新するには、"
-				 "これを実行してください：\n"
-				 "	cp %s %s\n",
-			 actual_fn, expected_fn);
+		printf("出力ファイルを更新するには、"
+		       "これを実行してください：\n"
+		       "	cp %s %s\n",
+		       actual_fn, expected_fn);
 }
 
 static void *start_output_processor(void *unused)
@@ -63,11 +84,12 @@ static void *start_output_processor(void *unused)
 	FILE *output = xfopen(actual_fn, "w");
 	int b;
 
-	while ((b = xfgetc(test_output_pipe_read)) != EOF) {
+	while ((b = fgetc(test_output_pipe_read)) != EOF) {
 		if (b || !(flags & CONFIG_TESTS_IGNORE_NULL_BYTES))
-			xfputc(b, output);
+			fputc(b, output);
 	}
 
+	report_output_errors("実際テスト出力", output, stdout);
 	XFCLOSE(output);
 	XFCLOSE(test_output_pipe_read);
 
@@ -94,7 +116,7 @@ void start_test(const char *name)
 		    "前に設定してください。");
 	xasprintf(&actual_fn, "actual_test_out/%s.%s.out",
 		  test_source_file, name);
-	xfprintf(stderr, "テスト：(%s) %s\n", test_source_file, name);
+	fprintf(stderr, "テスト：(%s) %s\n", test_source_file, name);
 
 	if (pipe(test_output_pipe))
 		DIE(1, "pipe");
@@ -120,19 +142,23 @@ void start_test(const char *name)
 static void end_test_common(void)
 {
 	if (flags & CONFIG_TESTS_STDIN_FROM_FILE) {
-		if (xfgetc(in) != -1)
-			xfputs("入力が最後まで読み込まれていない", stdout);
+		if (fgetc(in) != -1)
+			fputs("入力が最後まで読み込まれていない", stdout);
 		XFCLOSE(in);
 	}
 
 	if (actual_fn == NULL)
 		DIE(0, "実行中のテストはありません。");
+	report_output_errors("未処理実際テスト出力", out, stdout);
 	XFCLOSE(out);
 	out = err = NULL;
 	errno = pthread_join(test_output_processor, NULL);
 	if (errno)
 		DIE(1, "pthread_join");
 	test_name = NULL;
+
+	if (report_output_errors("標準出力", stdout, stderr))
+		exit(204);
 }
 
 static void store_in_tmp_file(char const *str, char *tmp_file_template);

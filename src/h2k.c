@@ -10,12 +10,12 @@ int h2k(char const *const *argv, int argc)
 	int size = 0;
 
 	if (argc) {
-		xfputs("引数を渡さないでください。\n", err);
+		fputs("引数を渡さないでください。\n", err);
 		return 92;
 	}
 
 	while (1) {
-		int c = xfgetc(in);
+		int c = fgetc(in);
 
 		if (c == -1)
 			break;
@@ -24,7 +24,7 @@ int h2k(char const *const *argv, int argc)
 		if (is_complete_utf8(buf[0], size)) {
 			if (codepoint_range(buf) == CODEPOINT_RANGE_HIRAGANA)
 				hiragana_to_katakana(buf);
-			xfwrite(buf, size, out);
+			fwrite(buf, size, 1, out);
 			size = 0;
 			memset(buf, 0, sizeof(buf));
 		}

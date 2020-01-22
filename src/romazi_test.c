@@ -12,7 +12,7 @@ static void show_code_for_orig(
 		struct key_mapping *m = mapping->el + i;
 		if (!strcmp(orig, m->orig)) {
 			print_mapping(m, out);
-			xfputc('\n', out);
+			fputc('\n', out);
 		}
 	}
 }
@@ -25,7 +25,7 @@ static void print_code_length(
 		if (strcmp(mapping->el[i].conv, conv))
 			continue;
 
-		xfprintf(out, "「%s」入力コードの長さ: %zu\n",
+		fprintf(out, "「%s」入力コードの長さ: %zu\n",
 			 conv, strlen(mapping->el[i].orig));
 	}
 }
@@ -61,7 +61,7 @@ int main(void)
 			memcpy(scratch, test_cases[i].input, sizeof(scratch));
 			hiragana_to_katakana(scratch);
 			if (strcmp(scratch, test_cases[i].output))
-				xfprintf(err,
+				fprintf(err,
 					 "input: %s\nexpected: %s\nactual:%s\n",
 					 test_cases[i].input,
 					 test_cases[i].output, scratch);
@@ -80,7 +80,7 @@ int main(void)
 	{
 		char const *args[] = {"--hiragana-wo-key", "?"};
 		/* 引数の数 (argc) が足りないため、「?」を解析しないべき。*/
-		xfprintf(err, "exit code: %d\n", free_kanji_keys(args, 1));
+		fprintf(err, "exit code: %d\n", free_kanji_keys(args, 1));
 	}
 	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
 		 "exit code: 200\n");
@@ -88,7 +88,7 @@ int main(void)
 	start_test("free_kanji_keys_wo_key_arg_too_short");
 	{
 		char const *args[] = {"--hiragana-wo-key", ""};
-		xfprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));
+		fprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));
 	}
 	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
 		 "exit code: 200\n");
@@ -96,7 +96,7 @@ int main(void)
 	start_test("free_kanji_keys_wo_key_arg_too_long");
 	{
 		char const *args[] = {"--hiragana-wo-key", "xy"};
-		xfprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));
+		fprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));
 	}
 	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
 		 "exit code: 200\n");
@@ -194,7 +194,7 @@ int main(void)
 		print_code_length(&mapping, "エ");
 		print_code_length(&mapping, "オ");
 
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&mapping));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&mapping));
 
 		DESTROY_ARRAY(mapping);
 	}
@@ -208,8 +208,8 @@ int main(void)
 
 		struct romazi_config config = {0};
 		if (!parse_romazi_flags(&argc, &argv_ptr, &config))
-			xfputs("解析に失敗\n", out);
-		xfprintf(out, "%s %d %d\n",
+			fputs("解析に失敗\n", out);
+		fprintf(out, "%s %d %d\n",
 			 argv_ptr[0], argc, config.optimize_keystrokes);
 	}
 	end_test("END 0 1\n");

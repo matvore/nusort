@@ -74,14 +74,14 @@ int kana_stats(char const *const *argv, int argc)
 	int i;
 
 	if (argc) {
-		xfputs("引数を渡さないでください。\n", err);
+		fputs("引数を渡さないでください。\n", err);
 		return 92;
 	}
 
 	collect_potential_mappings(&stats);
 
 	while (1) {
-		int c = xfgetc(in);
+		int c = fgetc(in);
 		Conv conv = {last_last_c, last_c, c};
 		struct stats_entry *entry;
 

@@ -89,10 +89,10 @@ int input_impl(struct key_mapping_array const *mapping,
 		keyboard_update(mapping, so_far_input);
 		if (keyboard_out) {
 			keyboard_write(keyboard_out);
-			xfputc('\n', keyboard_out);
+			fputc('\n', keyboard_out);
 		}
 
-		ch = xfgetc(in);
+		ch = fgetc(in);
 
 		/* EOF、 ^D 又は Escape の場合は終了します。 */
 		if (ch == EOF || ch == 4 || ch == '\e')
@@ -136,12 +136,12 @@ int input_impl(struct key_mapping_array const *mapping,
 			continue;
 
 		if (converted.cnt)
-			xfwrite(converted.el, converted.cnt, pending_out);
+			fwrite(converted.el, converted.cnt, 1, pending_out);
 		if (so_far_input[0] || did_delete_orig)
-			xfprintf(pending_out, "<%s>", so_far_input);
+			fprintf(pending_out, "<%s>", so_far_input);
 		if (so_far_input[0] || did_delete_orig ||
 		    converted.cnt || did_delete_conv)
-			xfputc('\n', pending_out);
+			fputc('\n', pending_out);
 	}
 
 	DESTROY_ARRAY(converted);

@@ -19,7 +19,7 @@ int free_kanji_keys(char const *const *argv, int argc)
 			argc--;
 			break;
 		} else if (!parse_romazi_flags(&argc, &argv, &romazi_config)) {
-			xfprintf(err,
+			fprintf(err,
 				 "フラグを認識できませんでした：%s\n", argv[0]);
 			return 200;
 		}
@@ -29,7 +29,7 @@ int free_kanji_keys(char const *const *argv, int argc)
 	kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
 	
 	for (i = 0; i < kd.unused_kanji_origs.cnt; i++)
-		xfprintf(out, "%.2s\n", kd.unused_kanji_origs.el[i]);
+		fprintf(out, "%.2s\n", kd.unused_kanji_origs.el[i]);
 
 	DESTROY_ARRAY(romazi_m);
 	kanji_distribution_destroy(&kd);

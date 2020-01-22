@@ -30,7 +30,7 @@ int main(void)
 
 		key = 20;
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "%d %d ", *found_key, *found_value);
+		fprintf(out, "%d %d ", *found_key, *found_value);
 
 		DESTROY_HASHMAP(h);
 	}
@@ -46,27 +46,27 @@ int main(void)
 
 		key = 10;
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "%d ", *found_key);
+		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
 		key = 20;
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "%d ", *found_key);
+		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
 		key = 30;
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "%d ", *found_key);
+		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
 		key = 40;
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "%d ", *found_key);
+		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
 		key = 50;
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "%d ", *found_key);
+		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
 
@@ -93,7 +93,7 @@ int main(void)
 		*found_value = 900;
 
 		for (i = 0; i < h.bucket_cnt; i++)
-			xfprintf(out, "<%d %d>", h.keys[i], h.values[i]);
+			fprintf(out, "<%d %d>", h.keys[i], h.values[i]);
 
 		DESTROY_HASHMAP(h);
 	}
@@ -114,7 +114,7 @@ int main(void)
 		*found_value = 42;
 
 		DESTROY_HASHMAP(h);
-		xfprintf(out, "%d %d %zu", !h.keys, !h.values, h.bucket_cnt);
+		fprintf(out, "%d %d %zu", !h.keys, !h.values, h.bucket_cnt);
 	}
 	end_test("1 1 0");
 
@@ -138,11 +138,11 @@ int main(void)
 
 		key = 33;
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "<%d %d>", *found_key, *found_value);
+		fprintf(out, "<%d %d>", *found_key, *found_value);
 
 		key = -101;
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "<%d %d>", *found_key, *found_value);
+		fprintf(out, "<%d %d>", *found_key, *found_value);
 	}
 	end_test("<33 42><-101 99>");
 
@@ -158,18 +158,18 @@ int main(void)
 
 		strcpy(key, "foobar!");
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "'%s' ", *found_key);
+		fprintf(out, "'%s' ", *found_key);
 		strcpy(*found_key, key);
 		*found_value = 44;
 
 		strcpy(key, "!FOOBAR");
 		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
-		xfprintf(out, "'%s' ", *found_key);
+		fprintf(out, "'%s' ", *found_key);
 		strcpy(*found_key, key);
 		*found_value = 88;
 
 		for (i = 0; i < h.bucket_cnt; i++)
-			xfprintf(out, "<%s %d>", h.keys[i], h.values[i]);
+			fprintf(out, "<%s %d>", h.keys[i], h.values[i]);
 
 		DESTROY_HASHMAP(h);
 	}

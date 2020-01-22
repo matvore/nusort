@@ -15,7 +15,7 @@ int main(void)
 		char const *argv[] = {"--nonsense-arg"};
 		int argc = 1;
 
-		xfprintf(out, "exit code: %d\n",
+		fprintf(out, "exit code: %d\n",
 			 input(argv, argc, /*set_raw_mode=*/0));
 	}
 	end_test("フラグを認識できませんでした：--nonsense-arg\n"
@@ -26,7 +26,7 @@ int main(void)
 		char const *argv[] = {"-s"};
 		int argc = 1;
 		in = open_tmp_file_containing("kj");
-		xfprintf(out, "exit code: %d\n",
+		fprintf(out, "exit code: %d\n",
 			 input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
@@ -37,7 +37,7 @@ int main(void)
 		char const *argv[] = {"-s"};
 		int argc = 1;
 		in = open_tmp_file_containing("tya" "HWI" "DWO" "WHO" "YE");
-		xfprintf(out, "exit code: %d\n",
+		fprintf(out, "exit code: %d\n",
 			 input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
@@ -49,7 +49,7 @@ int main(void)
 
 		append_mapping(&m, "xyz", "あ");
 		in = open_tmp_file_containing("x!");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, out, NULL));
+		fprintf(out, "exit code: %d\n", input_impl(&m, out, NULL));
 		XFCLOSE(in);
 		DESTROY_ARRAY(m);
 	}
@@ -61,7 +61,7 @@ int main(void)
 		int argc = 2;
 
 		in = open_tmp_file_containing("");
-		xfprintf(out, "exit code: %d\n",
+		fprintf(out, "exit code: %d\n",
 			 input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
@@ -73,7 +73,7 @@ int main(void)
 		int argc = 1;
 
 		in = open_tmp_file_containing("m");
-		xfprintf(out, "exit code: %d\n",
+		fprintf(out, "exit code: %d\n",
 			 input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
@@ -85,7 +85,7 @@ int main(void)
 		append_mapping(&m, "mo", "も");
 
 		in = open_tmp_file_containing("m");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 
 		DESTROY_ARRAY(m);
 	}
@@ -98,7 +98,7 @@ int main(void)
 		append_mapping(&m, "ki", "き");
 
 		in = open_tmp_file_containing("ki");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 
 		DESTROY_ARRAY(m);
 	}
@@ -114,7 +114,7 @@ int main(void)
 		sort_and_validate_no_conflicts(&m);
 
 		in = open_tmp_file_containing("ropa");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 
 		DESTROY_ARRAY(m);
 	}
@@ -126,7 +126,7 @@ int main(void)
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ro", "ろ");
 		in = open_tmp_file_containing("\b\b\b\b");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("exit code: 0\n");
@@ -136,7 +136,7 @@ int main(void)
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ro", "ろ");
 		in = open_tmp_file_containing("\x7f\x7f\x7f\x7f");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("exit code: 0\n");
@@ -148,7 +148,7 @@ int main(void)
 		append_mapping(&m, "ba", "ば");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("r\x7f""b");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<r>\n<>\n<b>\nexit code: 0\n");
@@ -160,7 +160,7 @@ int main(void)
 		append_mapping(&m, "ba", "ば");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("r\bb");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<r>\n<>\n<b>\nexit code: 0\n");
@@ -173,7 +173,7 @@ int main(void)
 		append_mapping(&m, "sya", "しゃ");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("ry\b\bsya");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<r>\n<ry>\n<r>\n<>\n<s>\n<sy>\nしゃ\nexit code: 0\n");
@@ -183,7 +183,7 @@ int main(void)
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "wa", "わ");
 		in = open_tmp_file_containing("wa\b");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<w>\nわ\n\nexit code: 0\n");
@@ -195,7 +195,7 @@ int main(void)
 		append_mapping(&m, "ha", "は");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("wahaha\b\bwawa");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<w>\n"
@@ -217,7 +217,7 @@ int main(void)
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ma", "ま");
 		in = open_tmp_file_containing("x");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("x\n"
@@ -229,7 +229,7 @@ int main(void)
 		append_mapping(&m, "ma", "ま");
 		append_mapping(&m, "xa", "ぁ");
 		in = open_tmp_file_containing("mx");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<m>\n"
@@ -243,7 +243,7 @@ int main(void)
 		append_mapping(&m, "xa", "ぁ");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("x?");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<x>\n"
@@ -257,7 +257,7 @@ int main(void)
 		append_mapping(&m, "J", "ッ");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("kJ");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<k>\nkッ\nexit code: 0\n");
@@ -267,7 +267,7 @@ int main(void)
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ka", "か");
 		in = open_tmp_file_containing("kr\b");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<k>\nkr\nk\nexit code: 0\n");
@@ -277,7 +277,7 @@ int main(void)
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ka", "か");
 		in = open_tmp_file_containing("kakr\b");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<k>\nか\nか<k>\nかkr\nかk\nexit code: 0\n");
@@ -287,7 +287,7 @@ int main(void)
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ka", "か");
 		in = open_tmp_file_containing("kakb\b");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<k>\nか\nか<k>\nかkb\nかk\nexit code: 0\n");
@@ -297,7 +297,7 @@ int main(void)
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "dmf", "é");
 		in = open_tmp_file_containing("dmf\b");
-		xfprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<d>\n<dm>\né\n\nexit code: 0\n");

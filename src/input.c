@@ -42,7 +42,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 		if (parse_romazi_flags(&argc, &argv, &romazi_config))
 			continue;
 
-		xfprintf(err,
+		fprintf(err,
 			 "フラグを認識できませんでした：%s\n", argv[0]);
 		return 3;
 	}

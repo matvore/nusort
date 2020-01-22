@@ -8,7 +8,7 @@ static void print_mapping_array(struct key_mapping_array const *a)
 	int i;
 	for (i = 0; i < a->cnt; i++) {
 		print_mapping(a->el + i, out);
-		xfputc('\n', out);
+		fputc('\n', out);
 	}
 }
 
@@ -21,7 +21,7 @@ int main(void)
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "xxa", "ぁ");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 		print_mapping_array(&a);
 
 		DESTROY_ARRAY(a);
@@ -34,7 +34,7 @@ int main(void)
 
 		append_mapping(&a, "xxa", "ぁ");
 		append_mapping(&a, "ya", "や");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 		print_mapping_array(&a);
 
 		DESTROY_ARRAY(a);
@@ -47,7 +47,7 @@ int main(void)
 
 		append_mapping(&a, "me", "め");
 		append_mapping(&a, "me", "眼");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 
 		DESTROY_ARRAY(a);
 	}
@@ -60,7 +60,7 @@ int main(void)
 		append_mapping(&a, "me", "め");
 		append_mapping(&a, "yu", "ゆ");
 		append_mapping(&a, "me", "眼");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 
 		DESTROY_ARRAY(a);
 	}
@@ -74,7 +74,7 @@ int main(void)
 		append_mapping(&a, "yu", "ゆ");
 		append_mapping(&a, "me", "眼");
 		append_mapping(&a, "YU", "湯");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 
 		DESTROY_ARRAY(a);
 	}
@@ -88,7 +88,7 @@ int main(void)
 		append_mapping(&a, "ka", "か");
 		append_mapping(&a, "ka", "蚊");
 		append_mapping(&a, "YU", "湯");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 
 		DESTROY_ARRAY(a);
 	}
@@ -103,7 +103,7 @@ int main(void)
 		append_mapping(&a, "ka", "蚊");
 		append_mapping(&a, "YU", "湯");
 		append_mapping(&a, "za", "ざ");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 
 		DESTROY_ARRAY(a);
 	}
@@ -118,7 +118,7 @@ int main(void)
 		append_mapping(&a, "ka", "蚊");
 		append_mapping(&a, "YU", "湯");
 		append_mapping(&a, "za", "座");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 
 		DESTROY_ARRAY(a);
 	}
@@ -134,11 +134,11 @@ int main(void)
 		append_mapping(&a, "ka", "か");
 		append_mapping(&a, "za", "ざ");
 		append_mapping(&a, "yu", "ゆ");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 
 		for (i = 0; i < a.cnt; i++) {
 			print_mapping(a.el + i, out);
-			xfputc('\n', out);
+			fputc('\n', out);
 		}
 		DESTROY_ARRAY(a);
 	}
@@ -153,7 +153,7 @@ int main(void)
 
 		append_mapping(&a, "k", "ん");
 		append_mapping(&a, "ka", "か");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 
 		DESTROY_ARRAY(a);
 	}
@@ -165,7 +165,7 @@ int main(void)
 
 		append_mapping(&a, "ka", "か");
 		append_mapping(&a, "kar", "車");
-		xfprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
+		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&a));
 
 		DESTROY_ARRAY(a);
 	}

@@ -13,7 +13,7 @@ int main(void)
 	{
 		const char *argv[] = {"-q"};
 		int exit = check_kanji_db_order(argv, 1);
-		xfprintf(out, "exit: %d\n", exit);
+		fprintf(out, "exit: %d\n", exit);
 	}
 	end_test("13454字の並べ替えキーを読み込み済み\n"
 		 "exit: 0\n");

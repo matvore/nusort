@@ -29,7 +29,7 @@ void *xreallocarray(void *ptr, size_t count, size_t el_size)
 void report_fopen_failure(char const *pathname)
 {
 	perror("ファイルを開く際にfopenが失敗しました");
-	xfprintf(stderr, "ファイル名：%s\n", pathname);
+	fprintf(stderr, "ファイル名：%s\n", pathname);
 }
 
 FILE *xfopen(const char *pathname, const char *mode)
@@ -50,61 +50,15 @@ FILE *xfdopen(int fd, char const *mode)
 	return f;
 }
 
-int xfgetc(FILE *stream)
-{
-	int c;
-	if (ferror(stream) != 0)
-		DIE(0, "fgetc の前にファイルエラーが未処理です");
-	c = fgetc(stream);
-	if (ferror(stream) != 0)
-		DIE(0, "fgetc");
-	return c;
-}
-
-char *xfgets(char *s, int size, FILE *stream)
-{
-	s = fgets(s, size, stream);
-	if (!s && errno)
-		DIE(1, "fgets");
-	return s;
-}
-
-void xfputs(char const *s, FILE *stream)
-{
-	int res = fputs(s, stream);
-	if (res == EOF)
-		DIE(1, "fputs");
-	if (res < 0)
-		DIE(0, "fputsから規定に反する戻り値");
-}
-
-void xfwrite(void const *buf, size_t size, FILE *stream)
-{
-	errno = 0;
-	if (!fwrite(buf, size, 1, stream))
-		DIE(1, "fwrite");
-}
-
 void xfclose_impl(FILE *stream)
 {
-	if (!stream || !fclose(stream))
+	if (!stream)
+		return;
+	if (ferror(stream))
+		DIE(0, "エラービットがオン状態で fclose しようとしました");
+	if (!fclose(stream))
 		return;
 	perror("警告: fclose が失敗しました");
-}
-
-int xfprintf(FILE *stream, const char *format, ...)
-{
-	int res;
-
-	va_list argp;
-	va_start(argp, format);
-	res = vfprintf(stream, format, argp);
-	va_end(argp);
-
-	if (res < 0)
-		DIE(1, "fprintf");
-
-	return res;
 }
 
 int xasprintf(char **strp, const char *format, ...)
@@ -122,26 +76,6 @@ int xasprintf(char **strp, const char *format, ...)
 	return res;
 }
 
-int xfputc(int c, FILE *stream)
-{
-	c = fputc(c, stream);
-	if (c == EOF)
-		DIE(1, "fputc");
-	return c;
-}
-
-size_t xfread(void *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-	size_t read_size = fread(ptr, size, nmemb, stream);
-	if (ferror(stream))
-		DIE(1, "fread");
-	return read_size;
-}
-
-/*
- * xfprintf, xfputc などが DIE を呼び出すことができるため、DIE の実装では使えま
- * せん。
- */
 void _Noreturn die(
 	int show_errno,
 	char const *file,

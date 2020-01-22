@@ -32,7 +32,7 @@ static void validate_line(struct line_stats const *ls)
 	}
 
 	if (share_rsc_key && !is_in_mapping)
-		xfprintf(out, "%s がマッピングに入っていないため、区切り字"
+		fprintf(out, "%s がマッピングに入っていないため、区切り字"
 			      "に使うべきではない\n", ls->cutoff->c);
 }
 
@@ -93,7 +93,7 @@ int main(void)
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars != KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1))
-		        xfprintf(out, "%d\n", (int) kd.total_chars);
+		        fprintf(out, "%d\n", (int) kd.total_chars);
 	
 		kanji_distribution_destroy(&kd);
 	}
@@ -111,7 +111,7 @@ int main(void)
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
 		    KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1) - 1)
-		        xfprintf(out, "%d\n", (int) kd.total_chars);
+		        fprintf(out, "%d\n", (int) kd.total_chars);
 	
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
@@ -130,7 +130,7 @@ int main(void)
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
 		    KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1) - KANJI_KEY_COUNT)
-			xfprintf(out, "%d\n", (int) kd.total_chars);
+			fprintf(out, "%d\n", (int) kd.total_chars);
 	
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
@@ -164,7 +164,7 @@ int main(void)
 				if (is_in_mapping(&kd, k))
 					break;
 				if (k->cutoff_type > orig_co_type)
-					xfprintf(out, "%s", k->c);
+					fprintf(out, "%s", k->c);
 			}
 		}
 
@@ -187,7 +187,7 @@ int main(void)
 			struct kanji_entry const *cutoff =
 				kd.line_stats[line].cutoff;
 			if (kanji_db_rsc_index(cutoff) >= 3001)
-				xfprintf(out, "%s", cutoff->c);
+				fprintf(out, "%s", cutoff->c);
 		}
 
 		kanji_distribution_destroy(&kd);
@@ -212,7 +212,7 @@ int main(void)
 				struct kanji_entry const *k =
 					kd.line_stats[line].e[c];
 				if (kanji_db_rsc_index(k) >= 2495)
-					xfprintf(out, "%s", k->c);
+					fprintf(out, "%s", k->c);
 			}
 		}
 
@@ -234,7 +234,7 @@ int main(void)
 		kanji_distribution_populate(&kd);
 
 		if (kanji_db_rsc_index(kd.line_stats[0].cutoff) != start)
-			xfprintf(out, "最初の区切り字が違います: %s",
+			fprintf(out, "最初の区切り字が違います: %s",
 				 kd.line_stats[0].cutoff->c);
 
 		for (line = 1; line < kd.line_stats_nr; line++) {
@@ -243,7 +243,7 @@ int main(void)
 				struct kanji_entry const *k =
 					kd.line_stats[line].e[c];
 				if (kanji_db_rsc_index(k) < start)
-					xfprintf(out, "%s", k->c);
+					fprintf(out, "%s", k->c);
 			}
 		}
 
@@ -267,19 +267,19 @@ int main(void)
 		kanji_distribution_populate(&kd);
 
 		if (kanji_db_rsc_index(kd.line_stats[0].cutoff) != start)
-			xfprintf(out, "最初の区切り字が違います: %s",
+			fprintf(out, "最初の区切り字が違います: %s",
 				 kd.line_stats[0].cutoff->c);
 
 		for (line = 1; line < kd.line_stats_nr; line++) {
 			if (!kd.line_stats[line].cutoff) {
-				xfprintf(out,
+				fprintf(out,
 					 "区切り字が設定されていない: %d\n",
 					 line);
 				continue;
 			}
 			if (kd.line_stats[line - 1].cutoff->rsc_sort_key >=
 			    kd.line_stats[line].cutoff->rsc_sort_key)
-				xfprintf(out,
+				fprintf(out,
 					 "区切り字の部首+画数キーが増加して"
 					 "いない: %d\n",
 					 line);
@@ -314,7 +314,7 @@ int main(void)
 				struct kanji_entry const *e =
 					kd.line_stats[line].e[i];
 				if (!e)
-					xfprintf(out, "!%d / %d\n", line, i);
+					fprintf(out, "!%d / %d\n", line, i);
 				GROW_ARRAY_BY(allocated, 1);
 				allocated.el[allocated.cnt - 1] = e;
 			}
@@ -325,12 +325,12 @@ int main(void)
 		for (alloc_i = 1; alloc_i < allocated.cnt; alloc_i++) {
 			if (!strcmp(allocated.el[alloc_i]->c,
 				    allocated.el[alloc_i - 1]->c))
-				xfprintf(out, "err: %u %s\n",
+				fprintf(out, "err: %u %s\n",
 					 alloc_i, allocated.el[alloc_i]->c);
 		}
 
 		if (allocated.cnt < 890)
-			xfprintf(out, "%zu", allocated.cnt);
+			fprintf(out, "%zu", allocated.cnt);
 
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
@@ -359,13 +359,13 @@ int main(void)
 				struct kanji_entry const *cutoff =
 					kd.line_stats[line].cutoff;
 				if (e->rsc_sort_key < cutoff->rsc_sort_key)
-					xfprintf(out, "%s < %s\n",
+					fprintf(out, "%s < %s\n",
 						 e->c, cutoff->c);
 				if (line == kd.line_stats_nr - 1)
 					continue;
 				cutoff = kd.line_stats[line + 1].cutoff;
 				if (e->rsc_sort_key >= cutoff->rsc_sort_key)
-					xfprintf(out, "%s >= %s\n",
+					fprintf(out, "%s >= %s\n",
 						 e->c, cutoff->c);
 			}
 		}
@@ -392,7 +392,7 @@ int main(void)
 			struct kanji_entry const *e2 =
 				kd.line_stats[line].cutoff;
 			if (e1->rsc_sort_key >= e2->rsc_sort_key)
-				xfprintf(out, "%d: %s %s\n",
+				fprintf(out, "%d: %s %s\n",
 					 line, e1->c, e2->c);
 		}
 
@@ -425,7 +425,7 @@ int main(void)
 				found++;
 		}
 
-		xfprintf(out, "%d", found);
+		fprintf(out, "%d", found);
 
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);

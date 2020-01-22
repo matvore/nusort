@@ -22,7 +22,7 @@ int make_map(char const *const *argv, int argc) {
 		if (parse_romazi_flags(&argc, &argv, &romazi_config))
 			continue;
 
-		xfprintf(err,
+		fprintf(err,
 			 "フラグを認識できませんでした：%s\n", argv[0]);
 		res = 3;
 		goto cleanup;
@@ -35,7 +35,7 @@ int make_map(char const *const *argv, int argc) {
 	}
 
 	for (i = 0; i < mapping.cnt; i++)
-		xfprintf(out, "%s\t%s\n",
+		fprintf(out, "%s\t%s\n",
 			 mapping.el[i].orig, mapping.el[i].conv);
 
 cleanup:

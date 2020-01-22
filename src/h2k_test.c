@@ -32,7 +32,7 @@ int main(void)
 		start_test(test_cases[test_i].name);
 		exit_code = h2k(0, 0);
 		if (exit_code)
-			xfprintf(out, "non-zero exit: %d\n", exit_code);
+			fprintf(out, "non-zero exit: %d\n", exit_code);
 		end_test(test_cases[test_i].out);
 
 		XFCLOSE(in);

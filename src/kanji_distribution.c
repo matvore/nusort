@@ -331,7 +331,7 @@ int kanji_distribution_parse_user_cutoff(
 	size_t i;
 
 	if (argc != kd->line_stats_nr - 1) {
-		xfprintf(err,
+		fprintf(err,
 			 "%ld個の区切り漢字を必するけれど、%d個が渡された。\n",
 			 kd->line_stats_nr - 1, argc);
 		return 1;
@@ -341,14 +341,14 @@ int kanji_distribution_parse_user_cutoff(
 		const struct kanji_entry *cutoff = kanji_db_lookup(argv[i]);
 
 		if (!cutoff) {
-			xfprintf(err,
+			fprintf(err,
 				 "[ %s ] は区切り漢字に指定されている"
 				 "けれど、KANJI配列に含まれていない。\n",
 				 argv[i]);
 			return 2;
 		}
 		if (!cutoff->cutoff_type) {
-			xfprintf(err, "[ %s ] は区切り漢字として使えません。\n",
+			fprintf(err, "[ %s ] は区切り漢字として使えません。\n",
 				 argv[i]);
 			return 3;
 		}

@@ -11,19 +11,8 @@ void report_fopen_failure(char const *pathname);
 FILE *xfopen(const char *pathname, const char *mode);
 FILE *xfdopen(int fd, char const *mode);
 
-int xfgetc(FILE *stream);
-char *xfgets(char *s, int size, FILE *stream);
-void xfputs(char const *s, FILE *stream);
-void xfwrite(void const *, size_t, FILE *);
-
-__attribute__((format (printf, 2, 3)))
-int xfprintf(FILE *stream, const char *format, ...);
-
 __attribute__((format (printf, 2, 3)))
 int xasprintf(char **strp, const char *format, ...);
-
-int xfputc(int c, FILE *stream);
-size_t xfread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 
 __attribute__((format (printf, 4, 5)))
 void _Noreturn die(

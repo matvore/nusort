@@ -23,11 +23,11 @@ static int conflicts(struct key_mapping const *a, struct key_mapping const *b)
 	if (strncmp(a->orig, b->orig, a_len < b_len ? a_len : b_len))
 		return 0;
 
-	xfputs("コード衝突: ", err);
+	fputs("コード衝突: ", err);
 	print_mapping(a, err);
-	xfputs(" と ", err);
+	fputs(" と ", err);
 	print_mapping(b, err);
-	xfputc('\n', err);
+	fputc('\n', err);
 
 	return 1;
 }
@@ -66,5 +66,5 @@ void append_mapping(
 
 void print_mapping(struct key_mapping const *m, FILE *stream)
 {
-	xfprintf(stream, "%s->%s", m->orig, m->conv);
+	fprintf(stream, "%s->%s", m->orig, m->conv);
 }

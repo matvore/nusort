@@ -13,11 +13,11 @@ void print_kana_stats_header(void)
 {
 	int i;
 	for (i = 0; i < LEFT_COLUMN_WIDTH; i++)
-		xfputc(' ', out);
-	xfputs("    平仮名数 (  割合  )"
-	       "    片仮名数 (  割合  )"
-	       "  全文字中の割合\n",
-	       out);
+		fputc(' ', out);
+	fputs("    平仮名数 (  割合  )"
+	      "    片仮名数 (  割合  )"
+	      "  全文字中の割合\n",
+	      out);
 }
 
 static uint32_t whole_part(uint32_t def, uint64_t numer, uint64_t denom)
@@ -44,11 +44,11 @@ void print_kana_stats_line(
 	if (hira_kata_count > all_kana_count)
 		DIE(0, "all_kana_count が低すぎます: %"PRIu64, all_kana_count);
 
-	xfputs(left_column, out);
+	fputs(left_column, out);
 	while (left_column_str_width++ < LEFT_COLUMN_WIDTH)
-		xfputc(' ', out);
+		fputc(' ', out);
 
-	xfprintf(out, "%12"PRIu64" (%3d.%04"PRIu32")"
+	fprintf(out, "%12"PRIu64" (%3d.%04"PRIu32")"
 		      "%12"PRIu64" (%3d.%04"PRIu32")    "
 		      "   %3d.%05"PRIu32"\n",
 

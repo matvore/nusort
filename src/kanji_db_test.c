@@ -8,14 +8,14 @@ static int cutoff_type(char const *k)
 	struct kanji_entry const *e = kanji_db_lookup(k);
 	if (e)
 		return e->cutoff_type;
-	xfprintf(err, "見つからない: %s\n", k);
+	fprintf(err, "見つからない: %s\n", k);
 	return 0;
 }
 
 static void print_if_cutoff(char const *k)
 {
 	if (cutoff_type(k))
-		xfprintf(out, "%s\n", k);
+		fprintf(out, "%s\n", k);
 }
 
 static void verify_rsc_order(char const *a, char const *b, char const *c)
@@ -25,7 +25,7 @@ static void verify_rsc_order(char const *a, char const *b, char const *c)
 	struct kanji_entry const *k3 = kanji_db_lookup(c);
 	if (k1->rsc_sort_key >= k2->rsc_sort_key ||
 	    k3->rsc_sort_key <= k2->rsc_sort_key)
-		xfprintf(out, "%d, %d, %d\n",
+		fprintf(out, "%d, %d, %d\n",
 			 k1->rsc_sort_key, k2->rsc_sort_key,
 			 k3->rsc_sort_key);
 }
@@ -37,7 +37,7 @@ int main(void)
 	start_test("lookup_non_kanji");
 	{
 		if (kanji_db_lookup("?"))
-			xfputs("漢字ではない文字がデータベースにある", out);
+			fputs("漢字ではない文字がデータベースにある", out);
 	}
 	end_test("");
 
@@ -45,7 +45,7 @@ int main(void)
 	{
 		struct kanji_entry const *e = kanji_db_lookup("格");
 		if (e)
-			xfputs(e->c, out);
+			fputs(e->c, out);
 	}
 	end_test("格");
 
@@ -84,7 +84,7 @@ int main(void)
 			cutoff_count++;
 		if (cutoff_type("横"))
 			cutoff_count++;
-		xfprintf(out, "%d", cutoff_count);
+		fprintf(out, "%d", cutoff_count);
 	}
 	end_test("1");
 
@@ -92,17 +92,17 @@ int main(void)
 	{
 		struct kanji_entry const *e = kanji_db_lookup("无");
 		if (!e)
-			xfprintf(out, "ない\n");
+			fprintf(out, "ない\n");
 		e = kanji_db_lookup("旡");
 		if (!e)
-			xfprintf(out, "ない\n");
+			fprintf(out, "ない\n");
 	}
 	end_test("");
 
 	start_test("sude_no_tsukuri_and_munyou_cutoff_type");
 	{
-		xfprintf(out, "%d\n", cutoff_type("无"));
-		xfprintf(out, "%d\n", cutoff_type("旡"));
+		fprintf(out, "%d\n", cutoff_type("无"));
+		fprintf(out, "%d\n", cutoff_type("旡"));
 	}
 	end_test("2\n0\n");
 
@@ -113,10 +113,10 @@ int main(void)
 		struct kanji_entry const *c = kanji_db_lookup("竹");
 
 		if (!a || !b || !c)
-			xfputs("ない\n", out);
+			fputs("ない\n", out);
 		else if (a->rsc_sort_key < b->rsc_sort_key &&
 			 b->rsc_sort_key < c->rsc_sort_key)
-			xfputs("ok\n", out);
+			fputs("ok\n", out);
 	}
 	end_test("ok\n");
 
@@ -126,9 +126,9 @@ int main(void)
 		struct kanji_entry const *b = kanji_db_lookup("章");
 
 		if (!a || !b)
-			xfputs("ない\n", out);
+			fputs("ない\n", out);
 		else if (a->rsc_sort_key < b->rsc_sort_key)
-			xfputs("ok\n", out);
+			fputs("ok\n", out);
 	}
 	end_test("ok\n");
 
@@ -138,9 +138,9 @@ int main(void)
 		struct kanji_entry const *b = kanji_db_lookup("章");
 
 		if (!a || !b)
-			xfputs("ない\n", out);
+			fputs("ない\n", out);
 		else if (a->rsc_sort_key == b->rsc_sort_key)
-			xfputs("ok\n", out);
+			fputs("ok\n", out);
 	}
 	end_test("ok\n");
 
@@ -153,20 +153,20 @@ int main(void)
 		for (k = 1; k < kanji_db_nr(); k++) {
 			if (db[rsc[k]].rsc_sort_key <
 			    db[rsc[k - 1]].rsc_sort_key)
-				xfprintf(out, "%s", db[rsc[k]].c);
+				fprintf(out, "%s", db[rsc[k]].c);
 		}
 	}
 	end_test("");
 
 	start_test("can_find_rsc_sorted_index");
 	{
-		xfprintf(
+		fprintf(
 			out, "%s",
 			kanji_db()[
 				kanji_db_rsc_sorted()[
 					kanji_db_rsc_index(
 						kanji_db_lookup("一"))]].c);
-		xfprintf(
+		fprintf(
 			out, "%s",
 			kanji_db()[
 				kanji_db_rsc_sorted()[
@@ -179,7 +179,7 @@ int main(void)
 	{
 		struct kanji_entry const *mu = kanji_db_lookup("厶");
 		if (!mu)
-			xfputs("ない\n", out);
+			fputs("ない\n", out);
 	}
 	end_test("");
 
@@ -199,7 +199,7 @@ int main(void)
 	{
 		if (kanji_db_lookup("齒")->rsc_sort_key >
 		    kanji_db_lookup("歯")->rsc_sort_key)
-			xfputs("失敗", out);
+			fputs("失敗", out);
 	}
 	end_test("");
 
@@ -209,7 +209,7 @@ int main(void)
 
 		e = kanji_db_lookup("皿");
 		if (e->cutoff_type != 2)
-			xfputs(e->c, out);
+			fputs(e->c, out);
 	}
 	end_test("");
 
