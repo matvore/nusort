@@ -34,24 +34,24 @@ int main(void)
 	}
 	end_test_expected_content_in_file();
 
+	start_test("no_kanji");
+	{
+		char const *argv[] = {"--no-kanji"};
+		fprintf(err, "exit code: %d\n", make_map(argv, 1));
+	}
+	end_test_expected_content_in_file();
+
 	start_test("no_classic_wo");
 	{
-		char const *argv[] = {"--no-classic-wo"};
-		fprintf(err, "exit code: %d\n", make_map(argv, 1));
+		char const *argv[] = {"--no-classic-wo", "--no-kanji"};
+		fprintf(err, "exit code: %d\n", make_map(argv, 2));
 	}
 	end_test_expected_content_in_file();
 
 	start_test("hiragana_wo_key");
 	{
-		char const *argv[] = {"--hiragana-wo-key", "="};
-		fprintf(err, "exit code: %d\n", make_map(argv, 2));
-	}
-	end_test_expected_content_in_file();
-
-	start_test("no_kanji");
-	{
-		char const *argv[] = {"--no-kanji"};
-		fprintf(err, "exit code: %d\n", make_map(argv, 1));
+		char const *argv[] = {"--hiragana-wo-key", "=", "--no-kanji"};
+		fprintf(err, "exit code: %d\n", make_map(argv, 3));
 	}
 	end_test_expected_content_in_file();
 
