@@ -27,7 +27,7 @@ int main(void)
 	}
 	end_test("フラグを認識できませんでした：asdf\nexit code: 3\n");
 
-	start_test("ergonomic_sort");
+	start_test("six_is_rh");
 	{
 		char const *argv[] = {"-s"};
 		fprintf(err, "exit code: %d\n", make_map(argv, 1));

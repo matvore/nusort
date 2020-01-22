@@ -6,7 +6,7 @@
 #include "romazi.h"
 
 struct mapping_config {
-	unsigned ergonomic_sort : 1;
+	unsigned six_is_rh : 1;
 	unsigned include_kanji : 1;
 };
 

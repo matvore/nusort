@@ -7,15 +7,28 @@
 #include "streams.h"
 #include "util.h"
 
-static int is_alt_hands(char const *a)
+static int hand(char a, int six_is_rh)
 {
-	return (char_to_key_index_or_die(a[0]) / 5) % 2 !=
-	       (char_to_key_index_or_die(a[1]) / 5) % 2;
+	if (!six_is_rh && a == '6')
+		return 0;
+	return (char_to_key_index_or_die(a) / 5) % 2;
+}
+
+static int is_alt_hands(char const *a, int six_is_rh)
+{
+	return hand(a[0], six_is_rh) != hand(a[1], six_is_rh);
 }
 
 uint8_t COLUMN_VALUE[] = {3, 2, 1, 0, 4,	4, 0, 1, 2, 3};
 
-static int ergonomic_lt(const char *a, const char *b)
+static int column_value(int key_index)
+{
+	if (key_index == char_to_key_index_or_die('6'))
+		return 5;
+	return COLUMN_VALUE[key_index % 10];
+}
+
+static int ergonomic_lt(const char *a, const char *b, int six_is_rh)
 {
 	ssize_t fir_key_i_a = char_to_key_index_or_die(a[0]) % KANJI_KEY_COUNT;
 	ssize_t fir_key_i_b = char_to_key_index_or_die(b[0]) % KANJI_KEY_COUNT;
@@ -46,7 +59,8 @@ static int ergonomic_lt(const char *a, const char *b)
 	 *     b. 3EDC 8IK,    列
 	 *     c. 2WSX 9OL.    列
 	 *     d. 1QAZ 0P;/    列
-	 *     e. 5TGB 6YHN    列
+	 *     e. 5TGB YHN     列
+	 *     f. 6
 	 */
 
 	/* 1. prefer shorter input codes */
@@ -58,8 +72,8 @@ static int ergonomic_lt(const char *a, const char *b)
 	}
 
 	/* 2. prefer alternating hands */
-	alt_hands_a = is_alt_hands(a);
-	alt_hands_b = is_alt_hands(b);
+	alt_hands_a = is_alt_hands(a, six_is_rh);
+	alt_hands_b = is_alt_hands(b, six_is_rh);
 	if (alt_hands_a != alt_hands_b)
 		return alt_hands_a;
 
@@ -79,15 +93,15 @@ static int ergonomic_lt(const char *a, const char *b)
 	}
 
 	/* 4. sort by column */
-	column_val_a = COLUMN_VALUE[sec_key_i_a % 10];
-	column_val_b = COLUMN_VALUE[sec_key_i_b % 10];
+	column_val_a = column_value(sec_key_i_a);
+	column_val_b = column_value(sec_key_i_b);
 	if (column_val_a == column_val_b) {
 		DIE(0, "列が違うはずけれど、一緒でした: %.2s と %.2s", a, b);
 	}
 	return column_val_a < column_val_b;
 }
 
-static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
+static void get_kanji_codes(struct key_mapping_array *m, int six_is_rh)
 {
 	size_t free_code;
 	size_t codes_consumed[KANJI_KEY_COUNT] = {0};
@@ -104,10 +118,9 @@ static void get_kanji_codes(struct key_mapping_array *m, int ergonomic_sort)
 	 * 更にコードを打ちやすい順に並べ替えれば、以降の論理の流れでよく使う漢
 	 * 字は打ちやすいコードに割り当てられます。
 	 */
-	if (ergonomic_sort)
-		QSORT(, kd.unused_kanji_origs.el, kd.unused_kanji_origs.cnt,
-		      ergonomic_lt(kd.unused_kanji_origs.el[a],
-				   kd.unused_kanji_origs.el[b]));
+	QSORT(, kd.unused_kanji_origs.el, kd.unused_kanji_origs.cnt,
+	      ergonomic_lt(kd.unused_kanji_origs.el[a],
+			   kd.unused_kanji_origs.el[b], six_is_rh));
 
 	for (free_code = 0; free_code < kd.unused_kanji_origs.cnt;
 	     free_code++) {
@@ -156,7 +169,7 @@ int parse_mapping_flags(
 	int *argc, char const *const **argv, struct mapping_config *config)
 {
 	if (!strcmp((*argv)[0], "-s")) {
-		config->ergonomic_sort = 1;
+		config->six_is_rh = 1;
 		(*argv)++;
 		(*argc)--;
 		return 1;
@@ -174,7 +187,7 @@ int mapping_populate(
 	struct mapping_config const *config, struct key_mapping_array *mapping)
 {
 	if (config->include_kanji)
-		get_kanji_codes(mapping, config->ergonomic_sort);
+		get_kanji_codes(mapping, config->six_is_rh);
 
 	return sort_and_validate_no_conflicts(mapping);
 }

@@ -22,7 +22,7 @@ int main(void)
 	{
 		struct mapping_config config = {
 			.include_kanji = 1,
-			.ergonomic_sort = 1,
+			.six_is_rh = 1,
 		};
 		struct key_mapping_array m = {0};
 		get_romazi_codes(&romazi_config, &m);
@@ -38,7 +38,7 @@ int main(void)
 	{
 		struct mapping_config config = {
 			.include_kanji = 1,
-			.ergonomic_sort = 1,
+			.six_is_rh = 1,
 		};
 		struct key_mapping_array m = {0};
 		get_romazi_codes(&romazi_config, &m);

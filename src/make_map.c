@@ -12,9 +12,7 @@ int make_map(char const *const *argv, int argc) {
 	struct romazi_config romazi_config = {0};
 
 	init_romazi_config_for_cli_flags(&romazi_config);
-
-	mapping_config.ergonomic_sort = 0;
-	mapping_config.include_kanji = 1;
+	init_mapping_config_for_cli_flags(&mapping_config);
 
 	while (argc > 0) {
 		if (parse_mapping_flags(&argc, &argv, &mapping_config))

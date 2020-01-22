@@ -79,6 +79,7 @@ test: \
 	keyboard_test \
 	last_rank_contained_test \
 	make_map_test \
+	mapping_test \
 	mapping_util_test \
 	rank_coverage_test \
 	romazi_test
