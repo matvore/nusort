@@ -3,6 +3,7 @@
 #include "input_impl.h"
 #include "keyboard.h"
 #include "mapping.h"
+#include "mapping_util.h"
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
@@ -10,43 +11,6 @@
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
-
-static int is_code_prefix(
-	struct key_mapping_array const *mapping,
-	Orig const so_far_input)
-{
-	size_t so_far_len = strlen(so_far_input);
-	Orig extended_input;
-
-	memcpy(&extended_input, so_far_input, sizeof(Orig));
-
-	for (size_t try_i = so_far_len; try_i < sizeof(Orig) - 1; try_i++) {
-		ssize_t extended_i;
-		extended_input[try_i] = 1;
-
-		BSEARCH_INDEX(extended_i, mapping->cnt,,
-			      code_cmp(mapping->el[extended_i].orig,
-				       extended_input));
-
-		if (extended_i >= 0)
-			DIE(0, "一致するコードはあるはずありません：%s",
-			    so_far_input);
-		extended_i = ~extended_i;
-
-		if (extended_i >= mapping->cnt)
-			continue;
-
-		if (strncmp(mapping->el[extended_i].orig, so_far_input,
-			    so_far_len))
-			continue;
-
-		/* so_far_input を接頭辞として持つコードが存在します。 */
-		return 1;
-	}
-
-	/* so_far_input を接頭辞として持つコードはありません。 */
-	return 0;
-}
 
 struct {
 	char *el;
@@ -124,7 +88,7 @@ int input_impl(struct key_mapping_array const *mapping,
 				memset(&so_far_input, 0, sizeof(so_far_input));
 				break;
 			}
-			if (is_code_prefix(mapping, so_far_input))
+			if (incomplete_code_is_prefix(mapping, so_far_input))
 				break;
 
 			append_to_converted(so_far_input, 1);

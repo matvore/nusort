@@ -68,3 +68,38 @@ void print_mapping(struct key_mapping const *m, FILE *stream)
 {
 	fprintf(stream, "%s->%s", m->orig, m->conv);
 }
+
+int incomplete_code_is_prefix(
+	struct key_mapping_array const *mapping, char const *incomplete_code)
+{
+	size_t so_far_len = strlen(incomplete_code);
+	Orig extended_input = {0};
+
+	strcpy(extended_input, incomplete_code);
+
+	for (size_t try_i = so_far_len; try_i < sizeof(Orig) - 1; try_i++) {
+		ssize_t extended_i;
+		extended_input[try_i] = 1;
+
+		BSEARCH_INDEX(extended_i, mapping->cnt,,
+			      code_cmp(mapping->el[extended_i].orig,
+				       extended_input));
+
+		if (extended_i >= 0)
+			DIE(0, "一致するコードはあるはずありません：%s",
+			    incomplete_code);
+		extended_i = ~extended_i;
+
+		if (extended_i >= mapping->cnt)
+			continue;
+
+		if (strncmp(mapping->el[extended_i].orig, incomplete_code,
+			    so_far_len))
+			continue;
+
+		return 1;
+	}
+
+	return 0;
+}
+

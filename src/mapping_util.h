@@ -40,4 +40,8 @@ void print_mapping(struct key_mapping const *, FILE *);
  */
 int sort_and_validate_no_conflicts(struct key_mapping_array *);
 
+/* incomplete_code を接頭辞として持つコードが存在するかどうか検出します。 */
+int incomplete_code_is_prefix(
+	struct key_mapping_array const *, char const *incomplete_code);
+
 #endif

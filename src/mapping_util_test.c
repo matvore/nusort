@@ -170,4 +170,54 @@ int main(void)
 		DESTROY_ARRAY(a);
 	}
 	end_test("コード衝突: ka->か と kar->車\n0\n");
+
+	start_test("incomplete_code_is_prefix_1");
+	{
+		struct key_mapping_array a = {0};
+
+		append_mapping(&a, "ka", "か");
+		append_mapping(&a, "za", "ざ");
+		append_mapping(&a, "yu", "ゆ");
+		append_mapping(&a, "tye", "ちぇ");
+		fprintf(out, "ok: %d\n", sort_and_validate_no_conflicts(&a));
+
+		fprintf(out, "k: %d\n", incomplete_code_is_prefix(&a, "k"));
+		fprintf(out, "f: %d\n", incomplete_code_is_prefix(&a, "f"));
+		fprintf(out, "y: %d\n", incomplete_code_is_prefix(&a, "y"));
+		fprintf(out, "ty: %d\n", incomplete_code_is_prefix(&a, "ty"));
+		fprintf(out, "tt: %d\n", incomplete_code_is_prefix(&a, "tt"));
+
+		DESTROY_ARRAY(a);
+	}
+	end_test("ok: 1\n"
+		 "k: 1\n"
+		 "f: 0\n"
+		 "y: 1\n"
+		 "ty: 1\n"
+		 "tt: 0\n");
+
+	start_test("incomplete_code_is_prefix_2");
+	{
+		struct key_mapping_array a = {0};
+
+		append_mapping(&a, "ga", "が");
+		append_mapping(&a, "fa", "ふぁ");
+		append_mapping(&a, "mu", "む");
+		append_mapping(&a, "tta", "台");
+		fprintf(out, "ok: %d\n", sort_and_validate_no_conflicts(&a));
+
+		fprintf(out, "k: %d\n", incomplete_code_is_prefix(&a, "k"));
+		fprintf(out, "f: %d\n", incomplete_code_is_prefix(&a, "f"));
+		fprintf(out, "y: %d\n", incomplete_code_is_prefix(&a, "y"));
+		fprintf(out, "ty: %d\n", incomplete_code_is_prefix(&a, "ty"));
+		fprintf(out, "tt: %d\n", incomplete_code_is_prefix(&a, "tt"));
+
+		DESTROY_ARRAY(a);
+	}
+	end_test("ok: 1\n"
+		 "k: 0\n"
+		 "f: 1\n"
+		 "y: 0\n"
+		 "ty: 0\n"
+		 "tt: 1\n");
 }
