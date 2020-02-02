@@ -66,6 +66,28 @@ int main(void)
 	}
 	end_test("");
 
+	start_test("does_not_use_uncommon_character_if_rsc_key_is_same_2");
+	{
+		int key;
+
+		struct romazi_config romazi_config = {0};
+		struct kanji_distribution kd = {0};
+		struct key_mapping_array romazi_m = {0};
+
+		get_romazi_codes(&romazi_config, &romazi_m);
+
+		kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
+		kanji_distribution_auto_pick_cutoff(&kd);
+		kanji_distribution_populate(&kd);
+
+		for (key = 0; key < kd.line_stats_nr; key++)
+			validate_line(kd.line_stats + key);
+
+		kanji_distribution_destroy(&kd);
+		DESTROY_ARRAY(romazi_m);
+	}
+	end_test("");
+
 	start_test("does_not_use_uncommon_character_for_cutoff_no_kana");
 	{
 		int key;
