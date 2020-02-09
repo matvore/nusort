@@ -29,7 +29,8 @@ int main(void)
 		INIT_HASHMAP(h, 100);
 
 		key = 20;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "%d %d ", *found_key, *found_value);
 
 		DESTROY_HASHMAP(h);
@@ -45,27 +46,32 @@ int main(void)
 		INIT_HASHMAP(h, 5);
 
 		key = 10;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
 		key = 20;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
 		key = 30;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
 		key = 40;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
 		key = 50;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "%d ", *found_key);
 		*found_key = key;
 		*found_value = 1;
@@ -84,11 +90,13 @@ int main(void)
 		INIT_HASHMAP(h, 16);
 
 		key = 10;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		*found_key = key;
 		*found_value = 100;
 		key = 30;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		*found_key = key;
 		*found_value = 900;
 
@@ -109,7 +117,8 @@ int main(void)
 		INIT_HASHMAP(h, 16);
 
 		key = 33;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		*found_key = key;
 		*found_value = 42;
 
@@ -127,21 +136,25 @@ int main(void)
 		INIT_HASHMAP(h, 16);
 
 		key = 33;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		*found_key = key;
 		*found_value = 42;
 
 		key = -101;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		*found_key = key;
 		*found_value = 99;
 
 		key = 33;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "<%d %d>", *found_key, *found_value);
 
 		key = -101;
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "<%d %d>", *found_key, *found_value);
 	}
 	end_test("<33 42><-101 99>");
@@ -157,13 +170,15 @@ int main(void)
 		INIT_HASHMAP(h, 16);
 
 		strcpy(key, "foobar!");
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "'%s' ", *found_key);
 		strcpy(*found_key, key);
 		*found_value = 44;
 
 		strcpy(key, "!FOOBAR");
-		FIND_HASHMAP_ENTRY(h, key, found_key, found_value);
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "'%s' ", *found_key);
 		strcpy(*found_key, key);
 		*found_value = 88;
@@ -175,4 +190,36 @@ int main(void)
 	}
 	end_test("'' '' < 0>< 0><!FOOBAR 88>< 0>< 0>< 0>< 0>< 0>< 0>< 0>< 0>"
 		 "< 0><foobar! 44>< 0>< 0>< 0>");
+
+	start_test("do_not_initialize_values_if_they_are_not_used");
+	{
+		struct {
+			int *keys;
+			void *values;
+			size_t bucket_cnt;
+		} h = {0};
+		int key;
+		int *found_key;
+
+		INIT_HASHMAP(h, 16);
+
+		key = 49;
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		*found_key = key;
+
+		key = 1011;
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		*found_key = key;
+
+		fprintf(out, "h.values が設定済み: %d\n", h.values != 0);
+		key = 49;
+		FIND_HASHMAP_ENTRY(h, key, found_key);
+		fprintf(out, "%d\n", *found_key);
+		fprintf(out, "h.values が設定済み: %d\n", h.values != 0);
+
+		DESTROY_HASHMAP(h);
+	}
+	end_test("h.values が設定済み: 0\n"
+		 "49\n"
+		 "h.values が設定済み: 0\n");
 }

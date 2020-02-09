@@ -155,7 +155,7 @@ do { \
  *
  * struct hashmap {
  * 	KEY_TYPE *keys;
- * 	VAL_TYPE *values;
+ * 	VAL_TYPE *values;  // values が要らない時は: "void *values;" で OK
  * 	size_t bucket_cnt;
  * };
  */
@@ -167,21 +167,29 @@ do { \
 	(hashmap).bucket_cnt = (bc); \
 	(hashmap).keys = \
 		xcalloc((hashmap).bucket_cnt, sizeof((hashmap).keys)); \
-	(hashmap).values = \
-		xcalloc((hashmap).bucket_cnt, sizeof((hashmap).values)); \
 } while (0)
 
 /*
  * キーがマップに入っていれば、そのバケツを見つけます。
  * マップに入っていなければ、そのキーの書き込めるバケツを見つけます。
  */
-#define FIND_HASHMAP_ENTRY(hashmap, key, found_key, found_value) do { \
+#define FIND_HASHMAP_ENTRY(hashmap, key, found_key) do { \
 	size_t index = find_hashmap_entry_impl( \
 		(hashmap).keys, sizeof (hashmap).keys[0], \
 		(hashmap).bucket_cnt, &(key)); \
 	(found_key) = (hashmap).keys + index; \
-	(found_value) = (hashmap).values + index; \
 } while (0)
+
+#define VALUE_PTR_FOR_HASH_KEY(hashmap, found_key) ( \
+	( \
+		(hashmap).values \
+		= \
+		((hashmap).values ? (hashmap).values \
+				  : xcalloc((hashmap).bucket_cnt, \
+					    sizeof((hashmap).values[0])))) \
+	+ \
+	((found_key) - (hashmap).keys) \
+)
 
 #define DESTROY_HASHMAP(hashmap) do { \
 	FREE((hashmap).keys); \
