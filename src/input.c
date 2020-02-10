@@ -27,17 +27,16 @@ static void customize_term_attributes(struct termios t)
 
 int input(char const *const *argv, int argc, int set_raw_mode)
 {
-	struct mapping_config mapping_config = {0};
+	struct mapping mapping = {0};
 	struct termios orig_termios;
 	struct romazi_config romazi_config = {0};
-	struct key_mapping_array mapping = {0};
 	int res;
 
 	init_romazi_config_for_cli_flags(&romazi_config);
-	init_mapping_config_for_cli_flags(&mapping_config);
+	init_mapping_config_for_cli_flags(&mapping);
 
 	while (argc > 0 && argv[0][0] == '-') {
-		if (parse_mapping_flags(&argc, &argv, &mapping_config))
+		if (parse_mapping_flags(&argc, &argv, &mapping))
 			continue;
 		if (parse_romazi_flags(&argc, &argv, &romazi_config))
 			continue;
@@ -47,20 +46,20 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 		return 3;
 	}
 
-	get_romazi_codes(&romazi_config, &mapping);
+	get_romazi_codes(&romazi_config, &mapping.arr);
 
-	if (!mapping_populate(&mapping_config, &mapping))
+	if (!mapping_populate(&mapping))
 		return 250;
 
 	if (set_raw_mode) {
 		check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));
 		customize_term_attributes(orig_termios);
 	}
-	res = input_impl(&mapping, out, out);
+	res = input_impl(&mapping.arr, out, out);
 	if (set_raw_mode)
 		check_term_op(tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios));
 
-	DESTROY_ARRAY(mapping);
+	destroy_mapping(&mapping);
 
 	return res;
 }

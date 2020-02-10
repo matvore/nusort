@@ -1,3 +1,6 @@
+#ifndef KANJI_H
+#define KANJI_H
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -54,3 +57,5 @@ struct kanji_entry const *kanji_db_lookup(char const *kanji);
  * ます。
  */
 void predictably_sort_by_rsc(struct kanji_entry const **, size_t count);
+
+#endif

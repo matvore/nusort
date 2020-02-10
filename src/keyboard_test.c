@@ -20,33 +20,31 @@ int main(void)
 
 	start_test("default_view");
 	{
-		struct mapping_config config = {
+		struct mapping m = {
 			.include_kanji = 1,
 			.six_is_rh = 1,
 		};
-		struct key_mapping_array m = {0};
-		get_romazi_codes(&romazi_config, &m);
-		if (!mapping_populate(&config, &m))
+		get_romazi_codes(&romazi_config, &m.arr);
+		if (!mapping_populate(&m))
 			DIE(0, "mapping_populate");
-		keyboard_update(&m, "");
+		keyboard_update(&m.arr, "");
 		keyboard_write(out);
-		DESTROY_ARRAY(m);
+		destroy_mapping(&m);
 	}
 	end_test_expected_content_in_file();
 
 	start_test("first_key_typed");
 	{
-		struct mapping_config config = {
+		struct mapping m = {
 			.include_kanji = 1,
 			.six_is_rh = 1,
 		};
-		struct key_mapping_array m = {0};
-		get_romazi_codes(&romazi_config, &m);
-		if (!mapping_populate(&config, &m))
+		get_romazi_codes(&romazi_config, &m.arr);
+		if (!mapping_populate(&m))
 			DIE(0, "mapping_populate");
-		keyboard_update(&m, "/");
+		keyboard_update(&m.arr, "/");
 		keyboard_write(out);
-		DESTROY_ARRAY(m);
+		destroy_mapping(&m);
 	}
 	end_test_expected_content_in_file();
 }

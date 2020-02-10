@@ -42,57 +42,53 @@ int main(void)
 
 	start_test("6_is_rh_6s_is_higher_ranked_kanji_than_6k");
 	{
-		struct mapping_config c = {
+		struct mapping m = {
 			.six_is_rh = 1,
 			.include_kanji = 1,
 		};
-		struct key_mapping_array m = {0};
 
-		mapping_populate(&c, &m);
-		check_rank_order(&m, "6s", "6k");
-		DESTROY_ARRAY(m);
+		mapping_populate(&m);
+		check_rank_order(&m.arr, "6s", "6k");
+		destroy_mapping(&m);
 	}
 	end_test("");
 
 	start_test("6_is_lh_6k_is_higher_ranked_kanji_than_6s");
 	{
-		struct mapping_config c = {
+		struct mapping m = {
 			.six_is_rh = 0,
 			.include_kanji = 1,
 		};
-		struct key_mapping_array m = {0};
 
-		mapping_populate(&c, &m);
-		check_rank_order(&m, "6k", "6s");
-		DESTROY_ARRAY(m);
+		mapping_populate(&m);
+		check_rank_order(&m.arr, "6k", "6s");
+		destroy_mapping(&m);
 	}
 	end_test("");
 
 	start_test("6_is_lh_6o_is_higher_ranked_kanji_than_6q");
 	{
-		struct mapping_config c = {
+		struct mapping m = {
 			.six_is_rh = 0,
 			.include_kanji = 1,
 		};
-		struct key_mapping_array m = {0};
 
-		mapping_populate(&c, &m);
-		check_rank_order(&m, "6o", "6q");
-		DESTROY_ARRAY(m);
+		mapping_populate(&m);
+		check_rank_order(&m.arr, "6o", "6q");
+		destroy_mapping(&m);
 	}
 	end_test("");
 
 	start_test("6_is_lh_k6_is_higher_ranked_kanji_than_ki");
 	{
-		struct mapping_config c = {
+		struct mapping m = {
 			.six_is_rh = 0,
 			.include_kanji = 1,
 		};
-		struct key_mapping_array m = {0};
 
-		mapping_populate(&c, &m);
-		check_rank_order(&m, "k6", "ki");
-		DESTROY_ARRAY(m);
+		mapping_populate(&m);
+		check_rank_order(&m.arr, "k6", "ki");
+		destroy_mapping(&m);
 	}
 	end_test("");
 }

@@ -5,17 +5,16 @@
 #include "util.h"
 
 int make_map(char const *const *argv, int argc) {
-	struct mapping_config mapping_config = {0};
-	struct key_mapping_array mapping = {0};
+	struct mapping m = {0};
 	size_t i;
 	int res = 0;
 	struct romazi_config romazi_config = {0};
 
 	init_romazi_config_for_cli_flags(&romazi_config);
-	init_mapping_config_for_cli_flags(&mapping_config);
+	init_mapping_config_for_cli_flags(&m);
 
 	while (argc > 0) {
-		if (parse_mapping_flags(&argc, &argv, &mapping_config))
+		if (parse_mapping_flags(&argc, &argv, &m))
 			continue;
 		if (parse_romazi_flags(&argc, &argv, &romazi_config))
 			continue;
@@ -26,18 +25,18 @@ int make_map(char const *const *argv, int argc) {
 		goto cleanup;
 	}
 
-	get_romazi_codes(&romazi_config, &mapping);
-	if (!mapping_populate(&mapping_config, &mapping)) {
+	get_romazi_codes(&romazi_config, &m.arr);
+	if (!mapping_populate(&m)) {
 		res = 11;
 		goto cleanup;
 	}
 
-	for (i = 0; i < mapping.cnt; i++)
+	for (i = 0; i < m.arr.cnt; i++)
 		fprintf(out, "%s\t%s\n",
-			 mapping.el[i].orig, mapping.el[i].conv);
+			 m.arr.el[i].orig, m.arr.el[i].conv);
 
 cleanup:
-	DESTROY_ARRAY(mapping);
+	destroy_mapping(&m);
 
 	return res;
 }

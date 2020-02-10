@@ -1,3 +1,6 @@
+#ifndef KANJI_DISTRIBUTION_H
+#define KANJI_DISTRIBUTION_H
+
 #include <stdint.h>
 
 #include "kanji_db.h"
@@ -80,3 +83,5 @@ int kanji_distribution_parse_user_cutoff(
 void kanji_distribution_populate(struct kanji_distribution *kd);
 
 void kanji_distribution_destroy(struct kanji_distribution *kd);
+
+#endif

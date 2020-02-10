@@ -158,24 +158,23 @@ static void get_kanji_codes(struct key_mapping_array *m, int six_is_rh)
 	kanji_distribution_destroy(&kd);
 }
 
-void init_mapping_config_for_cli_flags(struct mapping_config *config)
+void init_mapping_config_for_cli_flags(struct mapping *m)
 {
-	if (!bytes_are_zero(config, sizeof(*config)))
+	if (!bytes_are_zero(m, sizeof(*m)))
 		DIE(0, "mapping_config not initialized to zero bytes");
-	config->include_kanji = 1;
+	m->include_kanji = 1;
 }
 
-int parse_mapping_flags(
-	int *argc, char const *const **argv, struct mapping_config *config)
+int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *m)
 {
 	if (!strcmp((*argv)[0], "-s")) {
-		config->six_is_rh = 1;
+		m->six_is_rh = 1;
 		(*argv)++;
 		(*argc)--;
 		return 1;
 	}
 	if (!strcmp((*argv)[0], "--no-kanji")) {
-		config->include_kanji = 0;
+		m->include_kanji = 0;
 		(*argv)++;
 		(*argc)--;
 		return 1;
@@ -183,11 +182,17 @@ int parse_mapping_flags(
 	return 0;
 }
 
-int mapping_populate(
-	struct mapping_config const *config, struct key_mapping_array *mapping)
+int mapping_populate(struct mapping *m)
 {
-	if (config->include_kanji)
-		get_kanji_codes(mapping, config->six_is_rh);
+	if (m->include_kanji)
+		get_kanji_codes(&m->arr, m->six_is_rh);
 
-	return sort_and_validate_no_conflicts(mapping);
+	return sort_and_validate_no_conflicts(&m->arr);
 }
+
+void destroy_mapping(struct mapping *m)
+{
+	DESTROY_ARRAY(m->arr);
+	memset(m, 0, sizeof(*m));
+}
+
