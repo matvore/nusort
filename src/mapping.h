@@ -26,6 +26,9 @@ int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *);
 /* エラーの時は非0を返す */
 int mapping_populate(struct mapping *);
 
+/* Returns 0 on success. */
+int mapping_lazy_populate(struct mapping *, char const *key_prefix);
+
 void destroy_mapping(struct mapping *);
 
 #endif

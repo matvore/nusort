@@ -36,6 +36,80 @@ static void validate_line(struct line_stats const *ls)
 			      "に使うべきではない\n", ls->cutoff->c);
 }
 
+static void show_preferred_next_chars(
+	char prior, char const *start, char const *end, int six_is_rh)
+{
+	struct kanji_distribution kd = {
+		.short_shifted_codes = 1,
+	};
+	struct key_mapping_array preexisting_m = {0};
+	int line;
+
+	kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup(start));
+	kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup(end));
+	kanji_distribution_set_preexisting_convs(
+		&kd, &preexisting_m, 1);
+	kanji_distribution_auto_pick_cutoff_exhaustive(
+		&kd, prior, 10, six_is_rh);
+
+	fprintf(out, "%c (%s, %s, %d): ", prior, start, end, six_is_rh);
+	for (line = 0; line < kd.line_stats_nr; line++)
+		fputc(kd.line_stats[line].key_ch, out);
+	fputc('\n', out);
+
+	kanji_distribution_destroy(&kd);
+	DESTROY_ARRAY(preexisting_m);
+}
+
+static void check_using_distinct_cutoff(
+	char const *start, char const *end, int max_basic_kanji_per_line)
+{
+	struct kanji_distribution kd = {
+		.short_shifted_codes = 1,
+	};
+	struct key_mapping_array preexisting_m = {0};
+	int i;
+
+	fprintf(out, "--- [%s, %s) --- (basic_per_line <= %d)\n",
+		start, end, max_basic_kanji_per_line);
+
+	kd.sort_each_line_by_rsc = 1;
+	kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup(start));
+	kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup(end));
+	kanji_distribution_set_preexisting_convs(&kd, &preexisting_m, 1);
+
+	kanji_distribution_auto_pick_cutoff_exhaustive(
+		&kd, 'j', max_basic_kanji_per_line, 0);
+	kanji_distribution_populate(&kd);
+
+	for (i = 0; i < kd.line_stats_nr - 1; i++) {
+		struct line_stats const *line = kd.line_stats + i;
+		unsigned this_key = line->cutoff->rsc_sort_key;
+		unsigned next_key =
+			kd.line_stats[i + 1].cutoff->rsc_sort_key;
+		int ki;
+
+		if (this_key > next_key) {
+			fprintf(out, "\tエラー: (%d) %u > %u\n",
+				i, this_key, next_key);
+			continue;
+		}
+		if (this_key < next_key)
+			continue;
+
+		fprintf(out, "\t(%d) [%s, %s)\n", i, line->cutoff->c,
+			kd.line_stats[i + 1].cutoff->c);
+
+		for (ki = 0; ki < line->e_nr; ki++) {
+			if (line->e[ki]->rsc_sort_key != this_key)
+				fprintf(out, "\tエラー: %s\n", line->e[ki]->c);
+		}
+	}
+
+	kanji_distribution_destroy(&kd);
+	DESTROY_ARRAY(preexisting_m);
+}
+
 int main(void)
 {
 	set_test_source_file(__FILE__);
@@ -56,7 +130,7 @@ int main(void)
 
 		get_romazi_codes(&romazi_config, &romazi_m);
 
-		kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
+		kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
@@ -80,7 +154,7 @@ int main(void)
 
 		get_romazi_codes(&romazi_config, &romazi_m);
 
-		kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
+		kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
@@ -101,7 +175,7 @@ int main(void)
 		};
 		struct key_mapping_array m = {0};
 
-		kanji_distribution_set_preexisting_convs(&kd, &m);
+		kanji_distribution_set_preexisting_convs(&kd, &m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
@@ -119,7 +193,8 @@ int main(void)
 		};
 		struct key_mapping_array preexisting_m = {0};
 
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars != KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1))
@@ -137,8 +212,8 @@ int main(void)
 		struct key_mapping_array preexisting_m = {0};
 
 		append_mapping(&preexisting_m, "ka", "か");
-
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
@@ -158,8 +233,8 @@ int main(void)
 		struct key_mapping_array preexisting_m = {0};
 
 		append_mapping(&preexisting_m, "a", "あ");
-
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
@@ -184,7 +259,7 @@ int main(void)
 
 		get_romazi_codes(&romazi_config, &romazi_m);
 
-		kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
+		kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
@@ -218,7 +293,8 @@ int main(void)
 		};
 
 		kd.rsc_range_end = 3001;
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 
 		for (line = 0; line < kd.line_stats_nr; line++) {
@@ -242,7 +318,8 @@ int main(void)
 		};
 
 		kd.rsc_range_end = 2495;
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
@@ -271,7 +348,8 @@ int main(void)
 		unsigned start = kanji_db_rsc_index(kanji_db_lookup("広"));
 
 		kd.rsc_range_start = start;
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
@@ -302,12 +380,13 @@ int main(void)
 			.short_shifted_codes = 1,
 		};
 		unsigned start = kanji_db_rsc_index(kanji_db_lookup("忠"));
-		unsigned end = kanji_db_rsc_index(kanji_db_lookup("濫"));
+		unsigned end = kanji_db_rsc_index(kanji_db_lookup("数"));
 
 		kd.rsc_range_start = start;
 		kd.rsc_range_end = end;
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
-		kanji_distribution_auto_pick_cutoff(&kd);
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
+		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 		kanji_distribution_populate(&kd);
 
 		if (kanji_db_rsc_index(kd.line_stats[0].cutoff) != start)
@@ -321,8 +400,8 @@ int main(void)
 					 line);
 				continue;
 			}
-			if (kd.line_stats[line - 1].cutoff->rsc_sort_key >=
-			    kd.line_stats[line].cutoff->rsc_sort_key)
+			if (distinct_rsc_cmp(kd.line_stats[line - 1].cutoff,
+					     kd.line_stats[line].cutoff) >= 0)
 				fprintf(out,
 					 "区切り字の部首+画数キーが増加して"
 					 "いない: %d\n",
@@ -348,9 +427,10 @@ int main(void)
 		unsigned alloc_i;
 
 		kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup("忠"));
-		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("濫"));
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
-		kanji_distribution_auto_pick_cutoff(&kd);
+		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("数"));
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
+		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 		kanji_distribution_populate(&kd);
 
 		for (line = 0; line < kd.line_stats_nr; line++) {
@@ -375,7 +455,7 @@ int main(void)
 					 alloc_i, allocated.el[alloc_i]->c);
 		}
 
-		if (allocated.cnt < 890)
+		if (allocated.cnt < 301)
 			fprintf(out, "%zu", allocated.cnt);
 
 		kanji_distribution_destroy(&kd);
@@ -393,9 +473,10 @@ int main(void)
 		};
 
 		kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup("忠"));
-		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("濫"));
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
-		kanji_distribution_auto_pick_cutoff(&kd);
+		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("数"));
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
+		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 		kanji_distribution_populate(&kd);
 
 		for (line = 0; line < kd.line_stats_nr; line++) {
@@ -412,7 +493,7 @@ int main(void)
 				if (line == kd.line_stats_nr - 1)
 					continue;
 				cutoff = kd.line_stats[line + 1].cutoff;
-				if (e->rsc_sort_key >= cutoff->rsc_sort_key)
+				if (distinct_rsc_cmp(e, cutoff) >= 0)
 					fprintf(out, "%s >= %s\n",
 						 e->c, cutoff->c);
 			}
@@ -433,8 +514,9 @@ int main(void)
 
 		kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup("石"));
 		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("禁"));
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
-		kanji_distribution_auto_pick_cutoff(&kd);
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
+		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 
 		for (line = 1; line < kd.line_stats_nr; line++) {
 			struct kanji_entry const *e1 =
@@ -466,8 +548,9 @@ int main(void)
 
 		kd.rsc_range_start = start;
 		kd.rsc_range_end = end;
-		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
-		kanji_distribution_auto_pick_cutoff(&kd);
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
+		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 		kanji_distribution_populate(&kd);
 
 		line = kd.line_stats_nr - 1;
@@ -483,4 +566,44 @@ int main(void)
 		DESTROY_ARRAY(preexisting_m);
 	}
 	end_test("1");
+
+	start_test("choose_easy_to_type_1st_chars_in_exhaustive_pick_cutoff");
+	{
+		show_preferred_next_chars('.', "閉", "項", 0);
+		show_preferred_next_chars('6', "閉", "項", 0);
+		show_preferred_next_chars('6', "閉", "項", 1);
+
+		show_preferred_next_chars('f', "丿", "亘", 1);
+	}
+	end_test_expected_content_in_file();
+
+	start_test("use_distinct_cutoff_if_possible");
+	{
+		check_using_distinct_cutoff("授", "日", 10);
+		check_using_distinct_cutoff("決", "減", 10);
+		check_using_distinct_cutoff("決", "減", 20);
+		check_using_distinct_cutoff("超", "通", 5);
+		check_using_distinct_cutoff("超", "通", 10);
+	}
+	end_test(
+		"--- [授, 日) --- (basic_per_line <= 10)\n"
+		"	(0) [授, 排)\n"
+		"	(1) [排, 措)\n"
+		"	(6) [撒, 撲)\n"
+		"--- [決, 減) --- (basic_per_line <= 10)\n"
+		"	(0) [決, 沓)\n"
+		"	(2) [法, 泉)\n"
+		"	(3) [泉, 泰)\n"
+		"	(5) [活, 洲)\n"
+		"	(7) [流, 浸)\n"
+		"	(9) [済, 淘)\n"
+		"	(10) [淘, 清)\n"
+		"--- [決, 減) --- (basic_per_line <= 20)\n"
+		"	(1) [法, 泰)\n"
+		"	(4) [済, 清)\n"
+		"--- [超, 通) --- (basic_per_line <= 5)\n"
+		"	(2) [践, 跳)\n"
+		"	(20) [迷, 送)\n"
+		"--- [超, 通) --- (basic_per_line <= 10)\n"
+	);
 }

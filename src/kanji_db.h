@@ -52,6 +52,9 @@ uint16_t kanji_db_rsc_index(struct kanji_entry const *e);
 
 struct kanji_entry const *kanji_db_lookup(char const *kanji);
 
+int distinct_rsc_cmp(
+	struct kanji_entry const *, struct kanji_entry const *);
+
 /*
  * 部首+画数順でべ替えますが、部首も画数も同一の２文字は必ず決まった順番に配置し
  * ます。

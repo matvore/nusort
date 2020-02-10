@@ -27,7 +27,7 @@ int free_kanji_keys(char const *const *argv, int argc)
 	}
 
 	get_romazi_codes(&romazi_config, &romazi_m);
-	kanji_distribution_set_preexisting_convs(&kd, &romazi_m);
+	kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
 	
 	for (i = 0; i < kd.unused_kanji_origs.cnt; i++)
 		fprintf(out, "%.2s\n", kd.unused_kanji_origs.el[i]);

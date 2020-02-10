@@ -114,16 +114,19 @@ static int first_key(
 	int min = 0;
 	int max = kd->line_stats_nr - 1;
 
-	do {
+	if (!kd->line_stats_nr)
+		DIE(0, "行が足りない");
+
+	while (min < max) {
 		int mid = (min + max) / 2;
 		struct kanji_entry const *co = kd->line_stats[mid + 1].cutoff;
 		if (!co)
 			DIE(0, "co == NULL: [%d, %d]", min, max);
-		else if (co->rsc_sort_key <= kanji->rsc_sort_key)
+		else if (distinct_rsc_cmp(co, kanji) <= 0)
 			min = mid + 1;
 		else
 			max = mid;
-	} while (min < max);
+	}
 
 	return min;
 }
@@ -202,7 +205,8 @@ static void end_line(struct kanji_distribution *kd, struct line_stats *ls)
 }
 
 void kanji_distribution_set_preexisting_convs(
-	struct kanji_distribution *kd, struct key_mapping_array const *m)
+	struct kanji_distribution *kd, struct key_mapping_array const *m,
+	int block_already_used)
 {
 	int i;
 	struct used_bit_map used = {0};
@@ -224,7 +228,8 @@ void kanji_distribution_set_preexisting_convs(
 		DIE(0, "start > end: %d > %d",
 		    kd->rsc_range_start, kd->rsc_range_end);
 
-	fill_used_bit_map(m, &used);
+	if (block_already_used)
+		fill_used_bit_map(m, &used);
 	fill_unused_kanji_origs(kd, &used);
 
 	for (i = 0; i < m->cnt; i++)
@@ -272,21 +277,6 @@ void kanji_distribution_set_preexisting_convs(
 		    kd->line_stats[0].cutoff->c, kd->rsc_range_start);
 }
 
-static unsigned find_best_cutoff_for_assigning_all_kanji(
-	unsigned start_from_kanji,
-	struct kanji_distribution const *kd)
-{
-	unsigned ki = start_from_kanji + KANJI_KEY_COUNT;
-
-	if (ki >= kd->available.cnt)
-		return kd->available.cnt;
-
-	while (!kd->available.el[ki]->cutoff_type)
-		ki--;
-
-	return ki;
-}
-
 void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd)
 {
 	int cumulative_offset = 0;
@@ -295,22 +285,83 @@ void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd)
 
 	predictably_sort_by_rsc(kd->available.el, kd->available.cnt);
 	for (line = 1; line < kd->line_stats_nr; line++) {
-		if (kd->available.cnt <= kd->total_chars) {
-			ki = find_best_cutoff_for_assigning_all_kanji(ki, kd);
-			if (ki == kd->available.cnt)
-				break;
-		} else {
-			rank_coverage_reset(
-				kd->target_rank,
-				kd->line_stats[line - 1].available);
-			ki = find_best_cutoff_for_rank_target(
-				&cumulative_offset, ki, kd);
-		}
+		rank_coverage_reset(
+			kd->target_rank, kd->line_stats[line - 1].available);
+		ki = find_best_cutoff_for_rank_target(
+			&cumulative_offset, ki, kd);
 
 		kd->line_stats[line].cutoff = kd->available.el[ki];
 	}
+}
 
-	kd->line_stats_nr = line;
+static unsigned find_best_cutoff_for_assigning_all_kanji(
+	unsigned start_from_kanji,
+	unsigned max_basic_kanji_per_line,
+	struct kanji_distribution const *kd)
+{
+	struct kanji_entry const **start = kd->available.el + start_from_kanji;
+	struct kanji_entry const **k = start;
+	unsigned basic_added = 0;
+
+	while (k - kd->available.el < kd->available.cnt) {
+		if ((**k).ranking <= BASIC_KANJI_MAX_PRI) {
+			if (++basic_added > max_basic_kanji_per_line)
+				break;
+		}
+		k++;
+	}
+
+	if (k - kd->available.el < kd->available.cnt &&
+	    (**k).rsc_sort_key > (**start).rsc_sort_key) {
+		while ((**k).rsc_sort_key == (**(k - 1)).rsc_sort_key)
+			k--;
+	}
+
+	return k - kd->available.el;
+}
+
+void kanji_distribution_auto_pick_cutoff_exhaustive(
+	struct kanji_distribution *kd, char prior_key,
+	unsigned max_basic_kanji_per_line, int six_is_rh)
+{
+	int count = 1;
+	unsigned ki = 0;
+	char keys[KANJI_KEY_COUNT];
+	int line;
+
+	predictably_sort_by_rsc(kd->available.el, kd->available.cnt);
+	while (1) {
+		ki = find_best_cutoff_for_assigning_all_kanji(
+			ki, max_basic_kanji_per_line, kd);
+		if (ki == kd->available.cnt)
+			break;
+
+		if (count >= kd->line_stats_nr)
+			DIE(0, "line_stats の項目がたりない: %zu",
+			    kd->available.cnt);
+		kd->line_stats[count].cutoff = kd->available.el[ki];
+		count++;
+	}
+
+	for (line = 0; line < kd->line_stats_nr; line++)
+		keys[line] = kd->line_stats[line].key_ch;
+
+	if (!prior_key || char_to_key_index(prior_key) < 0)
+		DIE(0, "prior_key が無効です: %d", prior_key);
+
+	QSORT(, keys, kd->line_stats_nr,
+	      ergonomic_lt_same_first_key(prior_key, keys[a], keys[b],
+					  six_is_rh));
+
+	QSORT(, keys, count, (char_to_key_index_or_die(keys[a]) <
+			      char_to_key_index_or_die(keys[b])));
+
+	for (line = 0; line < count; line++)
+		kd->line_stats[line].key_ch = keys[line];
+
+	kd->line_stats_nr = count;
+	memset(kd->line_stats + count, 0,
+	       sizeof(kd->line_stats) - sizeof(*kd->line_stats) * count);
 }
 
 int kanji_distribution_parse_user_cutoff(
@@ -362,8 +413,8 @@ void kanji_distribution_populate(struct kanji_distribution *kd)
 	line_stats = &kd->line_stats[0];
 	for (i = 0; i < kd->available.cnt; i++) {
 		if (line_stats != &kd->line_stats[kd->line_stats_nr - 1] &&
-		     (line_stats + 1)->cutoff->rsc_sort_key <=
-		     kd->available.el[i]->rsc_sort_key) {
+		    distinct_rsc_cmp((line_stats + 1)->cutoff,
+				     kd->available.el[i]) <= 0) {
 			end_line(kd, line_stats);
 			line_stats++;
 		}

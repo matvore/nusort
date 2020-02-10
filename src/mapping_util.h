@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 /* ヌル終端の入力コード */
-typedef char Orig[4];
+typedef char Orig[5];
 typedef char Conv[7];
 
 struct key_mapping {
@@ -43,5 +43,18 @@ int sort_and_validate_no_conflicts(struct key_mapping_array *);
 /* incomplete_code を接頭辞として持つコードが存在するかどうか検出します。 */
 int incomplete_code_is_prefix(
 	struct key_mapping_array const *, char const *incomplete_code);
+
+/*
+ * 長さが2で一打けん目が first_key_index または長さが1でコードが
+ * first_key_index のシフトされた字の入力できるかん字の中から最低の部首+画数
+ * インデックスを返す。
+ */
+unsigned lowest_rsc_index_for_codes_with_first_key(
+	struct key_mapping_array const *, int first_key_index);
+
+int ergonomic_lt_same_first_key(
+	char first_key, char second_a, char second_b, int six_is_rh);
+
+int ergonomic_lt(const char *a, const char *b, int six_is_rh);
 
 #endif

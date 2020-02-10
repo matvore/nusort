@@ -4086,9 +4086,6 @@ struct kanji_entry const *kanji_db(void)
 
 uint16_t *rsc_sorted;
 
-static int distinct_rsc_cmp(
-	struct kanji_entry const *, struct kanji_entry const *);
-
 static void verify_rsc_sorted(void)
 {
 	uint16_t i;
@@ -4131,9 +4128,7 @@ struct kanji_entry const *kanji_db_lookup(char const *kanji)
 	return e;
 }
 
-static int distinct_rsc_cmp(
-	struct kanji_entry const *a,
-	struct kanji_entry const *b)
+int distinct_rsc_cmp(struct kanji_entry const *a, struct kanji_entry const *b)
 {
 	if (a == b)
 		return 0;
