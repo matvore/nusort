@@ -101,30 +101,28 @@ static int ergonomic_lt(const char *a, const char *b, int six_is_rh)
 	return column_val_a < column_val_b;
 }
 
-static void get_kanji_codes(struct key_mapping_array *m, int six_is_rh)
+static void get_kanji_codes(struct mapping *m)
 {
 	size_t free_code;
 	size_t codes_consumed[KANJI_KEY_COUNT] = {0};
 
-	struct kanji_distribution kd = {0};
-
-	kanji_distribution_set_preexisting_convs(&kd, m);
-	kanji_distribution_auto_pick_cutoff(&kd);
-	kanji_distribution_populate(&kd);
+	kanji_distribution_set_preexisting_convs(&m->dist, &m->arr);
+	kanji_distribution_auto_pick_cutoff(&m->dist);
+	kanji_distribution_populate(&m->dist);
 
 	/*
-	 * この時点で、kd.unused_kanji_origsが既に１打鍵目を共有する
+	 * この時点で、m->dist.unused_kanji_origsが既に１打鍵目を共有する
 	 * コード群ごとに使用頻度に基づいて並べ替え済みです。
 	 * 更にコードを打ちやすい順に並べ替えれば、以降の論理の流れでよく使う漢
 	 * 字は打ちやすいコードに割り当てられます。
 	 */
-	QSORT(, kd.unused_kanji_origs.el, kd.unused_kanji_origs.cnt,
-	      ergonomic_lt(kd.unused_kanji_origs.el[a],
-			   kd.unused_kanji_origs.el[b], six_is_rh));
+	QSORT(, m->dist.unused_kanji_origs.el, m->dist.unused_kanji_origs.cnt,
+	      ergonomic_lt(m->dist.unused_kanji_origs.el[a],
+			   m->dist.unused_kanji_origs.el[b], m->six_is_rh));
 
-	for (free_code = 0; free_code < kd.unused_kanji_origs.cnt;
+	for (free_code = 0; free_code < m->dist.unused_kanji_origs.cnt;
 	     free_code++) {
-		char first_key_ch = kd.unused_kanji_origs.el[free_code][0];
+		char first_key_ch = m->dist.unused_kanji_origs.el[free_code][0];
 		ssize_t first_key_i = char_to_key_index_or_die(first_key_ch);
 		struct line_stats *line_stats;
 		size_t next_code_i;
@@ -136,7 +134,7 @@ static void get_kanji_codes(struct key_mapping_array *m, int six_is_rh)
 		first_key_i %= KANJI_KEY_COUNT;
 		first_key_ch = KEY_INDEX_TO_CHAR_MAP[first_key_i];
 
-		BSEARCH(line_stats, kd.line_stats, kd.line_stats_nr,
+		BSEARCH(line_stats, m->dist.line_stats, m->dist.line_stats_nr,
 			char_to_key_index_or_die(line_stats->key_ch) -
 				first_key_i);
 
@@ -148,14 +146,12 @@ static void get_kanji_codes(struct key_mapping_array *m, int six_is_rh)
 		if (next_code_i >= line_stats->e_nr)
 			DIE(0, "kanji_distributionの１打鍵目が'%zd'のコード数が"
 			    "足りません", first_key_i);
-		GROW_ARRAY_BY(*m, 1);
-		memcpy(m->el[m->cnt - 1].orig,
-		       kd.unused_kanji_origs.el[free_code], 2);
-		strncpy(m->el[m->cnt - 1].conv, line_stats->e[next_code_i]->c,
-			sizeof(m->el->conv));
+		GROW_ARRAY_BY(m->arr, 1);
+		memcpy(m->arr.el[m->arr.cnt - 1].orig,
+		       m->dist.unused_kanji_origs.el[free_code], 2);
+		strncpy(m->arr.el[m->arr.cnt - 1].conv,
+			line_stats->e[next_code_i]->c, sizeof(m->arr.el->conv));
 	}
-
-	kanji_distribution_destroy(&kd);
 }
 
 void init_mapping_config_for_cli_flags(struct mapping *m)
@@ -185,7 +181,7 @@ int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *m)
 int mapping_populate(struct mapping *m)
 {
 	if (m->include_kanji)
-		get_kanji_codes(&m->arr, m->six_is_rh);
+		get_kanji_codes(m);
 
 	return sort_and_validate_no_conflicts(&m->arr);
 }
@@ -193,6 +189,6 @@ int mapping_populate(struct mapping *m)
 void destroy_mapping(struct mapping *m)
 {
 	DESTROY_ARRAY(m->arr);
+	kanji_distribution_destroy(&m->dist);
 	memset(m, 0, sizeof(*m));
 }
-
