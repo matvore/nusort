@@ -25,7 +25,7 @@ int main(void)
 			.six_is_rh = 1,
 		};
 		get_romazi_codes(&romazi_config, &m.arr);
-		if (!mapping_populate(&m))
+		if (mapping_populate(&m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m.arr, "");
 		keyboard_write(out);
@@ -40,7 +40,7 @@ int main(void)
 			.six_is_rh = 1,
 		};
 		get_romazi_codes(&romazi_config, &m.arr);
-		if (!mapping_populate(&m))
+		if (mapping_populate(&m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m.arr, "/");
 		keyboard_write(out);

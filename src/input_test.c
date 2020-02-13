@@ -26,8 +26,7 @@ int main(void)
 		char const *argv[] = {"-s"};
 		int argc = 1;
 		in = open_tmp_file_containing("kj");
-		fprintf(out, "exit code: %d\n",
-			 input(argv, argc, /*set_raw_mode=*/0));
+		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
 	end_test_expected_content_in_file();
@@ -37,8 +36,7 @@ int main(void)
 		char const *argv[] = {"-s"};
 		int argc = 1;
 		in = open_tmp_file_containing("tya" "HWI" "DWO" "WHO" "YE");
-		fprintf(out, "exit code: %d\n",
-			 input(argv, argc, /*set_raw_mode=*/0));
+		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
 	end_test_expected_content_in_file();
@@ -49,7 +47,7 @@ int main(void)
 
 		append_mapping(&m, "xyz", "あ");
 		in = open_tmp_file_containing("x!");
-		fprintf(out, "exit code: %d\n", input_impl(&m, out, NULL));
+		expect_ok(input_impl(&m, out, NULL));
 		XFCLOSE(in);
 		DESTROY_ARRAY(m);
 	}
@@ -61,8 +59,7 @@ int main(void)
 		int argc = 2;
 
 		in = open_tmp_file_containing("");
-		fprintf(out, "exit code: %d\n",
-			 input(argv, argc, /*set_raw_mode=*/0));
+		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
 	end_test_expected_content_in_file();
@@ -73,8 +70,7 @@ int main(void)
 		int argc = 1;
 
 		in = open_tmp_file_containing("m");
-		fprintf(out, "exit code: %d\n",
-			 input(argv, argc, /*set_raw_mode=*/0));
+		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
 	}
 	end_test_expected_content_in_file();
@@ -85,12 +81,11 @@ int main(void)
 		append_mapping(&m, "mo", "も");
 
 		in = open_tmp_file_containing("m");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 
 		DESTROY_ARRAY(m);
 	}
-	end_test("<m>\n"
-		 "exit code: 0\n");
+	end_test("<m>\n");
 
 	start_test("show_already_converted");
 	{
@@ -98,13 +93,12 @@ int main(void)
 		append_mapping(&m, "ki", "き");
 
 		in = open_tmp_file_containing("ki");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 
 		DESTROY_ARRAY(m);
 	}
 	end_test("<k>\n"
-		 "き\n"
-		 "exit code: 0\n");
+		 "き\n");
 
 	start_test("accumulates_multiple_converted");
 	{
@@ -114,32 +108,31 @@ int main(void)
 		sort_and_validate_no_conflicts(&m);
 
 		in = open_tmp_file_containing("ropa");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 
 		DESTROY_ARRAY(m);
 	}
-	end_test("<r>\nろ\nろ<p>\nろぱ\n"
-		 "exit code: 0\n");
+	end_test("<r>\nろ\nろ<p>\nろぱ\n");
 
 	start_test("backspace_on_empty_line_does_nothing");
 	{
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ro", "ろ");
 		in = open_tmp_file_containing("\b\b\b\b");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("exit code: 0\n");
+	end_test("");
 
 	start_test("ascii_del_on_empty_line_does_nothing");
 	{
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ro", "ろ");
 		in = open_tmp_file_containing("\x7f\x7f\x7f\x7f");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("exit code: 0\n");
+	end_test("");
 
 	start_test("ascii_del_to_remove_pending_conversion");
 	{
@@ -148,10 +141,10 @@ int main(void)
 		append_mapping(&m, "ba", "ば");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("r\x7f""b");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("<r>\n<>\n<b>\nexit code: 0\n");
+	end_test("<r>\n<>\n<b>\n");
 
 	start_test("backspace_to_remove_pending_conversion");
 	{
@@ -160,10 +153,10 @@ int main(void)
 		append_mapping(&m, "ba", "ば");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("r\bb");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("<r>\n<>\n<b>\nexit code: 0\n");
+	end_test("<r>\n<>\n<b>\n");
 
 	start_test("backspace_to_remove_pending_conv_one_char_at_a_time");
 	{
@@ -173,20 +166,20 @@ int main(void)
 		append_mapping(&m, "sya", "しゃ");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("ry\b\bsya");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("<r>\n<ry>\n<r>\n<>\n<s>\n<sy>\nしゃ\nexit code: 0\n");
+	end_test("<r>\n<ry>\n<r>\n<>\n<s>\n<sy>\nしゃ\n");
 
 	start_test("backspace_to_remove_converted_char");
 	{
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "wa", "わ");
 		in = open_tmp_file_containing("wa\b");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("<w>\nわ\n\nexit code: 0\n");
+	end_test("<w>\nわ\n\n");
 
 	start_test("backspace_to_remove_converted_char_one_at_a_time");
 	{
@@ -195,7 +188,7 @@ int main(void)
 		append_mapping(&m, "ha", "は");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("wahaha\b\bwawa");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<w>\n"
@@ -209,19 +202,17 @@ int main(void)
 		 "わ<w>\n"
 		 "わわ\n"
 		 "わわ<w>\n"
-		 "わわわ\n"
-		 "exit code: 0\n");
+		 "わわわ\n");
 
 	start_test("invalid_prefix_leaks_out_of_pending_conv");
 	{
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ma", "ま");
 		in = open_tmp_file_containing("x");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("x\n"
-		 "exit code: 0\n");
+	end_test("x\n");
 
 	start_test("invalid_prefix_leaks_one_char_at_a_time");
 	{
@@ -229,12 +220,11 @@ int main(void)
 		append_mapping(&m, "ma", "ま");
 		append_mapping(&m, "xa", "ぁ");
 		in = open_tmp_file_containing("mx");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<m>\n"
-		 "m<x>\n"
-		 "exit code: 0\n");
+		 "m<x>\n");
 
 	start_test("invalid_prefix_leaks_two_chars_at_a_time");
 	{
@@ -243,12 +233,11 @@ int main(void)
 		append_mapping(&m, "xa", "ぁ");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("x?");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
 	end_test("<x>\n"
-		 "x?\n"
-		 "exit code: 0\n");
+		 "x?\n");
 
 	start_test("leak_invalid_prefix_then_immediately_convert");
 	{
@@ -257,50 +246,50 @@ int main(void)
 		append_mapping(&m, "J", "ッ");
 		sort_and_validate_no_conflicts(&m);
 		in = open_tmp_file_containing("kJ");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("<k>\nkッ\nexit code: 0\n");
+	end_test("<k>\nkッ\n");
 
 	start_test("delete_converted_ascii_char");
 	{
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ka", "か");
 		in = open_tmp_file_containing("kr\b");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("<k>\nkr\nk\nexit code: 0\n");
+	end_test("<k>\nkr\nk\n");
 
 	start_test("delete_converted_ascii_char_with_prior_kana_char");
 	{
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ka", "か");
 		in = open_tmp_file_containing("kakr\b");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("<k>\nか\nか<k>\nかkr\nかk\nexit code: 0\n");
+	end_test("<k>\nか\nか<k>\nかkr\nかk\n");
 
 	start_test("delete_converted_ascii_char_with_prior_kana_char_2");
 	{
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "ka", "か");
 		in = open_tmp_file_containing("kakb\b");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("<k>\nか\nか<k>\nかkb\nかk\nexit code: 0\n");
+	end_test("<k>\nか\nか<k>\nかkb\nかk\n");
 
 	start_test("delete_converted_2_byte_char");
 	{
 		struct key_mapping_array m = {0};
 		append_mapping(&m, "dmf", "é");
 		in = open_tmp_file_containing("dmf\b");
-		fprintf(out, "exit code: %d\n", input_impl(&m, NULL, out));
+		expect_ok(input_impl(&m, NULL, out));
 		DESTROY_ARRAY(m);
 	}
-	end_test("<d>\n<dm>\né\n\nexit code: 0\n");
+	end_test("<d>\n<dm>\né\n\n");
 
 	return 0;
 }

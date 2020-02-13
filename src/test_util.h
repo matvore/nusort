@@ -35,3 +35,9 @@ void end_test(const char *expected);
 void end_test_expected_content_in_file(void);
 
 FILE *open_tmp_file_containing(char const *);
+
+/* exit_code が 0 ではない場合, エラーメッセージを out に出力します */
+void expect_ok(int exit_code);
+
+/* exit_code が 0 の場合, エラーメッセージを out に出力します */
+void expect_fail(int exit_code);

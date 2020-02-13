@@ -35,7 +35,7 @@ static int conflicts(struct key_mapping const *a, struct key_mapping const *b)
 int sort_and_validate_no_conflicts(struct key_mapping_array *arr)
 {
 	int i;
-	int ok = 1;
+	int error = 0;
 
 	QSORT(, arr->el, arr->cnt,
 	      code_cmp(arr->el[a].orig, arr->el[b].orig) < 0);
@@ -49,11 +49,11 @@ int sort_and_validate_no_conflicts(struct key_mapping_array *arr)
 		int j;
 		for (j = i + 1; j < arr->cnt; j++) {
 			if (i != j && conflicts(arr->el + i, arr->el + j))
-				ok = 0;
+				error = 1;
 		}
 	}
 
-	return ok;
+	return error;
 }
 
 void append_mapping(

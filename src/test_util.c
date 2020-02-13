@@ -207,3 +207,15 @@ FILE *open_tmp_file_containing(char const *str)
 	store_in_tmp_file(str, fn);
 	return xfopen(fn, "r");
 }
+
+void expect_ok(int exit_code)
+{
+	if (exit_code)
+		fprintf(out, "失敗: %d\n", exit_code);
+}
+
+void expect_fail(int exit_code)
+{
+	if (!exit_code)
+		fprintf(out, "失敗しなかった: %d\n", exit_code);
+}

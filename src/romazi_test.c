@@ -194,7 +194,7 @@ int main(void)
 		print_code_length(&mapping, "エ");
 		print_code_length(&mapping, "オ");
 
-		fprintf(out, "%d\n", sort_and_validate_no_conflicts(&mapping));
+		expect_ok(sort_and_validate_no_conflicts(&mapping));
 
 		DESTROY_ARRAY(mapping);
 	}

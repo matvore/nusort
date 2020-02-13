@@ -48,8 +48,9 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 
 	get_romazi_codes(&romazi_config, &mapping.arr);
 
-	if (!mapping_populate(&mapping))
-		return 250;
+	res = mapping_populate(&mapping);
+	if (res)
+		return res;
 
 	if (set_raw_mode) {
 		check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));

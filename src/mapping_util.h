@@ -35,8 +35,8 @@ void print_mapping(struct key_mapping const *, FILE *);
  * マッピング配列で衝突がないか確認します。衝突とは、入力コードが同じか入力
  * コードの１つが別のコードのプレフィックスであることです。
  *
- * 衝突の時は err ストリームにメッセージを出力して、０を返す。衝突がない時は０
- * ではない値を返す。
+ * 衝突の時は err ストリームにメッセージを出力して、非０を返す。衝突がない時は０
+ * 返す。
  */
 int sort_and_validate_no_conflicts(struct key_mapping_array *);
 

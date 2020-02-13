@@ -26,10 +26,9 @@ int make_map(char const *const *argv, int argc) {
 	}
 
 	get_romazi_codes(&romazi_config, &m.arr);
-	if (!mapping_populate(&m)) {
-		res = 11;
+	res = mapping_populate(&m);
+	if (res)
 		goto cleanup;
-	}
 
 	for (i = 0; i < m.arr.cnt; i++)
 		fprintf(out, "%s\t%s\n",
