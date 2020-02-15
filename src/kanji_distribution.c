@@ -104,13 +104,15 @@ static int first_key(
 	const struct kanji_entry *kanji,
 	const struct kanji_distribution *kd)
 {
-	size_t min = 0;
-	size_t max = kd->line_stats_nr - 1;
+	int min = 0;
+	int max = kd->line_stats_nr - 1;
 
 	do {
-		size_t mid = (min + max) / 2;
-		if (kd->line_stats[mid + 1].cutoff->rsc_sort_key <=
-				kanji->rsc_sort_key)
+		int mid = (min + max) / 2;
+		struct kanji_entry const *co = kd->line_stats[mid + 1].cutoff;
+		if (!co)
+			DIE(0, "co == NULL: [%d, %d]", min, max);
+		else if (co->rsc_sort_key <= kanji->rsc_sort_key)
 			min = mid + 1;
 		else
 			max = mid;

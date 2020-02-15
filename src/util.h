@@ -18,7 +18,7 @@ __attribute__((format (printf, 4, 5)))
 void _Noreturn die(
 	int show_errno, char const *file, long line, char const *format, ...);
 
-#define DIE(show_err, ...) die(show_err, __FILE__, __LINE__, __VA_ARGS__);
+#define DIE(show_err, ...) die(show_err, __FILE__, __LINE__, __VA_ARGS__)
 
 void xfclose_impl(FILE *);
 #define XFCLOSE(s) do { \
