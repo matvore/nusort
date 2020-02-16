@@ -39,7 +39,7 @@ static int is_done(
 	return 1;
 }
 
-int input_impl(struct key_mapping_array const *mapping,
+int input_impl(struct mapping *mapping,
 	       FILE *keyboard_out, FILE *pending_out)
 {
 	Orig so_far_input = {0};
@@ -50,7 +50,7 @@ int input_impl(struct key_mapping_array const *mapping,
 		int did_delete_conv = 0;
 		int pressed_bs = 0;
 
-		keyboard_update(mapping, so_far_input);
+		keyboard_update(&mapping->arr, so_far_input);
 		if (keyboard_out) {
 			keyboard_write(keyboard_out);
 			fputc('\n', keyboard_out);
@@ -84,11 +84,15 @@ int input_impl(struct key_mapping_array const *mapping,
 		}
 
 		while (1) {
-			if (is_done(mapping, so_far_input)) {
+			if (is_done(&mapping->arr, so_far_input)) {
 				memset(&so_far_input, 0, sizeof(so_far_input));
 				break;
 			}
-			if (incomplete_code_is_prefix(mapping, so_far_input))
+			if (strlen(so_far_input) == 2 && so_far_input[1] == ' ')
+				mapping_lazy_populate(
+					mapping, so_far_input);
+			if (incomplete_code_is_prefix(&mapping->arr,
+						      so_far_input))
 				break;
 
 			append_to_converted(so_far_input, 1);
