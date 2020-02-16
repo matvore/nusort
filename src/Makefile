@@ -1,7 +1,6 @@
 .PHONY: test clean
 
 CFLAGS = \
-	-pthread \
 	-Werror \
 	-Wall \
 	-Wdeclaration-after-statement \
@@ -14,6 +13,8 @@ CFLAGS = \
 	-Wstrict-prototypes \
 	-Wunused \
 	-Wvla
+
+ALL_CFLAGS=-pthread $(CFLAGS)
 
 all: test nusort
 
@@ -55,13 +56,13 @@ HDRS = \
 	util.h
 
 %.o: %.c $(HDRS)
-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $<
+	$(CC) -c $(CPPFLAGS) $(ALL_CFLAGS) $<
 
 nusort: $(SHARED_OBJS) main.o
-	$(CC) $(CFLAGS) -o nusort $^
+	$(CC) $(ALL_CFLAGS) -o nusort $^
 
 %_test: %_test.o $(SHARED_OBJS) test_util.o
-	$(CC) $(CFLAGS) -o $@_bin $^
+	$(CC) $(ALL_CFLAGS) -o $@_bin $^
 	@mkdir -p test_errors
 	./$@_bin >test_errors/$@
 	diff /dev/null test_errors/$@
