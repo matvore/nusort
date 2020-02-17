@@ -109,6 +109,7 @@ static struct {
 	{"巣", 0x1e, 0x08},
 	{"営", 0x1e, 0x09},
 	{"厳", 0x1e, 0x0e},
+	{"柴", 0x4c, 0x05},
 };
 
 static int process_rsc_line(char const *line)

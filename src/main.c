@@ -14,6 +14,7 @@ static const char *USAGE =
 "\tnusort kana_stats\n"
 "\tnusort last_rank_contained [-c] [-s] [-k] [-n] "
 	"CUTOFF_KANJI_1..CUTOFF_KANJI_n\n"
+"\tnusort longest_rsc_block\n"
 "\tnusort make_map\n";
 
 int main(int argc, const char **argv)
@@ -34,6 +35,8 @@ int main(int argc, const char **argv)
 		return check_kanji_db_order(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "last_rank_contained"))
 		return print_last_rank_contained(argv + 2, argc - 2);
+	if (argc >= 2 && !strcmp(argv[1], "longest_rsc_block"))
+		return longest_rsc_block(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "make_map"))
 		return make_map(argv + 2, argc - 2);
 	fprintf(stderr, "%s", USAGE);

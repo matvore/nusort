@@ -31,6 +31,7 @@ SHARED_OBJS = \
 	kanji_distribution.o \
 	keyboard.o \
 	last_rank_contained.o \
+	longest_rsc_block.o \
 	make_map.o \
 	mapping.o \
 	mapping_util.o \
@@ -79,6 +80,7 @@ test: \
 	kana_stats_util_test \
 	keyboard_test \
 	last_rank_contained_test \
+	longest_rsc_block_test \
 	make_map_test \
 	mapping_test \
 	mapping_util_test \
