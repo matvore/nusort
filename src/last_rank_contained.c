@@ -76,7 +76,9 @@ int print_last_rank_contained(char const *const *argv, int argc)
 			argc--;
 			argv++;
 			break;
-		} else if (!parse_romazi_flags(&argc, &argv, &romazi_config)) {
+		} else if (!parse_romazi_flags(&argc, &argv, &romazi_config) &&
+			   !parse_kanji_distribution_flags(
+				&argc, &argv, &kanji_distribution)) {
 			fprintf(err,
 				 "フラグを認識できませんでした：%s\n", argv[0]);
 			return 3;

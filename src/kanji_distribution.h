@@ -28,6 +28,7 @@ struct line_stats {
 
 struct kanji_distribution {
 	unsigned sort_each_line_by_rsc : 1;
+	unsigned short_shifted_codes : 1;
 
 	uint16_t total_rank;
 	uint16_t total_chars;
@@ -54,6 +55,9 @@ struct kanji_distribution {
 		size_t alloc;
 	} unused_kanji_origs;
 };
+
+int parse_kanji_distribution_flags(
+	int *argc, char const *const **argv, struct kanji_distribution *);
 
 /*
  * モジュールの用法:

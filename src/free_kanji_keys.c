@@ -18,7 +18,8 @@ int free_kanji_keys(char const *const *argv, int argc)
 			argv++;
 			argc--;
 			break;
-		} else if (!parse_romazi_flags(&argc, &argv, &romazi_config)) {
+		} else if (!parse_romazi_flags(&argc, &argv, &romazi_config) &&
+			   !parse_kanji_distribution_flags(&argc, &argv, &kd)) {
 			fprintf(err,
 				 "フラグを認識できませんでした：%s\n", argv[0]);
 			return 200;

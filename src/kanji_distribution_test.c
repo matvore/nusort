@@ -49,7 +49,9 @@ int main(void)
 			.classic_wo = 0,
 			.optimize_keystrokes = 1,
 		};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		struct key_mapping_array romazi_m = {0};
 
 		get_romazi_codes(&romazi_config, &romazi_m);
@@ -71,7 +73,9 @@ int main(void)
 		int key;
 
 		struct romazi_config romazi_config = {0};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		struct key_mapping_array romazi_m = {0};
 
 		get_romazi_codes(&romazi_config, &romazi_m);
@@ -92,7 +96,9 @@ int main(void)
 	{
 		int key;
 
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		struct key_mapping_array m = {0};
 
 		kanji_distribution_set_preexisting_convs(&kd, &m);
@@ -108,52 +114,58 @@ int main(void)
 
 	start_test("can_generate_distribution_with_only_kanji");
 	{
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		struct key_mapping_array preexisting_m = {0};
-	
+
 		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars != KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1))
 		        fprintf(out, "%d\n", (int) kd.total_chars);
-	
+
 		kanji_distribution_destroy(&kd);
 	}
 	end_test("");
-	
+
 	start_test("can_generate_distribution_with_one_romazi");
 	{
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		struct key_mapping_array preexisting_m = {0};
-	
+
 		append_mapping(&preexisting_m, "ka", "か");
-	
+
 		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
 		    KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1) - 1)
 		        fprintf(out, "%d\n", (int) kd.total_chars);
-	
+
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
 	end_test("");
-	
+
 	start_test("can_generate_distribution_with_one_key_romazi");
 	{
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		struct key_mapping_array preexisting_m = {0};
-	
+
 		append_mapping(&preexisting_m, "a", "あ");
-	
+
 		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
 		    KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1) - KANJI_KEY_COUNT)
 			fprintf(out, "%d\n", (int) kd.total_chars);
-	
+
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
@@ -165,7 +177,9 @@ int main(void)
 		struct romazi_config romazi_config = {
 			.optimize_keystrokes = 1,
 		};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		int line;
 
 		get_romazi_codes(&romazi_config, &romazi_m);
@@ -199,7 +213,9 @@ int main(void)
 	{
 		int line;
 		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 
 		kd.rsc_range_end = 3001;
 		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
@@ -221,7 +237,9 @@ int main(void)
 	{
 		int line;
 		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 
 		kd.rsc_range_end = 2495;
 		kanji_distribution_set_preexisting_convs(&kd, &preexisting_m);
@@ -247,7 +265,9 @@ int main(void)
 	{
 		int line;
 		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		unsigned start = kanji_db_rsc_index(kanji_db_lookup("広"));
 
 		kd.rsc_range_start = start;
@@ -278,7 +298,9 @@ int main(void)
 	{
 		int line;
 		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		unsigned start = kanji_db_rsc_index(kanji_db_lookup("忠"));
 		unsigned end = kanji_db_rsc_index(kanji_db_lookup("濫"));
 
@@ -316,7 +338,9 @@ int main(void)
 	{
 		int line;
 		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		struct {
 			struct kanji_entry const **el;
 			size_t cnt, alloc;
@@ -364,7 +388,9 @@ int main(void)
 	{
 		int line;
 		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 
 		kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup("忠"));
 		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("濫"));
@@ -400,7 +426,9 @@ int main(void)
 	start_test("set_rsc_range_not_enough_cutoffs_for_every_key");
 	{
 		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		int line;
 
 		kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup("石"));
@@ -427,7 +455,9 @@ int main(void)
 	start_test("last_kanji_in_db_in_limited_rsc_range");
 	{
 		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {0};
+		struct kanji_distribution kd = {
+			.short_shifted_codes = 1,
+		};
 		int line;
 		int e;
 		int found = 0;

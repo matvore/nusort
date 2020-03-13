@@ -9,7 +9,8 @@ int main(void)
 
 	start_test("default_mapping");
 	{
-		expect_ok(make_map(NULL, 0));
+		char const *argv[] = {"--short-shifted-codes"};
+		expect_ok(make_map(argv, 1));
 	}
 	end_test_expected_content_in_file();
 
@@ -29,36 +30,50 @@ int main(void)
 
 	start_test("six_is_rh");
 	{
-		char const *argv[] = {"-s"};
-		expect_ok(make_map(argv, 1));
+		char const *argv[] = {"-s", "--short-shifted-codes"};
+		expect_ok(make_map(argv, 2));
 	}
 	end_test_expected_content_in_file();
 
 	start_test("no_kanji");
 	{
-		char const *argv[] = {"--no-kanji"};
-		expect_ok(make_map(argv, 1));
+		char const *argv[] = {
+			"--no-kanji",
+			"--short-shifted-codes",
+		};
+		expect_ok(make_map(argv, 2));
 	}
 	end_test_expected_content_in_file();
 
 	start_test("no_classic_wo");
 	{
-		char const *argv[] = {"--no-classic-wo", "--no-kanji"};
-		expect_ok(make_map(argv, 2));
+		char const *argv[] = {
+			"--no-classic-wo",
+			"--no-kanji",
+			"--short-shifted-codes",
+		};
+		expect_ok(make_map(argv, 3));
 	}
 	end_test_expected_content_in_file();
 
 	start_test("hiragana_wo_key");
 	{
-		char const *argv[] = {"--hiragana-wo-key", "=", "--no-kanji"};
-		expect_ok(make_map(argv, 3));
+		char const *argv[] = {
+			"--hiragana-wo-key", "=",
+			"--no-kanji",
+			"--short-shifted-codes",
+		};
+		expect_ok(make_map(argv, 4));
 	}
 	end_test_expected_content_in_file();
 
 	start_test("conflict_in_romazi_map");
 	{
-		char const *argv[] = {"--hiragana-wo-key", "w",
-				      "--no-classic-wo"};
+		char const *argv[] = {
+			"--hiragana-wo-key", "w",
+			"--no-classic-wo",
+			"--short-shifted-codes",
+		};
 		expect_fail(make_map(argv, 3));
 	}
 	end_test("コード衝突: w->を と wa->わ\n");

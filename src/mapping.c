@@ -175,7 +175,7 @@ int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *m)
 		(*argc)--;
 		return 1;
 	}
-	return 0;
+	return parse_kanji_distribution_flags(argc, argv, &m->dist);
 }
 
 int mapping_populate(struct mapping *m)

@@ -23,8 +23,8 @@ int main(void)
 
 	start_test("first_key_k");
 	{
-		char const *argv[] = {"-s"};
-		int argc = 1;
+		char const *argv[] = {"-s", "--short-shifted-codes"};
+		int argc = 2;
 		in = open_tmp_file_containing("kj");
 		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
@@ -33,8 +33,8 @@ int main(void)
 
 	start_test("long_conv_strs");
 	{
-		char const *argv[] = {"-s"};
-		int argc = 1;
+		char const *argv[] = {"-s", "--short-shifted-codes"};
+		int argc = 2;
 		in = open_tmp_file_containing("tya" "HWI" "DWO" "WHO" "YE");
 		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
@@ -55,8 +55,10 @@ int main(void)
 
 	start_test("parse_romazi_flags_no_kanji_nums");
 	{
-		char const *argv[] = {"--no-kanji-nums", "-s"};
-		int argc = 2;
+		char const *argv[] = {
+			"--no-kanji-nums", "-s", "--short-shifted-codes",
+		};
+		int argc = 3;
 
 		in = open_tmp_file_containing("");
 		expect_ok(input(argv, argc, /*set_raw_mode=*/0));

@@ -5,6 +5,19 @@
 #include "streams.h"
 #include "util.h"
 
+int parse_kanji_distribution_flags(
+	int *argc, char const *const **argv, struct kanji_distribution *kd)
+{
+	if (!strcmp((*argv)[0], "--short-shifted-codes")) {
+		kd->short_shifted_codes = 1;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+
+	return 0;
+}
+
 struct used_bit_map {
 	char m[MAPPABLE_CHAR_COUNT * MAPPABLE_CHAR_COUNT];
 };
@@ -35,6 +48,25 @@ static void fill_used_bit_map(
 	}
 }
 
+static int maybe_add_short_shifted_code(
+	struct kanji_distribution *kd, struct used_bit_map const *used, int key)
+{
+	int shifted_key;
+
+	if (!kd->short_shifted_codes)
+		return 0;
+
+	shifted_key = key + MAPPABLE_CHAR_COUNT / 2;
+	if (!bytes_are_zero(used->m + shifted_key * MAPPABLE_CHAR_COUNT,
+			    MAPPABLE_CHAR_COUNT))
+		return 0;
+
+	GROW_ARRAY_BY(kd->unused_kanji_origs, 1);
+	kd->unused_kanji_origs.el[kd->unused_kanji_origs.cnt - 1][0] =
+		KEY_INDEX_TO_CHAR_MAP[shifted_key];
+	return 1;
+}
+
 static void fill_unused_kanji_origs(
 	struct kanji_distribution *kd, struct used_bit_map const *used)
 {
@@ -46,13 +78,9 @@ static void fill_unused_kanji_origs(
 
 	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
 		size_t key2;
-		size_t shifted_key1 = key1 + MAPPABLE_CHAR_COUNT / 2;
 		int unused = 0;
 		struct line_stats *s;
 		char key1_char = KEY_INDEX_TO_CHAR_MAP[key1];
-		int free_as_singleton_code = bytes_are_zero(
-			used->m + shifted_key1 * MAPPABLE_CHAR_COUNT,
-			MAPPABLE_CHAR_COUNT);
 
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
 			int last_index = kd->unused_kanji_origs.cnt;
@@ -67,14 +95,7 @@ static void fill_unused_kanji_origs(
 			unused++;
 		}
 
-		if (free_as_singleton_code) {
-			int last_index = kd->unused_kanji_origs.cnt;
-
-			GROW_ARRAY_BY(kd->unused_kanji_origs, 1);
-			kd->unused_kanji_origs.el[last_index][0] =
-				KEY_INDEX_TO_CHAR_MAP[shifted_key1];
-			unused++;
-		}
+		unused += maybe_add_short_shifted_code(kd, used, key1);
 
 		if (!unused)
 			continue;

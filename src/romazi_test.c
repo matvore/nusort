@@ -40,6 +40,13 @@ int main(void)
 	}
 	end_test_expected_content_in_file();
 
+	start_test("free_kanji_keys_output_short_shifted_codes");
+	{
+		char const *argv[] = {"--short-shifted-codes"};
+		free_kanji_keys(argv, 1);
+	}
+	end_test_expected_content_in_file();
+
 	start_test("hiragana_to_katakana");
 	{
 		struct {
@@ -71,8 +78,11 @@ int main(void)
 
 	start_test("free_kanji_keys_no_kanji_numerals");
 	{
-		char const *args[] = {"--no-kanji-nums"};
-		free_kanji_keys(args, 1);
+		char const *args[] = {
+			"--no-kanji-nums",
+			"--short-shifted-codes",
+		};
+		free_kanji_keys(args, 2);
 	}
 	end_test_expected_content_in_file();
 

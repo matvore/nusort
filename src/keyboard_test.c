@@ -23,6 +23,9 @@ int main(void)
 		struct mapping m = {
 			.include_kanji = 1,
 			.six_is_rh = 1,
+			.dist = {
+				.short_shifted_codes = 1,
+			},
 		};
 		get_romazi_codes(&romazi_config, &m.arr);
 		if (mapping_populate(&m))
@@ -38,6 +41,9 @@ int main(void)
 		struct mapping m = {
 			.include_kanji = 1,
 			.six_is_rh = 1,
+			.dist = {
+				.short_shifted_codes = 1,
+			},
 		};
 		get_romazi_codes(&romazi_config, &m.arr);
 		if (mapping_populate(&m))
