@@ -9,12 +9,6 @@ struct used_bit_map {
 	char m[MAPPABLE_CHAR_COUNT * MAPPABLE_CHAR_COUNT];
 };
 
-static int free_as_singleton_code(struct used_bit_map const *used, int key_code)
-{
-	return bytes_are_zero(used->m + key_code * MAPPABLE_CHAR_COUNT,
-			      MAPPABLE_CHAR_COUNT);
-}
-
 static void fill_used_bit_map(
 	struct key_mapping_array const *m, struct used_bit_map *used)
 {
@@ -41,29 +35,6 @@ static void fill_used_bit_map(
 	}
 }
 
-static void fill_unused_kanji_orig_cnts(
-	struct kanji_distribution *kd, struct used_bit_map const *used)
-{
-	size_t key1;
-
-	if (!bytes_are_zero(kd->unused_kanji_orig_cnts,
-			    sizeof(kd->unused_kanji_orig_cnts)))
-		DIE(0, "!bytes_are_zero");
-
-	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
-		size_t key2;
-		size_t shifted_key1 = key1 + MAPPABLE_CHAR_COUNT / 2;
-
-		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
-			if (!used->m[key1 * MAPPABLE_CHAR_COUNT + key2])
-				kd->unused_kanji_orig_cnts[key1]++;
-		}
-
-		if (free_as_singleton_code(used, shifted_key1))
-			kd->unused_kanji_orig_cnts[key1]++;
-	}
-}
-
 static void fill_unused_kanji_origs(
 	struct kanji_distribution *kd, struct used_bit_map const *used)
 {
@@ -76,6 +47,12 @@ static void fill_unused_kanji_origs(
 	for (key1 = 0; key1 < KANJI_KEY_COUNT; key1++) {
 		size_t key2;
 		size_t shifted_key1 = key1 + MAPPABLE_CHAR_COUNT / 2;
+		int unused = 0;
+		struct line_stats *s;
+		char key1_char = KEY_INDEX_TO_CHAR_MAP[key1];
+		int free_as_singleton_code = bytes_are_zero(
+			used->m + shifted_key1 * MAPPABLE_CHAR_COUNT,
+			MAPPABLE_CHAR_COUNT);
 
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
 			int last_index = kd->unused_kanji_origs.cnt;
@@ -84,19 +61,28 @@ static void fill_unused_kanji_origs(
 				continue;
 
 			GROW_ARRAY_BY(kd->unused_kanji_origs, 1);
-			kd->unused_kanji_origs.el[last_index][0] =
-				KEY_INDEX_TO_CHAR_MAP[key1];
+			kd->unused_kanji_origs.el[last_index][0] = key1_char;
 			kd->unused_kanji_origs.el[last_index][1] =
 				KEY_INDEX_TO_CHAR_MAP[key2];
+			unused++;
 		}
 
-		if (free_as_singleton_code(used, shifted_key1)) {
+		if (free_as_singleton_code) {
 			int last_index = kd->unused_kanji_origs.cnt;
 
 			GROW_ARRAY_BY(kd->unused_kanji_origs, 1);
 			kd->unused_kanji_origs.el[last_index][0] =
 				KEY_INDEX_TO_CHAR_MAP[shifted_key1];
+			unused++;
 		}
+
+		if (!unused)
+			continue;
+
+		s = &kd->line_stats[kd->line_stats_nr++];
+		s->key_ch = key1_char;
+		s->available = unused;
+		kd->total_chars += unused;
 	}
 }
 
@@ -131,22 +117,6 @@ static int first_key_then_rank_lt(
 	if (a_first_key != b_first_key)
 		return a_first_key < b_first_key;
 	return a->ranking < b->ranking;
-}
-
-static void get_top_keys(struct kanji_distribution *kd)
-{
-	KeyIndex ki;
-
-	for (ki = 0; ki < KANJI_KEY_COUNT; ki++) {
-		struct line_stats *s;
-		uint8_t unused = kd->unused_kanji_orig_cnts[ki];
-		if (!unused)
-			continue;
-		s = &kd->line_stats[kd->line_stats_nr++];
-		s->key_ch = KEY_INDEX_TO_CHAR_MAP[ki];
-		s->available = unused;
-		kd->total_chars += unused;
-	}
 }
 
 static int is_better_cutoff(
@@ -234,9 +204,6 @@ void kanji_distribution_set_preexisting_convs(
 		    kd->rsc_range_start, kd->rsc_range_end);
 
 	fill_used_bit_map(m, &used);
-
-	fill_unused_kanji_orig_cnts(kd, &used);
-	get_top_keys(kd);
 	fill_unused_kanji_origs(kd, &used);
 
 	for (i = 0; i < m->cnt; i++)

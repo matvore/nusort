@@ -48,7 +48,6 @@ struct kanji_distribution {
 		size_t alloc;
 	} available;
 
-	uint8_t unused_kanji_orig_cnts[KANJI_KEY_COUNT];
 	struct {
 		char (*el)[2];
 		size_t cnt;
