@@ -43,6 +43,8 @@ int sort_and_validate_no_conflicts(struct key_mapping_array *);
 /* incomplete_code を接頭辞として持つコードが存在するかどうか検出します。 */
 int incomplete_code_is_prefix(
 	struct key_mapping_array const *, char const *incomplete_code);
+int incomplete_code_is_prefix_for_code_len(
+	struct key_mapping_array const *, char const *incomplete_code, int len);
 
 /*
  * 長さが2で一打けん目が first_key_index または長さが1でコードが

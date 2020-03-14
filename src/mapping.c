@@ -140,7 +140,7 @@ int mapping_lazy_populate(struct mapping *m, char const *key_prefix)
 		return 0;
 	if (key_prefix[1] != ' ')
 		return 0;
-	if (incomplete_code_is_prefix(&m->arr, key_prefix))
+	if (incomplete_code_is_prefix_for_code_len(&m->arr, key_prefix, 4))
 		return 0;
 
 	if (strlen(key_prefix) != 2)

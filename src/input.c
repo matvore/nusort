@@ -48,6 +48,10 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 
 	get_romazi_codes(&romazi_config, &mapping.arr);
 
+	append_mapping(&mapping.arr, ".  ", "。");
+	append_mapping(&mapping.arr, ",  ", "、");
+	append_mapping(&mapping.arr, "/  ", "・");
+
 	res = mapping_populate(&mapping);
 	if (res)
 		return res;

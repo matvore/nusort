@@ -74,35 +74,54 @@ void print_mapping(struct key_mapping const *m, FILE *stream)
 int incomplete_code_is_prefix(
 	struct key_mapping_array const *mapping, char const *incomplete_code)
 {
-	size_t so_far_len = strlen(incomplete_code);
-	Orig extended_input = {0};
+	int try_len;
 
-	strcpy(extended_input, incomplete_code);
-
-	for (size_t try_i = so_far_len; try_i < sizeof(Orig) - 1; try_i++) {
-		ssize_t extended_i;
-		extended_input[try_i] = 1;
-
-		BSEARCH_INDEX(extended_i, mapping->cnt,,
-			      code_cmp(mapping->el[extended_i].orig,
-				       extended_input));
-
-		if (extended_i >= 0)
-			DIE(0, "一致するコードはあるはずありません：%s",
-			    incomplete_code);
-		extended_i = ~extended_i;
-
-		if (extended_i >= mapping->cnt)
-			continue;
-
-		if (strncmp(mapping->el[extended_i].orig, incomplete_code,
-			    so_far_len))
-			continue;
-
-		return 1;
+	for (try_len = strlen(incomplete_code) + 1; try_len <= sizeof(Orig) - 1;
+	     try_len++) {
+		int match = incomplete_code_is_prefix_for_code_len(
+			mapping, incomplete_code, try_len);
+		if (match)
+			return 1;
 	}
 
 	return 0;
+}
+
+int incomplete_code_is_prefix_for_code_len(
+	struct key_mapping_array const *mapping,
+	char const *incomplete_code,
+	int len)
+{
+	int so_far_len = strlen(incomplete_code);
+	ssize_t extended_i;
+	int i;
+	Orig extended_input = {0};
+	Orig *found;
+
+	if (so_far_len > sizeof(Orig) - 2)
+		DIE(0, "未確定コードの長さが範囲外: '%s'", incomplete_code);
+	if (len < so_far_len || len > sizeof(Orig) - 1)
+		DIE(0, "len が範囲外: %d (%s)", len, incomplete_code);
+
+	memcpy(extended_input, incomplete_code, so_far_len);
+	for (i = so_far_len; i < len; i++)
+		extended_input[i] = 1;
+
+	BSEARCH_INDEX(extended_i, mapping->cnt,,
+		      code_cmp(mapping->el[extended_i].orig,
+			       extended_input));
+
+	if (extended_i >= 0)
+		DIE(0, "一致するコードはあるはずありません：%s",
+		    incomplete_code);
+	extended_i = ~extended_i;
+
+	if (extended_i >= mapping->cnt)
+		return 0;
+
+	found = &mapping->el[extended_i].orig;
+	return !strncmp(*found, incomplete_code, so_far_len) &&
+		strlen(*found) == len;
 }
 
 static unsigned initial_lowest_rsc_for_shifted_key_code(
