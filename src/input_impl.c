@@ -39,8 +39,43 @@ static int is_done(
 	return 1;
 }
 
-int input_impl(struct mapping *mapping,
-	       FILE *keyboard_out, FILE *pending_out)
+static void show_cutoff_guide(
+	FILE *out, struct mapping *mapping, Orig so_far_input)
+{
+	int key_index;
+	int so_far_len = strlen(so_far_input);
+	Orig key = {0};
+	char second_line[KANJI_KEY_COUNT * 2 + 1];
+	int second_line_len = 0;
+
+	memcpy(key, so_far_input, so_far_len);
+
+	for (key_index = 0; key_index < KANJI_KEY_COUNT; key_index++) {
+		char ch = KEY_INDEX_TO_CHAR_MAP[key_index];
+		Orig *found_key;
+		struct kanji_entry const *k;
+
+		key[so_far_len] = ch;
+
+		FIND_HASHMAP_ENTRY(mapping->cutoff_map, key, found_key);
+		if (strcmp(*found_key, key))
+			continue;
+
+		k = kanji_db() + *VALUE_PTR_FOR_HASH_KEY(
+			mapping->cutoff_map, found_key);
+		fprintf(out, "%s", k->c);
+		second_line[second_line_len] = ch;
+		second_line[second_line_len + 1] = ' ';
+		second_line_len += 2;
+	}
+	second_line[second_line_len] = 0;
+	fputc('\n', out);
+	fputs(second_line, out);
+	fputc('\n', out);
+}
+
+int input_impl(
+	struct mapping *mapping, FILE *out, struct input_flags const *flags)
 {
 	Orig so_far_input = {0};
 
@@ -51,9 +86,11 @@ int input_impl(struct mapping *mapping,
 		int pressed_bs = 0;
 
 		keyboard_update(&mapping->arr, so_far_input);
-		if (keyboard_out) {
-			keyboard_write(keyboard_out);
-			fputc('\n', keyboard_out);
+		if (flags->show_cutoff_guide)
+			show_cutoff_guide(out, mapping, so_far_input);
+		if (flags->show_keyboard) {
+			keyboard_write(out);
+			fputc('\n', out);
 		}
 
 		ch = fgetc(in);
@@ -100,16 +137,16 @@ int input_impl(struct mapping *mapping,
 				sizeof(so_far_input) - 1);
 		}
 
-		if (!pending_out)
+		if (!flags->show_pending_and_converted)
 			continue;
 
 		if (converted.cnt)
-			fwrite(converted.el, converted.cnt, 1, pending_out);
+			fwrite(converted.el, converted.cnt, 1, out);
 		if (so_far_input[0] || did_delete_orig)
-			fprintf(pending_out, "<%s>", so_far_input);
+			fprintf(out, "<%s>", so_far_input);
 		if (so_far_input[0] || did_delete_orig ||
 		    converted.cnt || did_delete_conv)
-			fputc('\n', pending_out);
+			fputc('\n', out);
 	}
 
 	DESTROY_ARRAY(converted);

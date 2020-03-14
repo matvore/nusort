@@ -30,6 +30,11 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 	struct mapping mapping = {0};
 	struct termios orig_termios;
 	struct romazi_config romazi_config = {0};
+	struct input_flags flags = {
+		.show_pending_and_converted = 1,
+		.show_keyboard = 1,
+		.show_cutoff_guide = 1,
+	};
 	int res;
 
 	init_romazi_config_for_cli_flags(&romazi_config);
@@ -40,6 +45,12 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 			continue;
 		if (parse_romazi_flags(&argc, &argv, &romazi_config))
 			continue;
+		if (!strcmp(argv[0], "--no-show-cutoff-guide")) {
+			argv++;
+			argc--;
+			flags.show_cutoff_guide = 0;
+			continue;
+		}
 
 		fprintf(err,
 			 "フラグを認識できませんでした：%s\n", argv[0]);
@@ -60,7 +71,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 		check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));
 		customize_term_attributes(orig_termios);
 	}
-	res = input_impl(&mapping, out, out);
+	res = input_impl(&mapping, out, &flags);
 	if (set_raw_mode)
 		check_term_op(tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios));
 
