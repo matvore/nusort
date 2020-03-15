@@ -62,8 +62,10 @@ HDRS = \
 nusort: $(SHARED_OBJS) main.o
 	$(CC) $(ALL_CFLAGS) -o nusort $^
 
-%_test: %_test.o $(SHARED_OBJS) test_util.o
-	$(CC) $(ALL_CFLAGS) -o $@_bin $^
+%_test_bin: %_test.o $(SHARED_OBJS) test_util.o
+	$(CC) $(ALL_CFLAGS) -o $@ $^
+
+%_test: %_test_bin
 	@mkdir -p test_errors
 	./$@_bin >test_errors/$@
 	diff /dev/null test_errors/$@
