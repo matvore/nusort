@@ -270,7 +270,7 @@ void get_romazi_codes(
 	append_optimized(config, c, "ta", "a",  "た");
 	append_mapping_auto_kata(c, "ti",       "ち");
 	append_mapping_auto_kata(c, "tu",       "つ");
-	append_optimized(config, c, "j",  "t;", "っ");
+	append_optimized(config, c, "j",  "tj", "っ");
 	append_optimized(config, c, "te", "u",  "て");
 	append_optimized(config, c, "to", "q",  "と");
 	append_mapping_auto_kata(c, "da",       "だ");
