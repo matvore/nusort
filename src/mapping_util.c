@@ -17,6 +17,15 @@ int code_cmp(char const *a, char const *b)
 	return strcmp(a, b);
 }
 
+static int key_mapping_lt(
+	struct key_mapping const *a, struct key_mapping const *b)
+{
+	int code_cmp_res = code_cmp(a->orig, b->orig);
+	if (code_cmp_res)
+		return code_cmp_res < 0;
+	return strcmp(a->conv, b->conv) < 0;
+}
+
 static int conflicts(struct key_mapping const *a, struct key_mapping const *b)
 {
 	size_t a_len = strlen(a->orig);
@@ -24,6 +33,12 @@ static int conflicts(struct key_mapping const *a, struct key_mapping const *b)
 
 	if (strncmp(a->orig, b->orig, a_len < b_len ? a_len : b_len))
 		return 0;
+
+	if (key_mapping_lt(b, a)) {
+		struct key_mapping const *tmp = a;
+		a = b;
+		b = tmp;
+	}
 
 	fputs("コード衝突: ", err);
 	print_mapping(a, err);

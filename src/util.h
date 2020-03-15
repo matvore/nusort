@@ -91,9 +91,13 @@ do { \
 	qsort_push_frame(&f, 0, cnt); \
 	while (f.end != f.f) { \
 		size_t begin, p##a, p##b; \
+		void *mid; \
 		f.end--; \
 		p##b = begin = f.end->begin; \
-		memcpy(pivot, el + begin, sizeof(*(el))); \
+		mid = el + (begin + f.end->end) / 2; \
+		memcpy(pivot, mid, sizeof(*(el))); \
+		memcpy(mid, el + begin, sizeof(*(el))); \
+		memcpy(el + begin, pivot, sizeof(*(el))); \
 		for (p##a = begin + 1; p##a < f.end->end; p##a++) { \
 			if (lt) { \
 				/* \

@@ -240,7 +240,7 @@ int main(void)
 		expect_fail(sort_and_validate_no_conflicts(&a));
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: hwwa->ふぁ と hwwa->ふ!\n");
+	end_test("コード衝突: hwwa->ふ! と hwwa->ふぁ\n");
 
 	start_test("lowest_rsc_index_for_codes_with_first_key_singleton_map");
 	{
