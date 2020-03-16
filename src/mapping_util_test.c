@@ -194,11 +194,11 @@ int main(void)
 		append_mapping(&a, "tye", "ちぇ");
 		expect_ok(sort_and_validate_no_conflicts(&a));
 
-		fprintf(out, "k: %d\n", incomplete_code_is_prefix(&a, "k"));
-		fprintf(out, "f: %d\n", incomplete_code_is_prefix(&a, "f"));
-		fprintf(out, "y: %d\n", incomplete_code_is_prefix(&a, "y"));
-		fprintf(out, "ty: %d\n", incomplete_code_is_prefix(&a, "ty"));
-		fprintf(out, "tt: %d\n", incomplete_code_is_prefix(&a, "tt"));
+		fprintf(out, "k: %d\n", !!incomplete_code_is_prefix(&a, "k"));
+		fprintf(out, "f: %d\n", !!incomplete_code_is_prefix(&a, "f"));
+		fprintf(out, "y: %d\n", !!incomplete_code_is_prefix(&a, "y"));
+		fprintf(out, "ty: %d\n", !!incomplete_code_is_prefix(&a, "ty"));
+		fprintf(out, "tt: %d\n", !!incomplete_code_is_prefix(&a, "tt"));
 
 		DESTROY_ARRAY(a);
 	}
@@ -218,11 +218,11 @@ int main(void)
 		append_mapping(&a, "tta", "台");
 		expect_ok(sort_and_validate_no_conflicts(&a));
 
-		fprintf(out, "k: %d\n", incomplete_code_is_prefix(&a, "k"));
-		fprintf(out, "f: %d\n", incomplete_code_is_prefix(&a, "f"));
-		fprintf(out, "y: %d\n", incomplete_code_is_prefix(&a, "y"));
-		fprintf(out, "ty: %d\n", incomplete_code_is_prefix(&a, "ty"));
-		fprintf(out, "tt: %d\n", incomplete_code_is_prefix(&a, "tt"));
+		fprintf(out, "k: %d\n", !!incomplete_code_is_prefix(&a, "k"));
+		fprintf(out, "f: %d\n", !!incomplete_code_is_prefix(&a, "f"));
+		fprintf(out, "y: %d\n", !!incomplete_code_is_prefix(&a, "y"));
+		fprintf(out, "ty: %d\n", !!incomplete_code_is_prefix(&a, "ty"));
+		fprintf(out, "tt: %d\n", !!incomplete_code_is_prefix(&a, "tt"));
 
 		DESTROY_ARRAY(a);
 	}

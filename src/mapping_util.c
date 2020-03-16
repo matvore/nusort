@@ -17,36 +17,14 @@ int code_cmp(char const *a, char const *b)
 	return strcmp(a, b);
 }
 
-static int key_mapping_lt(
+static void show_conflict(
 	struct key_mapping const *a, struct key_mapping const *b)
 {
-	int code_cmp_res = code_cmp(a->orig, b->orig);
-	if (code_cmp_res)
-		return code_cmp_res < 0;
-	return strcmp(a->conv, b->conv) < 0;
-}
-
-static int conflicts(struct key_mapping const *a, struct key_mapping const *b)
-{
-	size_t a_len = strlen(a->orig);
-	size_t b_len = strlen(b->orig);
-
-	if (strncmp(a->orig, b->orig, a_len < b_len ? a_len : b_len))
-		return 0;
-
-	if (key_mapping_lt(b, a)) {
-		struct key_mapping const *tmp = a;
-		a = b;
-		b = tmp;
-	}
-
 	fputs("コード衝突: ", err);
 	print_mapping(a, err);
 	fputs(" と ", err);
 	print_mapping(b, err);
 	fputc('\n', err);
-
-	return 1;
 }
 
 int sort_and_validate_no_conflicts(struct key_mapping_array *arr)
@@ -57,17 +35,21 @@ int sort_and_validate_no_conflicts(struct key_mapping_array *arr)
 	QSORT(, arr->el, arr->cnt,
 	      code_cmp(arr->el[a].orig, arr->el[b].orig) < 0);
 
-	/*
-	 * code_cmp は長さの異なるコードを一緒に並べ替えないので、隣接のコードを
-	 * チェックするだけで不充分です。O(n^2)で全てのコードを他の全コードと対
-	 * にして比較します。
-	 */
 	for (i = 0; i < arr->cnt; i++) {
-		int j;
-		for (j = i + 1; j < arr->cnt; j++) {
-			if (i != j && conflicts(arr->el + i, arr->el + j))
-				error = 1;
+		struct key_mapping const *m = arr->el + i;
+		struct key_mapping const *pref_conf =
+			incomplete_code_is_prefix(arr, m->orig);
+		if (pref_conf) {
+			error = 1;
+			show_conflict(m, pref_conf);
 		}
+		if (!i || strcmp((m - 1)->orig, m->orig))
+			continue;
+		error = 1;
+		if (strcmp((m - 1)->conv, m->conv) > 0)
+			show_conflict(m, m - 1);
+		else
+			show_conflict(m - 1, m);
 	}
 
 	return error;
@@ -86,23 +68,24 @@ void print_mapping(struct key_mapping const *m, FILE *stream)
 	fprintf(stream, "%s->%s", m->orig, m->conv);
 }
 
-int incomplete_code_is_prefix(
+struct key_mapping const *incomplete_code_is_prefix(
 	struct key_mapping_array const *mapping, char const *incomplete_code)
 {
 	int try_len;
 
 	for (try_len = strlen(incomplete_code) + 1; try_len <= sizeof(Orig) - 1;
 	     try_len++) {
-		int match = incomplete_code_is_prefix_for_code_len(
-			mapping, incomplete_code, try_len);
+		struct key_mapping const *match =
+			incomplete_code_is_prefix_for_code_len(
+				mapping, incomplete_code, try_len);
 		if (match)
-			return 1;
+			return match;
 	}
 
 	return 0;
 }
 
-int incomplete_code_is_prefix_for_code_len(
+struct key_mapping const *incomplete_code_is_prefix_for_code_len(
 	struct key_mapping_array const *mapping,
 	char const *incomplete_code,
 	int len)
@@ -111,7 +94,7 @@ int incomplete_code_is_prefix_for_code_len(
 	ssize_t extended_i;
 	int i;
 	Orig extended_input = {0};
-	Orig *found;
+	struct key_mapping const *found;
 
 	if (so_far_len > sizeof(Orig) - 2)
 		DIE(0, "未確定コードの長さが範囲外: '%s'", incomplete_code);
@@ -134,9 +117,13 @@ int incomplete_code_is_prefix_for_code_len(
 	if (extended_i >= mapping->cnt)
 		return 0;
 
-	found = &mapping->el[extended_i].orig;
-	return !strncmp(*found, incomplete_code, so_far_len) &&
-		strlen(*found) == len;
+	found = mapping->el + extended_i;
+	if (strncmp(found->orig, incomplete_code, so_far_len))
+		return 0;
+	if (strlen(found->orig) != len)
+		return 0;
+
+	return found;
 }
 
 static unsigned initial_lowest_rsc_for_shifted_key_code(
