@@ -218,4 +218,24 @@ int main(void)
 		verify_rsc_order("少", "当", "尤");
 	}
 	end_test("");
+
+	start_test("all_one_stroke_rads_have_same_rsc_key");
+	{
+		char const *k[] = {"丨", "丶", "丿", "乙", 0};
+		unsigned expected = kanji_db_lookup("一")->rsc_sort_key;
+		int i;
+		for (i = 0; k[i]; i++) {
+			struct kanji_entry const *e = kanji_db_lookup(k[i]);
+
+			if (!e) {
+				fprintf(out, "kanji_db で見つからない: %s\n",
+					k[i]);
+				continue;
+			}
+
+			if (e->rsc_sort_key != expected)
+				fputs(k[i], out);
+		}
+	}
+	end_test("");
 }

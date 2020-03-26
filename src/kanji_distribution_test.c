@@ -292,7 +292,7 @@ int main(void)
 			.short_shifted_codes = 1,
 		};
 
-		kd.rsc_range_end = 3001;
+		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("薄"));
 		kanji_distribution_set_preexisting_convs(
 			&kd, &preexisting_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
@@ -316,8 +316,9 @@ int main(void)
 		struct kanji_distribution kd = {
 			.short_shifted_codes = 1,
 		};
+		unsigned end = kanji_db_rsc_index(kanji_db_lookup("笑"));
 
-		kd.rsc_range_end = 2495;
+		kd.rsc_range_end = end;
 		kanji_distribution_set_preexisting_convs(
 			&kd, &preexisting_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
@@ -328,7 +329,7 @@ int main(void)
 			for (c = 0; c < kd.line_stats[line].e_nr; c++) {
 				struct kanji_entry const *k =
 					kd.line_stats[line].e[c];
-				if (kanji_db_rsc_index(k) >= 2495)
+				if (kanji_db_rsc_index(k) >= end)
 					fprintf(out, "%s", k->c);
 			}
 		}
@@ -573,7 +574,7 @@ int main(void)
 		show_preferred_next_chars('6', "閉", "項", 0);
 		show_preferred_next_chars('6', "閉", "項", 1);
 
-		show_preferred_next_chars('f', "丿", "亘", 1);
+		show_preferred_next_chars('f', "一", "亘", 1);
 	}
 	end_test_expected_content_in_file();
 
