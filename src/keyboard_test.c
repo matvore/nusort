@@ -53,4 +53,32 @@ int main(void)
 		destroy_mapping(&m);
 	}
 	end_test_expected_content_in_file();
+
+	start_test("pad_half_width_quotes");
+	{
+		struct key_mapping_array m = {0};
+
+		append_mapping(&m, "d", "“");
+		append_mapping(&m, "k", "”");
+		expect_ok(sort_and_validate_no_conflicts(&m));
+		keyboard_update(&m, "");
+		keyboard_write(out);
+
+		DESTROY_ARRAY(m);
+	}
+	end_test_expected_content_in_file();
+
+	start_test("pad_half_width_single_quotes");
+	{
+		struct key_mapping_array m = {0};
+
+		append_mapping(&m, "b", "‘");
+		append_mapping(&m, "n", "’");
+		expect_ok(sort_and_validate_no_conflicts(&m));
+		keyboard_update(&m, "");
+		keyboard_write(out);
+
+		DESTROY_ARRAY(m);
+	}
+	end_test_expected_content_in_file();
 }

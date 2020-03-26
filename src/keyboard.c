@@ -7,29 +7,49 @@
 #include <stdint.h>
 #include <string.h>
 
-static char const KEYBOARD[] =
-	"┌──┬──┬──┬──┬──┬──╥──┬──┬──┬──┐\n"
-	"│　│　│　│　│　│　║　│　│　│　│\n"	/* number row */
-	"└┬─┴┬─┴┬─┴┬─┴┬─┴╥─╨┬─┴┬─┴┬─┴┬─┴┐\n"
-	" │　│　│　│　│　║　│　│　│　│　│\n"	/* QWER row */
-	" └┬─┴┬─┴┬─┴┬─┴┬─╨╥─┴┬─┴┬─┴┬─┴┬─┴┐\n"
-	"  │　│　│　│　│　║　│　│　│　│　│\n"	/* ASDF row */
-	"  └┬─┴┬─┴┬─┴┬─┴┬─╨╥─┴┬─┴┬─┴┬─┴┬─┴┐\n"
-	"   │　│　│　│　│　║　│　│　│　│　│\n"	/* ZXCV row */
-	"   └──┴──┴──┴──┴──╨──┴──┴──┴──┴──┘";
+#define I "\000│"
+#define II "\000║"
+#define r "┌"
+#define T "┬"
+#define TT "╥"
+#define L_ "└─"
+#define LT "└┬"
+#define vv "╨"
+
+static char const KEYBOARD[] = ""
+	  r"──"T"──"T"──"T"──"T"──"T"──"TT"──"T"──"T"──"T"──""┐\n"
+	  I"　"I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　" I"\n"
+	  LT"─┴"T"─┴"T"─┴"T"─┴"T"─┴"TT"─╨"T"─┴"T"─┴"T"─┴"T"─""┴┐\n"
+	" "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　" I"\n"
+	" "LT"─┴"T"─┴"T"─┴"T"─┴"T"─╨"TT"─┴"T"─┴"T"─┴"T"─┴"T  "─┴┐\n"
+	"  "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　" I"\n"
+	"  "LT"─┴"T"─┴"T"─┴"T"─┴"T"─╨"TT"─┴"T"─┴"T"─┴"T"─┴"T  "─┴┐\n"
+	"   "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　" I"\n"
+	"   "L_ "─┴──""┴──""┴──""┴──" vv "──┴──""┴──""┴──""┴──" "┘";
+
+#undef I
+#undef II
+#undef r
+#undef T
+#undef TT
+#undef L_
+#undef LT
+#undef vv
+
+#define NON_SHIFT_CELL_BYTES 4
 
 static uint16_t const LINE_OFFSET[] = {
 	/* キーインデックス 0-39 - 非シフト */
-	0x061,
-	0x103,
-	0x1a7,
-	0x24d,
+	0x062,
+	0x10f,
+	0x1be,
+	0x26f,
 
 	/* キーインデックス 40-79 - シフト */
 	0x003,
-	0x0a4,
-	0x147,
-	0x1ec,
+	0x0af,
+	0x15d,
+	0x20d,
 };
 
 static char keyboard[sizeof(KEYBOARD)] = {0};
@@ -54,8 +74,8 @@ static struct keyboard_slice ki_to_slice(int ki)
 	s.offset = LINE_OFFSET[ki / 10];
 
 	if (ki < KANJI_KEY_COUNT) {
-		s.offset += (ki % 10) * 6;
-		s.len = 3;
+		s.offset += (ki % 10) * (NON_SHIFT_CELL_BYTES + 3);
+		s.len = NON_SHIFT_CELL_BYTES;
 	} else {
 		s.offset += (ki % 10) * 9;
 		s.len = 6;
@@ -64,13 +84,24 @@ static struct keyboard_slice ki_to_slice(int ki)
 	return s;
 }
 
+static int padding(char const *str, size_t len)
+{
+	if (len != 3)
+		return 0;
+	if (strncmp(str, "\xe2\x80", 2))
+		return 0;
+	if ((str[2] & 0xf8) == 0x98)
+		return ' ';
+	return 0;
+}
+
 static void write_cell(KeyIndex ki, char const *str, size_t len)
 {
 	struct keyboard_slice s = ki_to_slice(ki);
 	char *keyboard_p = keyboard + s.offset;
 
 	memcpy(keyboard_p, str, len);
-	memset(keyboard_p + len, 0, s.len - len);
+	memset(keyboard_p + len, padding(str, len), s.len - len);
 }
 
 void keyboard_update(

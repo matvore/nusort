@@ -62,6 +62,31 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 	append_mapping(&mapping.arr, ".  ", "。");
 	append_mapping(&mapping.arr, ",  ", "、");
 	append_mapping(&mapping.arr, "/  ", "・");
+	append_mapping(&mapping.arr, "[q", "‘");
+	append_mapping(&mapping.arr, "]q", "’");
+	append_mapping(&mapping.arr, "[a", "“");
+	append_mapping(&mapping.arr, "]a", "”");
+	append_mapping(&mapping.arr, "[e", "〈");
+	append_mapping(&mapping.arr, "]e", "〉");
+	append_mapping(&mapping.arr, "[r", "《");
+	append_mapping(&mapping.arr, "]r", "》");
+	append_mapping(&mapping.arr, "[s", "「");
+	append_mapping(&mapping.arr, "]s", "」");
+	append_mapping(&mapping.arr, "[d", "『");
+	append_mapping(&mapping.arr, "]d", "』");
+	append_mapping(&mapping.arr, "[f", "【");
+	append_mapping(&mapping.arr, "]f", "】");
+	append_mapping(&mapping.arr, "[w", "〔");
+	append_mapping(&mapping.arr, "]w", "〕");
+	append_mapping(&mapping.arr, "[v", "〖");
+	append_mapping(&mapping.arr, "]v", "〗");
+	append_mapping(&mapping.arr, "[c", "〘");
+	append_mapping(&mapping.arr, "]c", "〙");
+	append_mapping(&mapping.arr, "[g", "〝");
+	append_mapping(&mapping.arr, "]g", "〟");
+	append_mapping(&mapping.arr, "[x", "｟");
+	append_mapping(&mapping.arr, "]x", "｠");
+	append_mapping(&mapping.arr, "\\  ", "￥");
 
 	res = mapping_populate(&mapping);
 	if (res)
