@@ -1,5 +1,6 @@
 #include "keyboard.h"
 
+#include "chars.h"
 #include "romazi.h"
 #include "util.h"
 
@@ -7,8 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#define I "\000│"
-#define II "\000║"
+#define I "\000\000\000│"
+#define II "\000\000\000║"
 #define r "┌"
 #define T "┬"
 #define TT "╥"
@@ -36,20 +37,21 @@ static char const KEYBOARD[] = ""
 #undef LT
 #undef vv
 
-#define NON_SHIFT_CELL_BYTES 4
+/* 合成用の濁点と仮名を合わせれば六バイトを必する。 */
+#define NON_SHIFT_CELL_BYTES 6
 
 static uint16_t const LINE_OFFSET[] = {
 	/* キーインデックス 0-39 - 非シフト */
-	0x062,
-	0x10f,
-	0x1be,
-	0x26f,
+	0x064,
+	0x127,
+	0x1ec,
+	0x2b3,
 
 	/* キーインデックス 40-79 - シフト */
 	0x003,
-	0x0af,
-	0x15d,
-	0x20d,
+	0x0c5,
+	0x189,
+	0x24f,
 };
 
 static char keyboard[sizeof(KEYBOARD)] = {0};
@@ -84,24 +86,30 @@ static struct keyboard_slice ki_to_slice(int ki)
 	return s;
 }
 
-static int padding(char const *str, size_t len)
+static int needs_padding_space(char const *str, int len)
 {
 	if (len != 3)
 		return 0;
 	if (strncmp(str, "\xe2\x80", 2))
 		return 0;
 	if ((str[2] & 0xf8) == 0x98)
-		return ' ';
+		return 1;
 	return 0;
 }
 
-static void write_cell(KeyIndex ki, char const *str, size_t len)
+static void write_cell(KeyIndex ki, char const *str, int len)
 {
 	struct keyboard_slice s = ki_to_slice(ki);
 	char *keyboard_p = keyboard + s.offset;
 
 	memcpy(keyboard_p, str, len);
-	memset(keyboard_p + len, padding(str, len), s.len - len);
+	keyboard_p += len;
+
+	if (needs_padding_space(str, len)) {
+		*keyboard_p++ = ' ';
+		len++;
+	}
+	memset(keyboard_p, 0, s.len - len);
 }
 
 void keyboard_update(
@@ -109,7 +117,7 @@ void keyboard_update(
 {
 	KeyIndex ki;
 	Orig full_code;
-	size_t missing_char_index = strlen(prefix);
+	int missing_char_index = strlen(prefix);
 
 	strncpy(full_code, prefix, sizeof(full_code));
 
@@ -124,7 +132,7 @@ void keyboard_update(
 
 	for (ki = 0; ki < MAPPABLE_CHAR_COUNT; ki++) {
 		struct key_mapping const *m;
-		size_t str_bytes;
+		int str_bytes;
 
 		full_code[missing_char_index] = KEY_INDEX_TO_CHAR_MAP[ki];
 
@@ -133,20 +141,20 @@ void keyboard_update(
 
 		if (!m)
 			continue;
+
 		str_bytes = strlen(m->conv);
-		if (str_bytes < 6) {
-			write_cell(ki, m->conv, str_bytes);
-			continue;
-		}
-		if (str_bytes == 6) {
+		if (str_bytes > 6)
+			DIE(0, "conv が長すぎます(%d): %s", str_bytes, m->conv);
+
+		if (str_bytes == 6 && (m->conv[5] !=
+				       LAST_BYTE_OF_COMBINING_DAKUTEN)) {
 			/* 入力文字列がカナ２個です。*/
 			int non_shifted = ki % KANJI_KEY_COUNT;
 			int shifted = non_shifted + KANJI_KEY_COUNT;
 			write_cell(shifted, m->conv, 3);
 			write_cell(non_shifted, m->conv + 3, 3);
-			continue;
+		} else {
+			write_cell(ki, m->conv, str_bytes);
 		}
-
-		DIE(0, "conv が長すぎます");
 	}
 }

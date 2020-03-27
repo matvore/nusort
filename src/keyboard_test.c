@@ -1,3 +1,4 @@
+#include "chars.h"
 #include "commands.h"
 #include "keyboard.h"
 #include "mapping.h"
@@ -74,6 +75,22 @@ int main(void)
 
 		append_mapping(&m, "b", "‘");
 		append_mapping(&m, "n", "’");
+		expect_ok(sort_and_validate_no_conflicts(&m));
+		keyboard_update(&m, "");
+		keyboard_write(out);
+
+		DESTROY_ARRAY(m);
+	}
+	end_test_expected_content_in_file();
+
+	start_test("formats_combining_dakuten");
+	{
+		struct key_mapping_array m = {0};
+
+		append_mapping(&m, "j", "ゑ" COMBINING_DAKUTEN);
+		append_mapping(&m, "k", "う" COMBINING_DAKUTEN);
+		append_mapping(&m, "l", "わ" COMBINING_DAKUTEN);
+		append_mapping(&m, ";", "を" COMBINING_DAKUTEN);
 		expect_ok(sort_and_validate_no_conflicts(&m));
 		keyboard_update(&m, "");
 		keyboard_write(out);

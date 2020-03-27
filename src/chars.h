@@ -1,6 +1,7 @@
 #ifndef CHARS_H
 #define CHARS_H
 
+#define LAST_BYTE_OF_COMBINING_DAKUTEN '\x99'
 #define COMBINING_DAKUTEN "\xe3\x82\x99"
 
 /*
