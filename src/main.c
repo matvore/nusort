@@ -15,7 +15,9 @@ static const char *USAGE =
 "\tnusort last_rank_contained [-c] [-s] [-k] [-n] "
 	"CUTOFF_KANJI_1..CUTOFF_KANJI_n\n"
 "\tnusort longest_rsc_block\n"
-"\tnusort make_map\n";
+"\tnusort make_map\n"
+"\tnusort rsc_sort_key\n"
+;
 
 int main(int argc, const char **argv)
 {
@@ -39,6 +41,8 @@ int main(int argc, const char **argv)
 		return longest_rsc_block(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "make_map"))
 		return make_map(argv + 2, argc - 2);
+	if (argc >= 2 && !strcmp(argv[1], "rsc_sort_key"))
+		return rsc_sort_key(argv + 2, argc - 2);
 	fprintf(stderr, "%s", USAGE);
 	return 1;
 }

@@ -8,3 +8,4 @@ int kana_stats(char const *const *argv, int argc);
 int longest_rsc_block(char const *const *argv, int argc);
 int make_map(char const *const *argv, int argc);
 int print_last_rank_contained(char const *const *argv, int argc);
+int rsc_sort_key(char const *const *argv, int argc);

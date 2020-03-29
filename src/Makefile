@@ -37,6 +37,7 @@ SHARED_OBJS = \
 	mapping_util.o \
 	rank_coverage.o \
 	romazi.o \
+	rsc_sort_key.o \
 	streams.o \
 	util.o
 
