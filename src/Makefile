@@ -35,6 +35,7 @@ SHARED_OBJS = \
 	make_map.o \
 	mapping.o \
 	mapping_util.o \
+	radicals.o \
 	rank_coverage.o \
 	romazi.o \
 	rsc_sort_key.o \
@@ -87,6 +88,7 @@ test: \
 	make_map_test \
 	mapping_test \
 	mapping_util_test \
+	radicals_test \
 	rank_coverage_test \
 	romazi_test
 

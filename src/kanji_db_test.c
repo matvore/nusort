@@ -1,4 +1,5 @@
 #include "kanji_db.h"
+#include "radicals.h"
 #include "streams.h"
 #include "test_util.h"
 #include "util.h"
@@ -281,26 +282,15 @@ int main(void)
 		/*
 		 * has_all_radicals で書いてある字は必ず部首の主な字形ではない
 		 * ので、区切り字の数を別のテストで確認する。
-		 *
-		 * 康熙字典で214個があり、日本語特有の部首 (⺍) が1個あるので、
-		 * 全部で 215 個あります。
-		 *
-		 *						   215
-		 * 一丨丶丿乙亅		を同一の部首と見なしす。   - 5
-		 * 匚匸			を同一の部首と見なしす。   - 1
-		 * 夊夂			を同一の部首と見なしす。   - 1
-		 * 日曰			を同一の部首と見なしす。   - 1
-		 * 						 = 207
 		 */
 		unsigned k;
-		int expected = 207;
 		int count = 0;
 		for (k = 0; k < kanji_db_nr(); k++) {
 			if (kanji_db()[k].cutoff_type >= 2)
 				count++;
 		}
-		if (count != expected)
-			fprintf(out, "%d != %d\n", count, expected);
+		if (count != RADICAL_COUNT)
+			fprintf(out, "%d != %d\n", count, RADICAL_COUNT);
 	}
 	end_test("");
 

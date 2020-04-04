@@ -4,6 +4,7 @@
 #include "keyboard.h"
 #include "mapping.h"
 #include "mapping_util.h"
+#include "radicals.h"
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
@@ -41,18 +42,23 @@ static int is_done(
 
 static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 {
-	int key_index;
+	int ki;
 	int so_far_len = strlen(so_far_input);
 	Orig key = {0};
-	char second_line[KANJI_KEY_COUNT * 2 + 1];
-	int second_line_len = 0;
+	struct {
+		struct kanji_entry const *k;
+		char key;
+		struct radical_coverage rads;
+	} cutoffs[KANJI_KEY_COUNT] = {0};
+	int cutoffs_nr = 0;
+	Orig *found_key;
+	int last_line = -1;
+	int fold_mode = 0;
 
 	memcpy(key, so_far_input, so_far_len);
 
-	for (key_index = 0; key_index < KANJI_KEY_COUNT; key_index++) {
-		char ch = KEY_INDEX_TO_CHAR_MAP[key_index];
-		Orig *found_key;
-		struct kanji_entry const *k;
+	for (ki = 0; ki < KANJI_KEY_COUNT; ki++) {
+		char ch = KEY_INDEX_TO_CHAR_MAP[ki];
 
 		key[so_far_len] = ch;
 
@@ -60,17 +66,74 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 		if (strcmp(*found_key, key))
 			continue;
 
-		k = kanji_db() + *VALUE_PTR_FOR_HASH_KEY(
+		cutoffs[cutoffs_nr].k = kanji_db() + *VALUE_PTR_FOR_HASH_KEY(
 			mapping->cutoff_map, found_key);
-		fprintf(out, "%s", k->c);
-		second_line[second_line_len] = ch;
-		second_line[second_line_len + 1] = ' ';
-		second_line_len += 2;
+		cutoffs[cutoffs_nr].key = ch;
+
+		if (cutoffs_nr)
+			cutoffs[cutoffs_nr - 1].rads.rsc_key_end =
+				cutoffs[cutoffs_nr].k->rsc_sort_key;
+
+		cutoffs_nr++;
 	}
-	second_line[second_line_len] = 0;
+
+	key[so_far_len] = 1;
+	FIND_HASHMAP_ENTRY(mapping->cutoff_map, key, found_key);
+	if (!strcmp(*found_key, key)) {
+		unsigned end_ki =
+			*VALUE_PTR_FOR_HASH_KEY(mapping->cutoff_map, found_key);
+		unsigned rsc_key_end = end_ki == kanji_db_nr()
+			? 0xffff : kanji_db()[end_ki].rsc_sort_key;
+		cutoffs[cutoffs_nr - 1].rads.rsc_key_end = rsc_key_end;
+	} else {
+		return;
+	}
+
+	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
+		struct kanji_entry const *first_rad;
+
+		cutoffs[ki].rads.rsc_key_start =
+			cutoffs[ki].k->rsc_sort_key;
+		radical_coverage_next(&cutoffs[ki].rads);
+
+		first_rad = kanji_db() + cutoffs[ki].rads.current;
+		if (cutoffs[ki].k != first_rad)
+			fputs(first_rad->c, out);
+		else
+			fputs("  ", out);
+
+		radical_coverage_next(&cutoffs[ki].rads);
+	}
 	fputc('\n', out);
-	fputs(second_line, out);
+	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
+		fputc(cutoffs[ki].key, out);
+		fputc(' ', out);
+	}
 	fputc('\n', out);
+	for (ki = cutoffs_nr - 1; ki >= 0; ki--)
+		fputs(cutoffs[ki].k->c, out);
+	fputc('\n', out);
+	while (last_line) {
+		int this_line = 0;
+		for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
+			struct radical_coverage *r = &cutoffs[ki].rads;
+			if (radical_coverage_done(r)) {
+				if (!fold_mode)
+					fputs("  ", out);
+				continue;
+			}
+			fputs(kanji_db()[r->current].c, out);
+			if (last_line == 1)
+				fold_mode = 1;
+			this_line++;
+			radical_coverage_next(r);
+		}
+		if (!fold_mode)
+			fputc('\n', out);
+		last_line = this_line;
+	}
+	if (fold_mode)
+		fputc('\n', out);
 }
 
 int input_impl(struct mapping *mapping, struct input_flags const *flags)

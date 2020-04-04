@@ -120,23 +120,36 @@ int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *m)
 	return parse_kanji_distribution_flags(argc, argv, &m->dist);
 }
 
-static void add_cutoff(
-	struct mapping *m, char const *pref, struct line_stats const *line)
+static void add_cutoffs(struct mapping *m, char const *pref,
+			struct kanji_distribution const *dist)
 {
-	Orig *found_key;
 	Orig key = {0};
+	int pref_len = strlen(pref);
+	int i;
+	Orig *found_key;
 	uint16_t *value;
 
-	int pref_len = strlen(pref);
-
 	memcpy(key, pref, pref_len);
-	key[pref_len] = line->key_ch;
 
+	for (i = 0; i < dist->line_stats_nr; i++) {
+
+		key[pref_len] = dist->line_stats[i].key_ch;
+
+		FIND_HASHMAP_ENTRY(m->cutoff_map, key, found_key);
+
+		memcpy(*found_key, key, sizeof(key));
+		value = VALUE_PTR_FOR_HASH_KEY(m->cutoff_map, found_key);
+		*value = dist->line_stats[i].cutoff - kanji_db();
+	}
+
+	key[pref_len] = 1;
 	FIND_HASHMAP_ENTRY(m->cutoff_map, key, found_key);
-
 	memcpy(*found_key, key, sizeof(key));
 	value = VALUE_PTR_FOR_HASH_KEY(m->cutoff_map, found_key);
-	*value = line->cutoff - kanji_db();
+	if (dist->rsc_range_end == kanji_db_nr())
+		*value = kanji_db_nr();
+	else
+		*value = kanji_from_rsc_index(dist->rsc_range_end) - kanji_db();
 }
 
 int mapping_populate(struct mapping *m)
@@ -145,10 +158,8 @@ int mapping_populate(struct mapping *m)
 		     KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1) * 2);
 
 	if (m->include_kanji) {
-		int i;
 		get_kanji_codes("", 0, &m->dist, &m->arr, m->six_is_rh);
-		for (i = 0; i < m->dist.line_stats_nr; i++)
-			add_cutoff(m, "", m->dist.line_stats + i);
+		add_cutoffs(m, "", &m->dist);
 	}
 
 	return sort_and_validate_no_conflicts(&m->arr);
@@ -159,7 +170,6 @@ int mapping_lazy_populate(struct mapping *m, char const *key_prefix)
 	int key_index = char_to_key_index(key_prefix[0]);
 	struct line_stats const *line_a;
 	struct kanji_distribution dist = {0};
-	int i;
 
 	if (!m->include_kanji)
 		return 0;
@@ -186,8 +196,7 @@ int mapping_lazy_populate(struct mapping *m, char const *key_prefix)
 	get_kanji_codes(key_prefix, m->dist.total_chars, &dist, &m->arr,
 		        m->six_is_rh);
 
-	for (i = 0; i < dist.line_stats_nr; i++)
-		add_cutoff(m, key_prefix, dist.line_stats + i);
+	add_cutoffs(m, key_prefix, &dist);
 
 	kanji_distribution_destroy(&dist);
 
