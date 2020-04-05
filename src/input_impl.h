@@ -7,4 +7,4 @@ struct input_flags {
 	unsigned show_cutoff_guide : 1;
 };
 
-int input_impl(struct mapping *, FILE *out, struct input_flags const *);
+int input_impl(struct mapping *, struct input_flags const *);

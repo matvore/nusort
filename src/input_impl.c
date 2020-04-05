@@ -39,8 +39,7 @@ static int is_done(
 	return 1;
 }
 
-static void show_cutoff_guide(
-	FILE *out, struct mapping *mapping, Orig so_far_input)
+static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 {
 	int key_index;
 	int so_far_len = strlen(so_far_input);
@@ -74,8 +73,7 @@ static void show_cutoff_guide(
 	fputc('\n', out);
 }
 
-int input_impl(
-	struct mapping *mapping, FILE *out, struct input_flags const *flags)
+int input_impl(struct mapping *mapping, struct input_flags const *flags)
 {
 	Orig so_far_input = {0};
 	int did_delete_orig = 0;
@@ -87,7 +85,7 @@ int input_impl(
 
 		keyboard_update(&mapping->arr, so_far_input);
 		if (flags->show_cutoff_guide)
-			show_cutoff_guide(out, mapping, so_far_input);
+			show_cutoff_guide(mapping, so_far_input);
 		if (flags->show_pending_and_converted) {
 			if (converted.cnt)
 				fwrite(converted.el, converted.cnt, 1, out);

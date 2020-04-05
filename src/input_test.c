@@ -55,7 +55,7 @@ int main(void)
 		};
 		append_mapping(&m.arr, "xyz", "あ");
 		in = open_tmp_file_containing("x!");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		XFCLOSE(in);
 		destroy_mapping(&m);
 	}
@@ -97,7 +97,7 @@ int main(void)
 		append_mapping(&m.arr, "mo", "も");
 
 		in = open_tmp_file_containing("m");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 
 		destroy_mapping(&m);
 	}
@@ -112,7 +112,7 @@ int main(void)
 		append_mapping(&m.arr, "ki", "き");
 
 		in = open_tmp_file_containing("ki");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 
 		destroy_mapping(&m);
 	}
@@ -130,7 +130,7 @@ int main(void)
 		sort_and_validate_no_conflicts(&m.arr);
 
 		in = open_tmp_file_containing("ropa");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 
 		destroy_mapping(&m);
 	}
@@ -144,7 +144,7 @@ int main(void)
 		};
 		append_mapping(&m.arr, "ro", "ろ");
 		in = open_tmp_file_containing("\b\b\b\b");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("");
@@ -157,7 +157,7 @@ int main(void)
 		};
 		append_mapping(&m.arr, "ro", "ろ");
 		in = open_tmp_file_containing("\x7f\x7f\x7f\x7f");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("");
@@ -172,7 +172,7 @@ int main(void)
 		append_mapping(&m.arr, "ba", "ば");
 		sort_and_validate_no_conflicts(&m.arr);
 		in = open_tmp_file_containing("r\x7f""b");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<r>\n<>\n<b>\n");
@@ -187,7 +187,7 @@ int main(void)
 		append_mapping(&m.arr, "ba", "ば");
 		sort_and_validate_no_conflicts(&m.arr);
 		in = open_tmp_file_containing("r\bb");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<r>\n<>\n<b>\n");
@@ -203,7 +203,7 @@ int main(void)
 		append_mapping(&m.arr, "sya", "しゃ");
 		sort_and_validate_no_conflicts(&m.arr);
 		in = open_tmp_file_containing("ry\b\bsya");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<r>\n<ry>\n<r>\n<>\n<s>\n<sy>\nしゃ\n");
@@ -216,7 +216,7 @@ int main(void)
 		};
 		append_mapping(&m.arr, "wa", "わ");
 		in = open_tmp_file_containing("wa\b");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<w>\nわ\n\n");
@@ -231,7 +231,7 @@ int main(void)
 		append_mapping(&m.arr, "ha", "は");
 		sort_and_validate_no_conflicts(&m.arr);
 		in = open_tmp_file_containing("wahaha\b\bwawa");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<w>\n"
@@ -255,7 +255,7 @@ int main(void)
 		};
 		append_mapping(&m.arr, "ma", "ま");
 		in = open_tmp_file_containing("x");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("x\n");
@@ -269,7 +269,7 @@ int main(void)
 		append_mapping(&m.arr, "ma", "ま");
 		append_mapping(&m.arr, "xa", "ぁ");
 		in = open_tmp_file_containing("mx");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<m>\n"
@@ -285,7 +285,7 @@ int main(void)
 		append_mapping(&m.arr, "xa", "ぁ");
 		sort_and_validate_no_conflicts(&m.arr);
 		in = open_tmp_file_containing("x?");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<x>\n"
@@ -301,7 +301,7 @@ int main(void)
 		append_mapping(&m.arr, "J", "ッ");
 		sort_and_validate_no_conflicts(&m.arr);
 		in = open_tmp_file_containing("kJ");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<k>\nkッ\n");
@@ -314,7 +314,7 @@ int main(void)
 		};
 		append_mapping(&m.arr, "ka", "か");
 		in = open_tmp_file_containing("kr\b");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<k>\nkr\nk\n");
@@ -327,7 +327,7 @@ int main(void)
 		};
 		append_mapping(&m.arr, "ka", "か");
 		in = open_tmp_file_containing("kakr\b");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<k>\nか\nか<k>\nかkr\nかk\n");
@@ -340,7 +340,7 @@ int main(void)
 		};
 		append_mapping(&m.arr, "ka", "か");
 		in = open_tmp_file_containing("kakb\b");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<k>\nか\nか<k>\nかkb\nかk\n");
@@ -353,7 +353,7 @@ int main(void)
 		};
 		append_mapping(&m.arr, "dmf", "é");
 		in = open_tmp_file_containing("dmf\b");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 	}
 	end_test("<d>\n<dm>\né\n\n");
@@ -369,7 +369,7 @@ int main(void)
 
 		expect_ok(mapping_populate(&m));
 		in = open_tmp_file_containing("1 jf");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 		XFCLOSE(in);
 	}
@@ -396,7 +396,7 @@ int main(void)
 		append_mapping(&m.arr, "9 ql", "巾");
 		expect_ok(sort_and_validate_no_conflicts(&m.arr));
 		in = open_tmp_file_containing("1 jdd jf9 q");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 		XFCLOSE(in);
 	}
@@ -412,7 +412,7 @@ int main(void)
 		};
 		expect_ok(mapping_populate(&m));
 		in = open_tmp_file_containing("y \b\bu ");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 		expect_ok(sort_and_validate_no_conflicts(&m.arr));
 		XFCLOSE(in);
@@ -431,7 +431,7 @@ int main(void)
 		};
 		expect_ok(mapping_populate(&m));
 		in = open_tmp_file_containing("t ");
-		expect_ok(input_impl(&m, out, &f));
+		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
 		expect_ok(sort_and_validate_no_conflicts(&m.arr));
 		XFCLOSE(in);
