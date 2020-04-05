@@ -78,20 +78,32 @@ int input_impl(
 	struct mapping *mapping, FILE *out, struct input_flags const *flags)
 {
 	Orig so_far_input = {0};
+	int did_delete_orig = 0;
+	int did_delete_conv = 0;
 
 	while (1) {
 		int ch;
-		int did_delete_orig = 0;
-		int did_delete_conv = 0;
 		int pressed_bs = 0;
 
 		keyboard_update(&mapping->arr, so_far_input);
 		if (flags->show_cutoff_guide)
 			show_cutoff_guide(out, mapping, so_far_input);
+		if (flags->show_pending_and_converted) {
+			if (converted.cnt)
+				fwrite(converted.el, converted.cnt, 1, out);
+			if (so_far_input[0] || did_delete_orig)
+				fprintf(out, "<%s>", so_far_input);
+			if (so_far_input[0] || did_delete_orig ||
+			    converted.cnt || did_delete_conv)
+				fputc('\n', out);
+		}
 		if (flags->show_keyboard) {
 			keyboard_write(out);
 			fputc('\n', out);
 		}
+
+		did_delete_orig = 0;
+		did_delete_conv = 0;
 
 		ch = fgetc(in);
 
@@ -136,17 +148,6 @@ int input_impl(
 			memmove(so_far_input, so_far_input + 1,
 				sizeof(so_far_input) - 1);
 		}
-
-		if (!flags->show_pending_and_converted)
-			continue;
-
-		if (converted.cnt)
-			fwrite(converted.el, converted.cnt, 1, out);
-		if (so_far_input[0] || did_delete_orig)
-			fprintf(out, "<%s>", so_far_input);
-		if (so_far_input[0] || did_delete_orig ||
-		    converted.cnt || did_delete_conv)
-			fputc('\n', out);
 	}
 
 	DESTROY_ARRAY(converted);

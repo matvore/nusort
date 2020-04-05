@@ -419,5 +419,24 @@ int main(void)
 	}
 	end_test_expected_content_in_file();
 
+	start_test("show_cutoff_then_pending_and_converted_then_keyboard");
+	{
+		struct mapping m = {
+			.include_kanji = 1,
+		};
+		struct input_flags f = {
+			.show_pending_and_converted = 1,
+			.show_cutoff_guide = 1,
+			.show_keyboard = 1,
+		};
+		expect_ok(mapping_populate(&m));
+		in = open_tmp_file_containing("t ");
+		expect_ok(input_impl(&m, out, &f));
+		destroy_mapping(&m);
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		XFCLOSE(in);
+	}
+	end_test_expected_content_in_file();
+
 	return 0;
 }
