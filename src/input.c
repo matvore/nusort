@@ -34,6 +34,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 		.show_pending_and_converted = 1,
 		.show_keyboard = 1,
 		.show_cutoff_guide = 1,
+		.save_with_osc52 = 1,
 	};
 	int res;
 

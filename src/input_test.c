@@ -438,5 +438,137 @@ int main(void)
 	}
 	end_test_expected_content_in_file();
 
+	start_test("enter_clears_input_line");
+	{
+		struct mapping m = {0};
+		struct input_flags f = {
+			.show_pending_and_converted = 1,
+		};
+		append_mapping(&m.arr, "ro", "ろ");
+		append_mapping(&m.arr, "ba", "ば");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		in = open_tmp_file_containing("ro\n");
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+		XFCLOSE(in);
+	}
+	end_test("<r>\n"
+		 "ろ\n");
+
+	start_test("does_not_remember_trailing_characters_after_enter");
+	{
+		struct mapping m = {0};
+		struct input_flags f = {
+			.show_pending_and_converted = 1,
+		};
+		append_mapping(&m.arr, "ro", "ろ");
+		append_mapping(&m.arr, "ba", "ば");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		in = open_tmp_file_containing("ba\nj");
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+		XFCLOSE(in);
+	}
+	end_test("<b>\n"
+		 "ば\n"
+		 "j\n");
+
+	start_test("enter before_typing_anything_does_not_crash");
+	{
+		struct mapping m = {0};
+		struct input_flags f = {
+			.show_pending_and_converted = 1,
+		};
+		append_mapping(&m.arr, "ro", "ろ");
+		append_mapping(&m.arr, "ba", "ば");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		in = open_tmp_file_containing("\n");
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+		XFCLOSE(in);
+	}
+	end_test("");
+
+	start_test("use_osc52_to_save_include_kanji");
+	{
+		struct mapping m = {0};
+		struct input_flags f = {
+			.save_with_osc52 = 1,
+		};
+		append_mapping(&m.arr, "a", "て");
+		append_mapping(&m.arr, "b", "す");
+		append_mapping(&m.arr, "c", "と");
+		append_mapping(&m.arr, "d", "成");
+		append_mapping(&m.arr, "e", "功");
+
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		in = open_tmp_file_containing("abcde\n");
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+		XFCLOSE(in);
+	}
+	end_test("\e]52;c;44Gm44GZ44Go5oiQ5Yqf\a");
+
+	start_test("use_osc52_to_save_with_padding");
+	{
+		struct mapping m = {0};
+		struct input_flags f = {
+			.save_with_osc52 = 1,
+		};
+		append_mapping(&m.arr, "a", "あ");
+		append_mapping(&m.arr, "i", "い");
+		append_mapping(&m.arr, "ro", "ろ");
+		append_mapping(&m.arr, "ha", "は");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		in = open_tmp_file_containing(
+			/* 出力が 6 bytes */
+			"ai\n"
+			/* 出力が 7 bytes - 要パディング */
+			"aiu\n"
+			/* 出力が 8 bytes - 要パディング */
+			"AiroN\n"
+			/* 出力が 9 bytes */
+			"aroha\n"
+		);
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+		XFCLOSE(in);
+	}
+	end_test(
+		"\e]52;c;44GC44GE\a"
+		"\e]52;c;44GC44GEdQ==\a"
+		"\e]52;c;QeOBhOOCjU4=\a"
+		"\e]52;c;44GC44KN44Gv\a"
+	);
+
+	start_test("use_osc52_to_save_use_plus_and_slash_in_output");
+	{
+		struct mapping m = {0};
+		struct input_flags f = {
+			.save_with_osc52 = 1,
+		};
+		append_mapping(&m.arr, "a", "あ");
+		append_mapping(&m.arr, "i", "い");
+		append_mapping(&m.arr, "ro", "ろ");
+		append_mapping(&m.arr, "ha", "は");
+		append_mapping(&m.arr, "#1", "\xce\x9f");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		in = open_tmp_file_containing(
+			"xy>\n"
+			"jk?\n"
+			"#1#1\n"
+			"3ro\n"
+		);
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+		XFCLOSE(in);
+	}
+	end_test(
+		"\e]52;c;eHk+\a"
+		"\e]52;c;ams/\a"
+		"\e]52;c;zp/Onw==\a"
+		"\e]52;c;M+OCjQ==\a"
+	);
+
 	return 0;
 }

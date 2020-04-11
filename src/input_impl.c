@@ -40,6 +40,67 @@ static int is_done(
 	return 1;
 }
 
+static void print_base64_digit(int d)
+{
+	if (d < 26) {
+		fputc('A' + d, out);
+		return;
+	}
+	d -= 26;
+	if (d < 26) {
+		fputc('a' + d, out);
+		return;
+	}
+	d -= 26;
+	if (d < 10) {
+		fputc('0' + d, out);
+		return;
+	}
+	d -= 10;
+	fputc(d ? '/' : '+', out);
+}
+
+static void save_with_osc52(void)
+{
+	size_t conv_i = 0;
+
+	fputs("\e]52;c;", out);
+
+	while (conv_i < converted.cnt) {
+		int bits = 0, i;
+		uint32_t packed = 0;
+
+		for (i = 0; i < 3; i++) {
+			packed <<= 8;
+
+			if (conv_i >= converted.cnt)
+				continue;
+
+			packed |= (int)converted.el[conv_i++] & 0xff;
+			bits += 8;
+		}
+
+		while (bits > 0) {
+			print_base64_digit((packed >> (24 - 6)) & 63);
+			bits -= 6;
+			packed <<= 6;
+		}
+	}
+
+	switch (converted.cnt % 3)
+	{
+	case 0:
+		fputc('\a', out);
+		break;
+	case 1:
+		fputs("==\a", out);
+		break;
+	case 2:
+		fputs("=\a", out);
+		break;
+	}
+}
+
 static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 {
 	int ki;
@@ -168,13 +229,25 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 
 		ch = fgetc(in);
 
-		/* EOF、 ^D 又は Escape の場合は終了します。 */
-		if (ch == EOF || ch == 4 || ch == '\e')
-			break;
-
-		if (ch == '\b' || ch == 0x7f) {
+		switch (ch) {
+		case EOF:
+		case 4:
+		case '\e':
+			/* EOF、 ^D 又は Escape の場合は終了します。 */
+			goto cleanup;
+		case '\b':
+		case '\x7f':
 			pressed_bs = 1;
 			did_delete_orig = so_far_input[0] != 0;
+			break;
+		case '\n':
+			if (converted.alloc) {
+				if (flags->save_with_osc52)
+					save_with_osc52();
+				converted.el[0] = 0;
+				converted.cnt = 0;
+			}
+			continue;
 		}
 
 		if (did_delete_orig) {
@@ -211,6 +284,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 		}
 	}
 
+cleanup:
 	DESTROY_ARRAY(converted);
 
 	return 0;
