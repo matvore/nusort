@@ -2,6 +2,7 @@
 
 #include "chars.h"
 #include "romazi.h"
+#include "streams.h"
 #include "util.h"
 
 #include <errno.h>
@@ -56,12 +57,9 @@ static uint16_t const LINE_OFFSET[] = {
 
 static char keyboard[sizeof(KEYBOARD)] = {0};
 
-char const *keyboard_bytes(void) { return keyboard; }
-size_t keyboard_size(void) { return sizeof(KEYBOARD); }
-
-void keyboard_write(FILE *stream)
+void keyboard_write(void)
 {
-	fwrite(keyboard_bytes(), keyboard_size(), 1, stream);
+	fwrite(keyboard, sizeof(KEYBOARD), 1, out);
 }
 
 struct keyboard_slice {

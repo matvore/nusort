@@ -220,7 +220,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 				fputc('\n', out);
 		}
 		if (flags->show_keyboard) {
-			keyboard_write(out);
+			keyboard_write();
 			fputc('\n', out);
 		}
 

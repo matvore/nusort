@@ -32,7 +32,7 @@ int main(void)
 		if (mapping_populate(&m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m.arr, "");
-		keyboard_write(out);
+		keyboard_write();
 		destroy_mapping(&m);
 	}
 	end_test_expected_content_in_file();
@@ -50,7 +50,7 @@ int main(void)
 		if (mapping_populate(&m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m.arr, "/");
-		keyboard_write(out);
+		keyboard_write();
 		destroy_mapping(&m);
 	}
 	end_test_expected_content_in_file();
@@ -63,7 +63,7 @@ int main(void)
 		append_mapping(&m, "k", "”");
 		expect_ok(sort_and_validate_no_conflicts(&m));
 		keyboard_update(&m, "");
-		keyboard_write(out);
+		keyboard_write();
 
 		DESTROY_ARRAY(m);
 	}
@@ -77,7 +77,7 @@ int main(void)
 		append_mapping(&m, "n", "’");
 		expect_ok(sort_and_validate_no_conflicts(&m));
 		keyboard_update(&m, "");
-		keyboard_write(out);
+		keyboard_write();
 
 		DESTROY_ARRAY(m);
 	}
@@ -93,7 +93,7 @@ int main(void)
 		append_mapping(&m, ";", "を" COMBINING_DAKUTEN);
 		expect_ok(sort_and_validate_no_conflicts(&m));
 		keyboard_update(&m, "");
-		keyboard_write(out);
+		keyboard_write();
 
 		DESTROY_ARRAY(m);
 	}
