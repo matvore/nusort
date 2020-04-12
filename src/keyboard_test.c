@@ -98,4 +98,37 @@ int main(void)
 		DESTROY_ARRAY(m);
 	}
 	end_test_expected_content_in_file();
+
+	start_test("rsc_list_basic");
+	{
+		struct key_mapping_array m = {0};
+
+		append_mapping(&m, "xj", "作");
+		append_mapping(&m, "xk", "準");
+		append_mapping(&m, "xl", "巾");
+		append_mapping(&m, "x;", "方");
+		expect_ok(sort_and_validate_no_conflicts(&m));
+		keyboard_update(&m, "x");
+		keyboard_show_rsc_list();
+
+		DESTROY_ARRAY(m);
+	}
+	end_test_expected_content_in_file();
+
+	start_test("rsc_list_grouping");
+	{
+		struct key_mapping_array m = {0};
+
+		append_mapping(&m, "yj", "作");
+		append_mapping(&m, "yk", "準");
+		append_mapping(&m, "yh", "漢");
+		append_mapping(&m, "yl", "滝");
+		append_mapping(&m, "y;", "方");
+		expect_ok(sort_and_validate_no_conflicts(&m));
+		keyboard_update(&m, "y");
+		keyboard_show_rsc_list();
+
+		DESTROY_ARRAY(m);
+	}
+	end_test_expected_content_in_file();
 }

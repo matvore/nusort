@@ -35,6 +35,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 		.show_keyboard = 1,
 		.show_cutoff_guide = 1,
 		.save_with_osc52 = 1,
+		.show_rsc_list = 1,
 	};
 	int res;
 
@@ -50,6 +51,12 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 			argv++;
 			argc--;
 			flags.show_cutoff_guide = 0;
+			continue;
+		}
+		if (!strcmp(argv[0], "--no-show-rsc-list")) {
+			argv++;
+			argc--;
+			flags.show_rsc_list = 0;
 			continue;
 		}
 

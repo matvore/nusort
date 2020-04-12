@@ -26,8 +26,9 @@ int main(void)
 		char const *argv[] = {
 			"-s", "--short-shifted-codes",
 			"--no-show-cutoff-guide",
+			"--no-show-rsc-list",
 		};
-		int argc = 3;
+		int argc = 4;
 		in = open_tmp_file_containing("kj");
 		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
@@ -39,8 +40,9 @@ int main(void)
 		char const *argv[] = {
 			"-s", "--short-shifted-codes",
 			"--no-show-cutoff-guide",
+			"--no-show-rsc-list",
 		};
-		int argc = 3;
+		int argc = 4;
 		in = open_tmp_file_containing("tya" "HWI" "DWO" "WHO" "YE");
 		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
 		XFCLOSE(in);
@@ -66,8 +68,9 @@ int main(void)
 		char const *argv[] = {
 			"--no-kanji-nums", "-s", "--short-shifted-codes",
 			"--no-show-cutoff-guide",
+			"--no-show-rsc-list",
 		};
-		int argc = 4;
+		int argc = 5;
 
 		in = open_tmp_file_containing("");
 		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
@@ -79,8 +82,9 @@ int main(void)
 	{
 		char const *argv[] = {
 			"--no-kanji", "--no-show-cutoff-guide",
+			"--no-show-rsc-list",
 		};
-		int argc = 2;
+		int argc = 3;
 
 		in = open_tmp_file_containing("m");
 		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
@@ -569,6 +573,25 @@ int main(void)
 		"\e]52;c;zp/Onw==\a"
 		"\e]52;c;M+OCjQ==\a"
 	);
+
+	start_test("show_rsc_list");
+	{
+		struct mapping m = {0};
+		struct input_flags f = {
+			.show_rsc_list = 1,
+		};
+		append_mapping(&m.arr, "yj", "肉");
+		append_mapping(&m.arr, "yk", "肘");
+		append_mapping(&m.arr, "yh", "漢");
+		append_mapping(&m.arr, "yl", "滝");
+		append_mapping(&m.arr, "y;", "方");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		in = open_tmp_file_containing("y");
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+		XFCLOSE(in);
+	}
+	end_test_expected_content_in_file();
 
 	return 0;
 }

@@ -219,6 +219,10 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 			    converted.cnt || did_delete_conv)
 				fputc('\n', out);
 		}
+		if (flags->show_rsc_list) {
+			keyboard_show_rsc_list();
+			fputc('\n', out);
+		}
 		if (flags->show_keyboard) {
 			keyboard_write();
 			fputc('\n', out);

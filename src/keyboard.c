@@ -1,6 +1,6 @@
-#include "keyboard.h"
-
 #include "chars.h"
+#include "kanji_db.h"
+#include "keyboard.h"
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
@@ -56,6 +56,16 @@ static uint16_t const LINE_OFFSET[] = {
 };
 
 static char keyboard[sizeof(KEYBOARD)] = {0};
+
+static struct {
+	/* kanji_db 配列へのインデックス */
+	unsigned k;
+
+	/* 入力コードの最後のキー */
+	char c;
+} rsc_list[MAPPABLE_CHAR_COUNT];
+
+static int rsc_list_nr;
 
 void keyboard_write(void)
 {
@@ -122,6 +132,8 @@ void keyboard_update(
 	if (!keyboard[0])
 		memcpy(keyboard, KEYBOARD, sizeof(KEYBOARD));
 
+	rsc_list_nr = 0;
+
 	/* 入力文字列を全てキーから消し、キーを空にします。*/
 	for (ki = 0; ki < MAPPABLE_CHAR_COUNT; ki++) {
 		struct keyboard_slice s = ki_to_slice(ki);
@@ -152,7 +164,41 @@ void keyboard_update(
 			write_cell(shifted, m->conv, 3);
 			write_cell(non_shifted, m->conv + 3, 3);
 		} else {
+			struct kanji_entry const *k = kanji_db_lookup(m->conv);
+			if (k && missing_char_index) {
+				rsc_list[rsc_list_nr].k = k - kanji_db();
+				rsc_list[rsc_list_nr].c =
+					m->orig[missing_char_index];
+				rsc_list_nr++;
+			}
 			write_cell(ki, m->conv, str_bytes);
 		}
+	}
+}
+
+static void maybe_print_preceding_space(int rsc_i)
+{
+	if (rsc_i && (kanji_db()[rsc_list[rsc_i    ].k].rsc_sort_key !=
+		      kanji_db()[rsc_list[rsc_i - 1].k].rsc_sort_key))
+		fputc(' ', out);
+}
+
+void keyboard_show_rsc_list(void)
+{
+	int i;
+
+	QSORT(, rsc_list, rsc_list_nr,
+	      distinct_rsc_cmp(kanji_db() + rsc_list[a].k,
+			       kanji_db() + rsc_list[b].k) > 0);
+
+	for (i = 0; i < rsc_list_nr; i++) {
+		maybe_print_preceding_space(i);
+		fputc(rsc_list[i].c, out);
+		fputc(' ', out);
+	}
+	fputc('\n', out);
+	for (i = 0; i < rsc_list_nr; i++) {
+		maybe_print_preceding_space(i);
+		fputs(kanji_db()[rsc_list[i].k].c, out);
 	}
 }
