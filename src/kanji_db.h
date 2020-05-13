@@ -13,7 +13,7 @@ struct kanji_entry {
 	/* UTF-8ヌル終端バイト列. */
 	char c[5];
 	/* 漢字出現による順位 */
-	uint16_t ranking;
+	uint16_t ranking : 14;
 
 	unsigned cutoff_type : 2;
 
