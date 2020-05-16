@@ -28,6 +28,7 @@ SHARED_OBJS = \
 	kana_stats.o \
 	kana_stats_util.o \
 	kanji_db.o \
+	kanji_db_chart.o \
 	kanji_distribution.o \
 	keyboard.o \
 	last_rank_contained.o \
@@ -80,6 +81,7 @@ test: \
 	input_test \
 	kana_stats_test \
 	kanji_db_test \
+	kanji_db_chart_test \
 	kanji_distribution_test \
 	kana_stats_util_test \
 	keyboard_test \

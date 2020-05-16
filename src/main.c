@@ -12,6 +12,7 @@ static const char *USAGE =
 "\tnusort h2k\n"
 "\tnusort input\n"
 "\tnusort kana_stats\n"
+"\tnusort kanji_db_chart [漢字数]\n"
 "\tnusort last_rank_contained [-c] [-s] [-k] [-n] "
 	"CUTOFF_KANJI_1..CUTOFF_KANJI_n\n"
 "\tnusort longest_rsc_block\n"
@@ -33,6 +34,8 @@ int main(int argc, const char **argv)
 		return input(argv + 2, argc - 2, /*set_raw_mode=*/1);
 	if (argc >= 2 && !strcmp(argv[1], "kana_stats"))
 		return kana_stats(argv + 2, argc - 2);
+	if (argc >= 2 && !strcmp(argv[1], "kanji_db_chart"))
+		return kanji_db_chart(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "check_kanji_db_order"))
 		return check_kanji_db_order(argv + 2, argc - 2);
 	if (argc >= 2 && !strcmp(argv[1], "last_rank_contained"))

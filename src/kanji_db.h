@@ -31,7 +31,7 @@ struct kanji_entry {
 	uint16_t rsc_sort_key;
 };
 
-size_t kanji_db_nr(void);
+unsigned kanji_db_nr(void);
 
 /* 返された配列は codepoint によって並べ替え済みです。*/
 struct kanji_entry const *kanji_db(void);

@@ -40,26 +40,6 @@ static int is_done(
 	return 1;
 }
 
-static void print_base64_digit(int d)
-{
-	if (d < 26) {
-		fputc('A' + d, out);
-		return;
-	}
-	d -= 26;
-	if (d < 26) {
-		fputc('a' + d, out);
-		return;
-	}
-	d -= 26;
-	if (d < 10) {
-		fputc('0' + d, out);
-		return;
-	}
-	d -= 10;
-	fputc(d ? '/' : '+', out);
-}
-
 static void save_with_osc52(void)
 {
 	size_t conv_i = 0;

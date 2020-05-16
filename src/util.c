@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 
+#include "streams.h"
 #include "util.h"
 
 #include <errno.h>
@@ -147,4 +148,24 @@ size_t find_hashmap_entry_impl(
 		if (i == key_hash)
 			DIE(0, "hash map is already full");
 	}
+}
+
+void print_base64_digit(int d)
+{
+	if (d < 26) {
+		fputc('A' + d, out);
+		return;
+	}
+	d -= 26;
+	if (d < 26) {
+		fputc('a' + d, out);
+		return;
+	}
+	d -= 26;
+	if (d < 10) {
+		fputc('0' + d, out);
+		return;
+	}
+	d -= 10;
+	fputc(d ? '/' : '+', out);
 }

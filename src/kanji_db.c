@@ -4114,7 +4114,7 @@ static struct kanji_entry kanji[] = {
 
 static int sorted;
 
-size_t kanji_db_nr(void)
+unsigned kanji_db_nr(void)
 {
 	return sizeof(kanji) / sizeof(*kanji);
 }
