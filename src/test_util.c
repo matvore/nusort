@@ -106,7 +106,7 @@ void set_test_source_file(char const *fn) {
 	test_source_file = fn;
 }
 
-void start_test(const char *name)
+static void start_test(char const *name)
 {
 	int test_output_pipe[2];
 	if (actual_fn != NULL)
@@ -163,7 +163,7 @@ static void end_test_common(void)
 
 static void store_in_tmp_file(char const *str, char *tmp_file_template);
 
-void end_test(const char *expected)
+static void end_test(const char *expected)
 {
 	char expected_fn[] = "/tmp/expected-XXXXXX";
 
@@ -173,7 +173,7 @@ void end_test(const char *expected)
 	FREE(actual_fn);
 }
 
-void end_test_expected_content_in_file(void)
+static void end_test_expected_content_in_file(void)
 {
 	char *expected_fn;
 	xasprintf(&expected_fn,
@@ -199,6 +199,25 @@ static void store_in_tmp_file(char const *str, char *tmp_file_template)
 
 	if (close(fd) == -1)
 		DIE(1, "一時ファイルの %s を閉じる", tmp_file_template);
+}
+
+int run_test(char const *name, char const *expected_content)
+{
+	if (!test_name) {
+		start_test(name);
+		return 1;
+	}
+	if (strcmp(test_name, name)) {
+		DIE(0, "run_test の使い方が間違っています: %s != %s",
+		    test_name, name);
+	}
+
+	if (expected_content)
+		end_test(expected_content);
+	else
+		end_test_expected_content_in_file();
+
+	return 0;
 }
 
 FILE *open_tmp_file_containing(char const *str)

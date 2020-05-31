@@ -34,21 +34,16 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	start_test("free_kanji_keys_output");
-	{
+	while (run_test("free_kanji_keys_output", NULL)) {
 		free_kanji_keys(NULL, 0);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("free_kanji_keys_output_short_shifted_codes");
-	{
+	while (run_test("free_kanji_keys_output_short_shifted_codes", NULL)) {
 		char const *argv[] = {"--short-shifted-codes"};
 		free_kanji_keys(argv, 1);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("hiragana_to_katakana");
-	{
+	while (run_test("hiragana_to_katakana", "")) {
 		struct {
 			Conv input;
 			Conv output;
@@ -74,45 +69,38 @@ int main(void)
 					 test_cases[i].output, scratch);
 		}
 	}
-	end_test("");
 
-	start_test("free_kanji_keys_no_kanji_numerals");
-	{
+	while (run_test("free_kanji_keys_no_kanji_numerals", NULL)) {
 		char const *args[] = {
 			"--no-kanji-nums",
 			"--short-shifted-codes",
 		};
 		free_kanji_keys(args, 2);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("free_kanji_keys_missing_wo_key_arg");
-	{
+	while (run_test("free_kanji_keys_missing_wo_key_arg",
+			"フラグを認識できませんでした：--hiragana-wo-key\n"
+			 "exit code: 200\n")) {
 		char const *args[] = {"--hiragana-wo-key", "?"};
 		/* 引数の数 (argc) が足りないため、「?」を解析しないべき。*/
 		fprintf(err, "exit code: %d\n", free_kanji_keys(args, 1));
 	}
-	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
-		 "exit code: 200\n");
 
-	start_test("free_kanji_keys_wo_key_arg_too_short");
-	{
+	while (run_test("free_kanji_keys_wo_key_arg_too_short",
+			"フラグを認識できませんでした：--hiragana-wo-key\n"
+			 "exit code: 200\n")) {
 		char const *args[] = {"--hiragana-wo-key", ""};
 		fprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));
 	}
-	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
-		 "exit code: 200\n");
 
-	start_test("free_kanji_keys_wo_key_arg_too_long");
-	{
+	while (run_test("free_kanji_keys_wo_key_arg_too_long",
+			"フラグを認識できませんでした：--hiragana-wo-key\n"
+			 "exit code: 200\n")) {
 		char const *args[] = {"--hiragana-wo-key", "xy"};
 		fprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));
 	}
-	end_test("フラグを認識できませんでした：--hiragana-wo-key\n"
-		 "exit code: 200\n");
 
-	start_test("set_hiragana_wo_key");
-	{
+	while (run_test("set_hiragana_wo_key", "'->を\n")) {
 		struct romazi_config config = {
 			.hiragana_wo_key = '\'',
 		};
@@ -123,10 +111,10 @@ int main(void)
 
 		DESTROY_ARRAY(mapping);
 	}
-	end_test("'->を\n");
 
-	start_test("include_hya_hyu_hyo");
-	{
+	while (run_test("include_hya_hyu_hyo",
+			"hya->ひゃ\nHYA->ヒャ\nhyu->ひゅ\nHYU->ヒュ\n"
+			"HYO->ヒョ\nHYI->ヒィ\nHYE->ヒェ\n")) {
 		struct romazi_config config = {0};
 		struct key_mapping_array mapping = {0};
 
@@ -142,11 +130,10 @@ int main(void)
 
 		DESTROY_ARRAY(mapping);
 	}
-	end_test("hya->ひゃ\nHYA->ヒャ\nhyu->ひゅ\nHYU->ヒュ\nHYO->ヒョ\n"
-		 "HYI->ヒィ\nHYE->ヒェ\n");
 
-	start_test("include_hya_hyu_hyo");
-	{
+	while (run_test("include_hya_hyu_hyo",
+			"dya->ぢゃ\nDYA->ヂャ\ndyu->ぢゅ\nDYU->ヂュ\ndyo->ぢょ\n"
+			"DYO->ヂョ\nDYI->ヂィ\ndyi->ぢぃ\nDYE->ヂェ\n")) {
 		struct romazi_config config = {0};
 		struct key_mapping_array mapping = {0};
 
@@ -164,11 +151,8 @@ int main(void)
 
 		DESTROY_ARRAY(mapping);
 	}
-	end_test("dya->ぢゃ\nDYA->ヂャ\ndyu->ぢゅ\nDYU->ヂュ\ndyo->ぢょ\n"
-		 "DYO->ヂョ\nDYI->ヂィ\ndyi->ぢぃ\nDYE->ヂェ\n");
 
-	start_test("optimize_keystrokes");
-	{
+	while (run_test("optimize_keystrokes", NULL)) {
 		struct romazi_config config = { .optimize_keystrokes = 1 };
 		struct key_mapping_array mapping = {0};
 
@@ -208,10 +192,8 @@ int main(void)
 
 		DESTROY_ARRAY(mapping);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("parse_optimize_keystroke_flag");
-	{
+	while (run_test("parse_optimize_keystroke_flag", "END 0 1\n")) {
 		int argc = 1;
 		char const *argv[] = {"--romazi-optimize-keystrokes", "END"};
 		char const *const *argv_ptr = argv;
@@ -222,7 +204,6 @@ int main(void)
 		fprintf(out, "%s %d %d\n",
 			 argv_ptr[0], argc, config.optimize_keystrokes);
 	}
-	end_test("END 0 1\n");
 
 	return 0;
 }

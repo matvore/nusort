@@ -8,85 +8,66 @@ int main(void)
 	config_tests(CONFIG_TESTS_STDIN_FROM_FILE);
 	set_test_source_file(__FILE__);
 
-	start_test("empty_input");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("empty_input", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("one_char");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("one_char", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("two_chars");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("two_chars", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("hundred_chars");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("hundred_chars", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("mix_2_chars");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("mix_2_chars", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("katakana");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("katakana", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("katakana_hiragana_mixed");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("katakana_hiragana_mixed", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("katakana_percent_fractional");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("katakana_percent_fractional", NULL))
+		expect_ok(kana_stats(0, 0));
 
 	/* In UTF-8, も has 2 0x82 bytes */
-	start_test("hiragana_mo");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("hiragana_mo", NULL))
+		expect_ok(kana_stats(0, 0));
 
 	/* In UTF-8, 䂂 has 2 0x82 bytes as well */
-	start_test("kanji_shares_two_bytes_with_hira_mo");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("kanji_shares_two_bytes_with_hira_mo", NULL))
+		expect_ok(kana_stats(0, 0));
 
 	/* In UTF-8, い shares the first two bytes with あ */
-	start_test("hiragana_i");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("hiragana_i", NULL))
+		expect_ok(kana_stats(0, 0));
 
 	/* 䁂 shares the last two bytes with あ */
-	start_test("kanji_shares_last_two_bytes_with_hira_a");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("kanji_shares_last_two_bytes_with_hira_a", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("lots_of_different_hiragana");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("lots_of_different_hiragana", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("lots_of_different_katakana");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("lots_of_different_katakana", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("chouon_kigou");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("chouon_kigou", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("chouon_kigou_with_others");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("chouon_kigou_with_others", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("wo");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("wo", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("va");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("va", NULL))
+		expect_ok(kana_stats(0, 0));
 
-	start_test("wa_gyo_with_dakuten");
-	expect_ok(kana_stats(0, 0));
-	end_test_expected_content_in_file();
+	while (run_test("wa_gyo_with_dakuten", NULL))
+		expect_ok(kana_stats(0, 0));
 
 	return 0;
 }

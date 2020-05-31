@@ -226,8 +226,7 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	start_test("6_is_rh_6s_is_higher_ranked_kanji_than_6k");
-	{
+	while (run_test("6_is_rh_6s_is_higher_ranked_kanji_than_6k", "")) {
 		struct mapping m = {
 			.six_is_rh = 1,
 			.include_kanji = 1,
@@ -237,10 +236,8 @@ int main(void)
 		check_rank_order(&m.arr, "6s", "6k");
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("6_is_lh_6k_is_higher_ranked_kanji_than_6s");
-	{
+	while (run_test("6_is_lh_6k_is_higher_ranked_kanji_than_6s", "")) {
 		struct mapping m = {
 			.six_is_rh = 0,
 			.include_kanji = 1,
@@ -250,10 +247,8 @@ int main(void)
 		check_rank_order(&m.arr, "6k", "6s");
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("6_is_lh_6o_is_higher_ranked_kanji_than_6q");
-	{
+	while (run_test("6_is_lh_6o_is_higher_ranked_kanji_than_6q", "")) {
 		struct mapping m = {
 			.six_is_rh = 0,
 			.include_kanji = 1,
@@ -263,10 +258,8 @@ int main(void)
 		check_rank_order(&m.arr, "6o", "6q");
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("6_is_lh_k6_is_higher_ranked_kanji_than_ki");
-	{
+	while (run_test("6_is_lh_k6_is_higher_ranked_kanji_than_ki", "")) {
 		struct mapping m = {
 			.six_is_rh = 0,
 			.include_kanji = 1,
@@ -276,10 +269,9 @@ int main(void)
 		check_rank_order(&m.arr, "k6", "ki");
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_adds_more_mappings_if_do_not_exist_yet");
-	{
+	while (run_test("lazy_populate_adds_more_mappings_if_do_not_exist_yet",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -309,10 +301,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_does_nothing_if_not_4_char_code_prefix");
-	{
+	while (run_test("lazy_populate_does_nothing_if_not_4_char_code_prefix",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -336,10 +327,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_considers_shifted_first_key_invalid");
-	{
+	while (run_test("lazy_populate_considers_shifted_first_key_invalid",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -359,10 +349,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_considers_shifted_first_key_invalid_2");
-	{
+	while (run_test("lazy_populate_considers_shifted_first_key_invalid_2",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -382,10 +371,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("at_least_19_rsc_sort_keys_in_first_line_and_11_in_second");
-	{
+	while (run_test("at_least_19_rsc_sort_keys_in_1st_line_and_11_in_2nd",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -406,10 +394,8 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_adds_some_possible_missing_kanji");
-	{
+	while (run_test("lazy_populate_adds_some_possible_missing_kanji", "")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -441,10 +427,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_add_available_kanji_when_prefix_is_2");
-	{
+	while (run_test("lazy_populate_add_available_kanji_when_prefix_is_2",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -480,10 +465,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_when_prefix_is_2_and_includes_romazi");
-	{
+	while (run_test("lazy_populate_when_prefix_is_2_and_includes_romazi",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -519,10 +503,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_hardmapped_kanji_do_not_influence_dist");
-	{
+	while (run_test("lazy_populate_hardmapped_kanji_do_not_influence_dist",
+			"ok\n")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -556,10 +539,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("ok\n");
 
-	start_test("lazy_populate_hardmapped_kanji_do_not_influence_dist_2");
-	{
+	while (run_test("lazy_populate_hardmapped_kanji_do_not_influence_dist2",
+			"ok\n")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -592,10 +574,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("ok\n");
 
-	start_test("lazy_populate_hardmapped_kanji_do_not_influence_dist_3");
-	{
+	while (run_test("lazy_populate_hardmapped_kanji_do_not_influence_dist3",
+			"ok\n")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -628,10 +609,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("ok\n");
 
-	start_test("lazy_populate_hardmapped_kanji_do_not_influence_dist_4");
-	{
+	while (run_test("lazy_populate_hardmapped_kanji_do_not_influence_dist4",
+			"ok\n")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -667,10 +647,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("ok\n");
 
-	start_test("lazy_populate_may_not_include_kanji_if_not_configured");
-	{
+	while (run_test("lazy_populate_may_not_include_kanji_if_not_configured",
+			"1")) {
 		struct mapping m = {
 			.dist = {
 				.short_shifted_codes = 1,
@@ -688,10 +667,9 @@ int main(void)
 		fprintf(out, "%d", orig_cnt == m.arr.cnt);
 		destroy_mapping(&m);
 	}
-	end_test("1");
 
-	start_test("lazy_populate_next_key_index_is_single_key_code");
-	{
+	while (run_test("lazy_populate_next_key_index_is_single_key_code",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -729,10 +707,8 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_last_key_prefix");
-	{
+	while (run_test("lazy_populate_last_key_prefix", "")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -767,10 +743,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_populate_last_key_prefix_includes_one_key_romazi");
-	{
+	while (run_test("lazy_populate_last_key_prefix_includes_one_key_romazi",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -807,10 +782,9 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_mapping_increasing_rsc_with_increasing_key_index");
-	{
+	while (run_test("lazy_mapping_increasing_rsc_with_increasing_key_index",
+			"")) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.dist = {
@@ -836,21 +810,16 @@ int main(void)
 
 		destroy_mapping(&m);
 	}
-	end_test("");
 
-	start_test("lazy_mapping_honors_six_is_lh_setting");
-	test_6_is_rh_setting(0);
-	end_test("");
+	while (run_test("lazy_mapping_honors_six_is_lh_setting", ""))
+		test_6_is_rh_setting(0);
 
-	start_test("lazy_mapping_honors_six_is_rh_setting");
-	test_6_is_rh_setting(1);
-	end_test("");
+	while (run_test("lazy_mapping_honors_six_is_rh_setting", ""))
+		test_6_is_rh_setting(1);
 
-	start_test("lazy_mapping_limit_basic_kanji_per_line");
-	{
+	while (run_test("lazy_mapping_limit_basic_kanji_per_line", "")) {
 		int i;
 		for (i = 0; i < 40; i++)
 			check_limit_basic_kanji_per_line(i);
 	}
-	end_test("");
 }

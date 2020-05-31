@@ -27,9 +27,9 @@ int main(void)
 	     test_i++) {
 		in = open_tmp_file_containing(test_cases[test_i].in);
 
-		start_test(test_cases[test_i].name);
-		expect_ok(h2k(0, 0));
-		end_test(test_cases[test_i].out);
+		while (run_test(test_cases[test_i].name,
+				test_cases[test_i].out))
+			expect_ok(h2k(0, 0));
 
 		XFCLOSE(in);
 		in = stdin;

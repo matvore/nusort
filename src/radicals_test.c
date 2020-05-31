@@ -26,8 +26,7 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	start_test("one_sort_key_in_range");
-	{
+	while (run_test("one_sort_key_in_range", "二")) {
 		unsigned key = kanji_db_lookup("些")->rsc_sort_key;
 		struct radical_coverage c = {
 			.rsc_key_start = key,
@@ -41,10 +40,8 @@ int main(void)
 		verify_done_is(&c, 1);
 		verify_done_is(&c, 1);
 	}
-	end_test("二");
 
-	start_test("last_two_radicals");
-	{
+	while (run_test("last_two_radicals", "龜龠")) {
 		unsigned key = kanji_db_lookup("龠")->rsc_sort_key;
 		struct radical_coverage c = {
 			.rsc_key_start = key - 1,
@@ -53,10 +50,8 @@ int main(void)
 
 		consume_radicals(&c);
 	}
-	end_test("龜龠");
 
-	start_test("last_radical_with_really_big_end_key");
-	{
+	while (run_test("last_radical_with_really_big_end_key", "龠")) {
 		struct radical_coverage c = {
 			.rsc_key_start = kanji_db_lookup("龠")->rsc_sort_key,
 			.rsc_key_end = 0xffff,
@@ -64,10 +59,8 @@ int main(void)
 
 		consume_radicals(&c);
 	}
-	end_test("龠");
 
-	start_test("first_three_radicals");
-	{
+	while (run_test("first_three_radicals", "一二亠")) {
 		struct radical_coverage c = {
 			.rsc_key_start = 0,
 			.rsc_key_end = kanji_db_lookup("交")->rsc_sort_key + 1,
@@ -75,10 +68,8 @@ int main(void)
 
 		consume_radicals(&c);
 	}
-	end_test("一二亠");
 
-	start_test("start_at_radical");
-	{
+	while (run_test("start_at_radical", "糸缶")) {
 		struct radical_coverage c = {
 			.rsc_key_start = kanji_db_lookup("糸")->rsc_sort_key,
 			.rsc_key_end = kanji_db_lookup("缶")->rsc_sort_key + 1,
@@ -86,10 +77,8 @@ int main(void)
 
 		consume_radicals(&c);
 	}
-	end_test("糸缶");
 
-	start_test("stop_at_radical");
-	{
+	while (run_test("stop_at_radical", "糸")) {
 		struct radical_coverage c = {
 			.rsc_key_start = kanji_db_lookup("糸")->rsc_sort_key,
 			.rsc_key_end = kanji_db_lookup("缶")->rsc_sort_key,
@@ -97,10 +86,8 @@ int main(void)
 
 		consume_radicals(&c);
 	}
-	end_test("糸");
 
-	start_test("same_start_and_end");
-	{
+	while (run_test("same_start_and_end", "言")) {
 		unsigned key = kanji_db_lookup("調")->rsc_sort_key;
 		struct radical_coverage c = {
 			.rsc_key_start = key,
@@ -109,5 +96,4 @@ int main(void)
 
 		consume_radicals(&c);
 	}
-	end_test("言");
 }

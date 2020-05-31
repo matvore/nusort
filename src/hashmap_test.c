@@ -20,8 +20,7 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	start_test("finds_unused_bucket");
-	{
+	while (run_test("finds_unused_bucket", "0 0 ")) {
 		struct int_hashmap h = {0};
 		int key;
 		int *found_key, *found_value;
@@ -35,10 +34,8 @@ int main(void)
 
 		DESTROY_HASHMAP(h);
 	}
-	end_test("0 0 ");
 
-	start_test("filling_up_all_buckets");
-	{
+	while (run_test("filling_up_all_buckets", "0 0 0 0 0 ")) {
 		struct int_hashmap h = {0};
 		int key;
 		int *found_key, *found_value;
@@ -78,10 +75,10 @@ int main(void)
 
 		DESTROY_HASHMAP(h);
 	}
-	end_test("0 0 0 0 0 ");
 
-	start_test("nonconsecutive_buckets");
-	{
+	while (run_test("nonconsecutive_buckets",
+			"<0 0><0 0><30 900><0 0><0 0><0 0><10 100><0 0><0 0>"
+			"<0 0><0 0><0 0><0 0><0 0><0 0><0 0>")) {
 		struct int_hashmap h = {0};
 		int key;
 		int *found_key, *found_value;
@@ -105,11 +102,8 @@ int main(void)
 
 		DESTROY_HASHMAP(h);
 	}
-	end_test("<0 0><0 0><30 900><0 0><0 0><0 0><10 100><0 0><0 0>"
-		 "<0 0><0 0><0 0><0 0><0 0><0 0><0 0>");
 
-	start_test("zero_out_bytes_in_free");
-	{
+	while (run_test("zero_out_bytes_in_free", "1 1 0")) {
 		struct int_hashmap h = {0};
 		int key;
 		int *found_key, *found_value;
@@ -125,10 +119,8 @@ int main(void)
 		DESTROY_HASHMAP(h);
 		fprintf(out, "%d %d %zu", !h.keys, !h.values, h.bucket_cnt);
 	}
-	end_test("1 1 0");
 
-	start_test("finds_existing_key");
-	{
+	while (run_test("finds_existing_key", "<33 42><-101 99>")) {
 		struct int_hashmap h = {0};
 		int key;
 		int *found_key, *found_value;
@@ -157,10 +149,10 @@ int main(void)
 		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "<%d %d>", *found_key, *found_value);
 	}
-	end_test("<33 42><-101 99>");
 
-	start_test("string_hashmap");
-	{
+	while (run_test("string_hashmap",
+			"'' '' < 0>< 0><!FOOBAR 88>< 0>< 0>< 0>< 0>< 0>< 0>< 0>"
+			"< 0>< 0><foobar! 44>< 0>< 0>< 0>")) {
 		struct string_hashmap h = {0};
 		char key[8];
 		char (*found_key)[8];
@@ -188,11 +180,11 @@ int main(void)
 
 		DESTROY_HASHMAP(h);
 	}
-	end_test("'' '' < 0>< 0><!FOOBAR 88>< 0>< 0>< 0>< 0>< 0>< 0>< 0>< 0>"
-		 "< 0><foobar! 44>< 0>< 0>< 0>");
 
-	start_test("do_not_initialize_values_if_they_are_not_used");
-	{
+	while (run_test("do_not_initialize_values_if_they_are_not_used",
+			"h.values が設定済み: 0\n"
+			"49\n"
+			"h.values が設定済み: 0\n")) {
 		struct {
 			int *keys;
 			void *values;
@@ -219,7 +211,4 @@ int main(void)
 
 		DESTROY_HASHMAP(h);
 	}
-	end_test("h.values が設定済み: 0\n"
-		 "49\n"
-		 "h.values が設定済み: 0\n");
 }

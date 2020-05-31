@@ -14,67 +14,60 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	start_test("trivial");
-	{
+	while (run_test("trivial", "32767 32767 32767 32767 32767 32767 32767 32767 32767 0 ")) {
 		size_t i;
 
 		rank_coverage_reset(10, 10);
 		for (i = 1; i <= 10; i++)
 			add(i);
 	}
-	end_test("32767 32767 32767 32767 32767 32767 32767 32767 32767 0 ");
 
-	start_test("half_fits");
-	{
+	while (run_test("half_fits", "32767 0 0 0 ")) {
 		size_t i;
 		rank_coverage_reset(2, 2);
 		for (i = 1; i <= 4; i++)
 			add(i);
 	}
-	end_test("32767 0 0 0 ");
 
-	start_test("too_much_capacity");
-	{
+	while (run_test("too_much_capacity", "32767 32767 1 1 ")) {
 		rank_coverage_reset(5, 3);
 		add(1);
 		add(4);
 		add(10);
 		add(12);
 	}
-	end_test("32767 32767 1 1 ");
 
-	start_test("too_much_capacity_reversed");
-	{
+	while (run_test("too_much_capacity_reversed", "32767 32767 2 1 ")) {
 		rank_coverage_reset(5, 3);
 		add(12);
 		add(10);
 		add(4);
 		add(1);
 	}
-	end_test("32767 32767 2 1 ");
 
-	start_test("insufficient_capacity");
-	{
+	while (run_test("insufficient_capacity", "32767 32767 0 -1 ")) {
 		rank_coverage_reset(10, 3);
 		add(2);
 		add(10);
 		add(4);
 		add(1);
 	}
-	end_test("32767 32767 0 -1 ");
 
-	start_test("sufficient_capacity");
-	{
+	while (run_test("sufficient_capacity", "32767 32767 1 0 ")) {
 		rank_coverage_reset(9, 3);
 		add(10);
 		add(2);
 		add(4);
 		add(1);
 	}
-	end_test("32767 32767 1 0 ");
 
-	start_test("first_key");
-	{
+	while (run_test(
+		"first_key",
+		"32767 32767 32767 32767 32767 32767 32767 32767 32767 32767 "
+		"32767 32767 32767 32767 32767 32767 32767 32767 32767 32767 "
+		"32767 32767 32767 32767 32767 32767 32767 32767 32767 32767 "
+		"32767 32767 32767 32767 32767 32767 32767 32767 32767 21 20 "
+		"19 19 18 17 16 16 16 15 14 14 14 14 13 12 11 11 10 9 8 ")) {
 		rank_coverage_reset(1261, 40);
 		add(1547);	add(2651);	add(3868);	add(839);
 		add(348);	 add(852);	add(4052);	add(1620);
@@ -92,11 +85,6 @@ int main(void)
 		add(2263);	add(1142);	add(324);	add(275);
 		add(1421);	add(2); 	add(10);	add(728);
 	}
-	end_test("32767 32767 32767 32767 32767 32767 32767 32767 32767 32767 "
-		 "32767 32767 32767 32767 32767 32767 32767 32767 32767 32767 "
-		 "32767 32767 32767 32767 32767 32767 32767 32767 32767 32767 "
-		 "32767 32767 32767 32767 32767 32767 32767 32767 32767 21 20 "
-		 "19 19 18 17 16 16 16 15 14 14 14 14 13 12 11 11 10 9 8 ");
 
 	return 0;
 }

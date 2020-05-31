@@ -31,8 +31,7 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	start_test("check_conflicts_one_code");
-	{
+	while (run_test("check_conflicts_one_code", "xxa->ぁ\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "xxa", "ぁ");
@@ -41,10 +40,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("xxa->ぁ\n");
 
-	start_test("check_conflicts_two_codes_ok");
-	{
+	while (run_test("check_conflicts_two_codes_ok", "ya->や\nxxa->ぁ\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "xxa", "ぁ");
@@ -54,10 +51,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("ya->や\nxxa->ぁ\n");
 
-	start_test("check_conflicts_two_codes_equal_orig");
-	{
+	while (run_test("check_conflicts_two_codes_equal_orig", "コード衝突: me->め と me->眼\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "me", "め");
@@ -66,10 +61,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: me->め と me->眼\n");
 
-	start_test("check_conflicts_two_codes_first_and_last_conflict");
-	{
+	while (run_test("check_conflicts_two_codes_first_and_last_conflict", "コード衝突: me->め と me->眼\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "me", "め");
@@ -79,10 +72,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: me->め と me->眼\n");
 
-	start_test("check_conflicts_two_codes_first_and_2nd_to_last_conflict");
-	{
+	while (run_test("check_conflicts_two_codes_first_and_2nd_to_last_conflict", "コード衝突: me->め と me->眼\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "me", "め");
@@ -93,10 +84,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: me->め と me->眼\n");
 
-	start_test("check_conflicts_two_codes_2nd_and_2nd_to_last_conflict");
-	{
+	while (run_test("check_conflicts_two_codes_2nd_and_2nd_to_last_conflict", "コード衝突: ka->か と ka->蚊\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "yu", "ゆ");
@@ -107,10 +96,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: ka->か と ka->蚊\n");
 
-	start_test("check_conflicts_two_codes_2nd_and_3rd_to_last_conflict");
-	{
+	while (run_test("check_conflicts_two_codes_2nd_and_3rd_to_last_conflict", "コード衝突: ka->か と ka->蚊\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "yu", "ゆ");
@@ -122,10 +109,10 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: ka->か と ka->蚊\n");
 
-	start_test("multiple_conflicts");
-	{
+	while (run_test("multiple_conflicts",
+			"コード衝突: ka->か と ka->蚊\n"
+			"コード衝突: za->ざ と za->座\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "ka", "か");
@@ -137,11 +124,11 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: ka->か と ka->蚊\n"
-		 "コード衝突: za->ざ と za->座\n");
 
-	start_test("no_conflicts_3_codes");
-	{
+	while (run_test("no_conflicts_3_codes",
+			"ka->か\n"
+			"yu->ゆ\n"
+			"za->ざ\n")) {
 		struct key_mapping_array a = {0};
 		int i;
 
@@ -156,12 +143,8 @@ int main(void)
 		}
 		DESTROY_ARRAY(a);
 	}
-	end_test("ka->か\n"
-		 "yu->ゆ\n"
-		 "za->ざ\n");
 
-	start_test("conflict_by_matching_prefix");
-	{
+	while (run_test("conflict_by_matching_prefix", "コード衝突: k->ん と ka->か\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "k", "ん");
@@ -170,10 +153,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: k->ん と ka->か\n");
 
-	start_test("conflict_by_matching_2_char_prefix");
-	{
+	while (run_test("conflict_by_matching_2_char_prefix", "コード衝突: ka->か と kar->車\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "ka", "か");
@@ -182,10 +163,13 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: ka->か と kar->車\n");
 
-	start_test("incomplete_code_is_prefix_1");
-	{
+	while (run_test("incomplete_code_is_prefix_1",
+			"k: 1\n"
+			"f: 0\n"
+			"y: 1\n"
+			"ty: 1\n"
+			"tt: 0\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "ka", "か");
@@ -202,14 +186,13 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("k: 1\n"
-		 "f: 0\n"
-		 "y: 1\n"
-		 "ty: 1\n"
-		 "tt: 0\n");
 
-	start_test("incomplete_code_is_prefix_2");
-	{
+	while (run_test("incomplete_code_is_prefix_2",
+			"k: 0\n"
+			"f: 1\n"
+			"y: 0\n"
+			"ty: 0\n"
+			"tt: 1\n")) {
 		struct key_mapping_array a = {0};
 
 		append_mapping(&a, "ga", "が");
@@ -226,24 +209,16 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("k: 0\n"
-		 "f: 1\n"
-		 "y: 0\n"
-		 "ty: 0\n"
-		 "tt: 1\n");
 
-	start_test("sort_and_validate_supports_long_codes");
-	{
+	while (run_test("sort_and_validate_supports_long_codes", "コード衝突: hwwa->ふ! と hwwa->ふぁ\n")) {
 		struct key_mapping_array a = {0};
 		append_mapping(&a, "hwwa", "ふぁ");
 		append_mapping(&a, "hwwa", "ふ!");
 		expect_fail(sort_and_validate_no_conflicts(&a));
 		DESTROY_ARRAY(a);
 	}
-	end_test("コード衝突: hwwa->ふ! と hwwa->ふぁ\n");
 
-	start_test("lowest_rsc_index_for_codes_with_first_key_singleton_map");
-	{
+	while (run_test("lowest_rsc_index_for_codes_with_first_key_singleton_map", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -261,10 +236,8 @@ int main(void)
 			fprintf(out, "四: %u\n", lowest);
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_for_codes_with_first_key_size_two_map");
-	{
+	while (run_test("lowest_rsc_index_for_codes_with_first_key_size_two_map", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -283,10 +256,8 @@ int main(void)
 			fprintf(out, "c: %u\n", lowest);
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_for_codes_with_first_key_two_matching");
-	{
+	while (run_test("lowest_rsc_index_for_codes_with_first_key_two_matching", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -301,10 +272,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_for_codes_with_first_key_two_matching_2");
-	{
+	while (run_test("lowest_rsc_index_for_codes_with_first_key_two_matching_2", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -319,10 +288,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_consider_code_where_second_key_is_0");
-	{
+	while (run_test("lowest_rsc_index_consider_code_where_second_key_is_0", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -337,10 +304,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_consider_code_where_second_key_is_comma");
-	{
+	while (run_test("lowest_rsc_index_consider_code_where_second_key_is_comma", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -355,10 +320,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_where_first_key_has_shift");
-	{
+	while (run_test("lowest_rsc_index_where_first_key_has_shift", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -374,10 +337,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_where_first_key_has_shift_2");
-	{
+	while (run_test("lowest_rsc_index_where_first_key_has_shift_2", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -394,10 +355,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_where_first_key_has_shift_3");
-	{
+	while (run_test("lowest_rsc_index_where_first_key_has_shift_3", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -414,10 +373,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_where_first_key_shifted_is_hiragana");
-	{
+	while (run_test("lowest_rsc_index_where_first_key_shifted_is_hiragana", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -434,10 +391,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_where_first_key_shifted_is_katakana");
-	{
+	while (run_test("lowest_rsc_index_where_first_key_shifted_is_katakana", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -453,10 +408,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_where_first_key_shifted_is_katakana_2");
-	{
+	while (run_test("lowest_rsc_index_where_first_key_shifted_is_katakana_2", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -472,10 +425,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("lowest_rsc_index_where_first_key_shifted_is_katakana_3");
-	{
+	while (run_test("lowest_rsc_index_where_first_key_shifted_is_katakana_3", "")) {
 		struct key_mapping_array a = {0};
 		unsigned lowest;
 
@@ -491,10 +442,8 @@ int main(void)
 
 		DESTROY_ARRAY(a);
 	}
-	end_test("");
 
-	start_test("ergonomic_lt_same_first_key");
-	{
+	while (run_test("ergonomic_lt_same_first_key", "")) {
 		check_ergonomic_lt_same_first_key('a', 'j', 'u', 0);
 		check_ergonomic_lt_same_first_key('j', 'j', 'u', 0);
 
@@ -510,5 +459,4 @@ int main(void)
 		check_ergonomic_lt_same_first_key('p', 'j', 'k', 0);
 		check_ergonomic_lt_same_first_key('f', 'a', 'r', 0);
 	}
-	end_test("");
 }

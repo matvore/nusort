@@ -19,8 +19,7 @@ int main(void)
 	set_test_source_file(__FILE__);
 	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
 
-	start_test("default_view");
-	{
+	while (run_test("default_view", NULL)) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.six_is_rh = 1,
@@ -35,10 +34,8 @@ int main(void)
 		keyboard_write();
 		destroy_mapping(&m);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("first_key_typed");
-	{
+	while (run_test("first_key_typed", NULL)) {
 		struct mapping m = {
 			.include_kanji = 1,
 			.six_is_rh = 1,
@@ -53,10 +50,8 @@ int main(void)
 		keyboard_write();
 		destroy_mapping(&m);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("pad_half_width_quotes");
-	{
+	while (run_test("pad_half_width_quotes", NULL)) {
 		struct key_mapping_array m = {0};
 
 		append_mapping(&m, "d", "“");
@@ -67,10 +62,8 @@ int main(void)
 
 		DESTROY_ARRAY(m);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("pad_half_width_single_quotes");
-	{
+	while (run_test("pad_half_width_single_quotes", NULL)) {
 		struct key_mapping_array m = {0};
 
 		append_mapping(&m, "b", "‘");
@@ -81,10 +74,8 @@ int main(void)
 
 		DESTROY_ARRAY(m);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("formats_combining_dakuten");
-	{
+	while (run_test("formats_combining_dakuten", NULL)) {
 		struct key_mapping_array m = {0};
 
 		append_mapping(&m, "j", "ゑ" COMBINING_DAKUTEN);
@@ -97,10 +88,8 @@ int main(void)
 
 		DESTROY_ARRAY(m);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("rsc_list_basic");
-	{
+	while (run_test("rsc_list_basic", NULL)) {
 		struct key_mapping_array m = {0};
 
 		append_mapping(&m, "xj", "作");
@@ -113,10 +102,8 @@ int main(void)
 
 		DESTROY_ARRAY(m);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("rsc_list_grouping");
-	{
+	while (run_test("rsc_list_grouping", NULL)) {
 		struct key_mapping_array m = {0};
 
 		append_mapping(&m, "yj", "作");
@@ -130,5 +117,4 @@ int main(void)
 
 		DESTROY_ARRAY(m);
 	}
-	end_test_expected_content_in_file();
 }

@@ -10,8 +10,7 @@ int main(void)
 
 	set_test_source_file(__FILE__);
 
-	start_test("index_found_item");
-	{
+	while (run_test("index_found_item", "0 2 4 ")) {
 		ssize_t index;
 		BSEARCH_INDEX(index, size, , arr[index] - 5);
 		fprintf(out, "%zu ", index);
@@ -22,10 +21,8 @@ int main(void)
 		BSEARCH_INDEX(index, size, , arr[index] - 20);
 		fprintf(out, "%zu ", index);
 	}
-	end_test("0 2 4 ");
 
-	start_test("index_did_not_find");
-	{
+	while (run_test("index_did_not_find", "0 3 5 ")) {
 		ssize_t index;
 		BSEARCH_INDEX(index, size, , arr[index] - 1);
 		fprintf(out, "%zu ", ~index);
@@ -36,5 +33,4 @@ int main(void)
 		BSEARCH_INDEX(index, size, , arr[index] - 25);
 		fprintf(out, "%zu ", ~index);
 	}
-	end_test("0 3 5 ");
 }

@@ -114,8 +114,7 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	start_test("does_not_use_uncommon_character_if_rsc_key_is_same");
-	{
+	while (run_test("does_not_use_uncommon_character_if_rsc_key_is_same", "")) {
 		int key;
 
 		struct romazi_config romazi_config = {
@@ -140,10 +139,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(romazi_m);
 	}
-	end_test("");
 
-	start_test("does_not_use_uncommon_character_if_rsc_key_is_same_2");
-	{
+	while (run_test("does_not_use_uncommon_character_if_rsc_key_is_same_2", "")) {
 		int key;
 
 		struct romazi_config romazi_config = {0};
@@ -164,10 +161,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(romazi_m);
 	}
-	end_test("");
 
-	start_test("does_not_use_uncommon_character_for_cutoff_no_kana");
-	{
+	while (run_test("does_not_use_uncommon_character_for_cutoff_no_kana", "")) {
 		int key;
 
 		struct kanji_distribution kd = {
@@ -184,10 +179,8 @@ int main(void)
 
 		kanji_distribution_destroy(&kd);
 	}
-	end_test("");
 
-	start_test("can_generate_distribution_with_only_kanji");
-	{
+	while (run_test("can_generate_distribution_with_only_kanji", "")) {
 		struct kanji_distribution kd = {
 			.short_shifted_codes = 1,
 		};
@@ -202,10 +195,8 @@ int main(void)
 
 		kanji_distribution_destroy(&kd);
 	}
-	end_test("");
 
-	start_test("can_generate_distribution_with_one_romazi");
-	{
+	while (run_test("can_generate_distribution_with_one_romazi", "")) {
 		struct kanji_distribution kd = {
 			.short_shifted_codes = 1,
 		};
@@ -223,10 +214,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
-	end_test("");
 
-	start_test("can_generate_distribution_with_one_key_romazi");
-	{
+	while (run_test("can_generate_distribution_with_one_key_romazi", "")) {
 		struct kanji_distribution kd = {
 			.short_shifted_codes = 1,
 		};
@@ -244,10 +233,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
-	end_test("");
 
-	start_test("does_not_pass_up_distinct_but_uncommon_kugiri_ji");
-	{
+	while (run_test("does_not_pass_up_distinct_but_uncommon_kugiri_ji", "")) {
 		struct key_mapping_array romazi_m = {0};
 		struct romazi_config romazi_config = {
 			.optimize_keystrokes = 1,
@@ -282,10 +269,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(romazi_m);
 	}
-	end_test("");
 
-	start_test("can_limit_rsc_range_to_auto_pick_cutoff");
-	{
+	while (run_test("can_limit_rsc_range_to_auto_pick_cutoff", "")) {
 		int line;
 		struct key_mapping_array preexisting_m = {0};
 		struct kanji_distribution kd = {
@@ -307,10 +292,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
-	end_test("");
 
-	start_test("can_limit_rsc_range_to_limit_chars_in_mapping");
-	{
+	while (run_test("can_limit_rsc_range_to_limit_chars_in_mapping", "")) {
 		int line;
 		struct key_mapping_array preexisting_m = {0};
 		struct kanji_distribution kd = {
@@ -337,10 +320,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
-	end_test("");
 
-	start_test("can_limit_rsc_range_start");
-	{
+	while (run_test("can_limit_rsc_range_start", "")) {
 		int line;
 		struct key_mapping_array preexisting_m = {0};
 		struct kanji_distribution kd = {
@@ -371,10 +352,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
-	end_test("");
 
-	start_test("set_rsc_range_not_enough_to_fill_all_codes_sets_cutoff");
-	{
+	while (run_test("set_rsc_range_not_enough_to_fill_all_codes_sets_cutoff", "")) {
 		int line;
 		struct key_mapping_array preexisting_m = {0};
 		struct kanji_distribution kd = {
@@ -412,10 +391,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
-	end_test("");
 
-	start_test("set_rsc_range_allocates_many_kanji");
-	{
+	while (run_test("set_rsc_range_allocates_many_kanji", "")) {
 		int line;
 		struct key_mapping_array preexisting_m = {0};
 		struct kanji_distribution kd = {
@@ -463,10 +440,8 @@ int main(void)
 		DESTROY_ARRAY(preexisting_m);
 		DESTROY_ARRAY(allocated);
 	}
-	end_test("");
 
-	start_test("set_rsc_range_allocates_kanji_honoring_cutoffs");
-	{
+	while (run_test("set_rsc_range_allocates_kanji_honoring_cutoffs", "")) {
 		int line;
 		struct key_mapping_array preexisting_m = {0};
 		struct kanji_distribution kd = {
@@ -503,10 +478,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
-	end_test("");
 
-	start_test("set_rsc_range_not_enough_cutoffs_for_every_key");
-	{
+	while (run_test("set_rsc_range_not_enough_cutoffs_for_every_key", "")) {
 		struct key_mapping_array preexisting_m = {0};
 		struct kanji_distribution kd = {
 			.short_shifted_codes = 1,
@@ -533,10 +506,8 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
-	end_test("");
 
-	start_test("last_kanji_in_db_in_limited_rsc_range");
-	{
+	while (run_test("last_kanji_in_db_in_limited_rsc_range", "1")) {
 		struct key_mapping_array preexisting_m = {0};
 		struct kanji_distribution kd = {
 			.short_shifted_codes = 1,
@@ -566,46 +537,40 @@ int main(void)
 		kanji_distribution_destroy(&kd);
 		DESTROY_ARRAY(preexisting_m);
 	}
-	end_test("1");
 
-	start_test("choose_easy_to_type_1st_chars_in_exhaustive_pick_cutoff");
-	{
+	while (run_test("choose_easy_to_type_1st_chars_in_exhaustive_pick_cutoff", NULL)) {
 		show_preferred_next_chars('.', "閉", "項", 0);
 		show_preferred_next_chars('6', "閉", "項", 0);
 		show_preferred_next_chars('6', "閉", "項", 1);
 
 		show_preferred_next_chars('f', "一", "亘", 1);
 	}
-	end_test_expected_content_in_file();
 
-	start_test("use_distinct_cutoff_if_possible");
-	{
+	while (run_test("use_distinct_cutoff_if_possible",
+			"--- [授, 日) --- (basic_per_line <= 10)\n"
+			"	(0) [授, 排)\n"
+			"	(1) [排, 措)\n"
+			"	(3) [提, 援)\n"
+			"	(7) [撒, 撲)\n"
+			"--- [決, 減) --- (basic_per_line <= 10)\n"
+			"	(0) [決, 沖)\n"
+			"	(2) [法, 泉)\n"
+			"	(3) [泉, 泰)\n"
+			"	(5) [活, 洲)\n"
+			"	(7) [流, 浸)\n"
+			"	(9) [済, 淘)\n"
+			"	(10) [淘, 清)\n"
+			"--- [決, 減) --- (basic_per_line <= 20)\n"
+			"	(1) [法, 泰)\n"
+			"	(4) [済, 清)\n"
+			"--- [超, 通) --- (basic_per_line <= 5)\n"
+			"	(2) [践, 跳)\n"
+			"	(20) [迷, 送)\n"
+			"--- [超, 通) --- (basic_per_line <= 10)\n")) {
 		check_using_distinct_cutoff("授", "日", 10);
 		check_using_distinct_cutoff("決", "減", 10);
 		check_using_distinct_cutoff("決", "減", 20);
 		check_using_distinct_cutoff("超", "通", 5);
 		check_using_distinct_cutoff("超", "通", 10);
 	}
-	end_test(
-		"--- [授, 日) --- (basic_per_line <= 10)\n"
-		"	(0) [授, 排)\n"
-		"	(1) [排, 措)\n"
-		"	(3) [提, 援)\n"
-		"	(7) [撒, 撲)\n"
-		"--- [決, 減) --- (basic_per_line <= 10)\n"
-		"	(0) [決, 沖)\n"
-		"	(2) [法, 泉)\n"
-		"	(3) [泉, 泰)\n"
-		"	(5) [活, 洲)\n"
-		"	(7) [流, 浸)\n"
-		"	(9) [済, 淘)\n"
-		"	(10) [淘, 清)\n"
-		"--- [決, 減) --- (basic_per_line <= 20)\n"
-		"	(1) [法, 泰)\n"
-		"	(4) [済, 清)\n"
-		"--- [超, 通) --- (basic_per_line <= 5)\n"
-		"	(2) [践, 跳)\n"
-		"	(20) [迷, 送)\n"
-		"--- [超, 通) --- (basic_per_line <= 10)\n"
-	);
 }

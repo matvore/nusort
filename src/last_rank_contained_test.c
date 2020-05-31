@@ -128,20 +128,16 @@ int main(void)
 
 	for (test_i = 0; test_i < sizeof(test_cases) / sizeof(*test_cases);
 	     test_i++) {
-		int arg_count, exit_code;
+		while (run_test(test_cases[test_i].name,
+		       test_cases[test_i].expected)) {
+			int arg_count, exit_code;
 
-		start_test(test_cases[test_i].name);
-
-		for (arg_count = 0; test_cases[test_i].args[arg_count];
-		     arg_count++) {}
-		exit_code = print_last_rank_contained(
-			test_cases[test_i].args, arg_count);
-		fprintf(out, "exit: %d\n", exit_code);
-
-		if (test_cases[test_i].expected)
-			end_test(test_cases[test_i].expected);
-		else
-			end_test_expected_content_in_file();
+			for (arg_count = 0; test_cases[test_i].args[arg_count];
+			     arg_count++) {}
+			exit_code = print_last_rank_contained(
+				test_cases[test_i].args, arg_count);
+			fprintf(out, "exit: %d\n", exit_code);
+		}
 	}
 	return 0;
 }

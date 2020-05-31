@@ -7,46 +7,35 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	start_test("default_mapping");
-	{
+	while (run_test("default_mapping", NULL)) {
 		char const *argv[] = {"--short-shifted-codes"};
 		expect_ok(make_map(argv, 1));
 	}
-	end_test_expected_content_in_file();
 
-	start_test("bad_flag");
-	{
+	while (run_test("bad_flag", "フラグを認識できませんでした：-1\nexit code: 3\n")) {
 		char const *argv[] = {"-1"};
 		fprintf(err, "exit code: %d\n", make_map(argv, 1));
 	}
-	end_test("フラグを認識できませんでした：-1\nexit code: 3\n");
 
-	start_test("bad_positional_argument");
-	{
+	while (run_test("bad_positional_argument", "フラグを認識できませんでした：asdf\nexit code: 3\n")) {
 		char const *argv[] = {"asdf"};
 		fprintf(err, "exit code: %d\n", make_map(argv, 1));
 	}
-	end_test("フラグを認識できませんでした：asdf\nexit code: 3\n");
 
-	start_test("six_is_rh");
-	{
+	while (run_test("six_is_rh", NULL)) {
 		char const *argv[] = {"-s", "--short-shifted-codes"};
 		expect_ok(make_map(argv, 2));
 	}
-	end_test_expected_content_in_file();
 
-	start_test("no_kanji");
-	{
+	while (run_test("no_kanji", NULL)) {
 		char const *argv[] = {
 			"--no-kanji",
 			"--short-shifted-codes",
 		};
 		expect_ok(make_map(argv, 2));
 	}
-	end_test_expected_content_in_file();
 
-	start_test("no_classic_wo");
-	{
+	while (run_test("no_classic_wo", NULL)) {
 		char const *argv[] = {
 			"--no-classic-wo",
 			"--no-kanji",
@@ -54,10 +43,8 @@ int main(void)
 		};
 		expect_ok(make_map(argv, 3));
 	}
-	end_test_expected_content_in_file();
 
-	start_test("hiragana_wo_key");
-	{
+	while (run_test("hiragana_wo_key", NULL)) {
 		char const *argv[] = {
 			"--hiragana-wo-key", "=",
 			"--no-kanji",
@@ -65,10 +52,8 @@ int main(void)
 		};
 		expect_ok(make_map(argv, 4));
 	}
-	end_test_expected_content_in_file();
 
-	start_test("conflict_in_romazi_map");
-	{
+	while (run_test("conflict_in_romazi_map", "コード衝突: w->を と wa->わ\n")) {
 		char const *argv[] = {
 			"--hiragana-wo-key", "w",
 			"--no-classic-wo",
@@ -76,6 +61,5 @@ int main(void)
 		};
 		expect_fail(make_map(argv, 3));
 	}
-	end_test("コード衝突: w->を と wa->わ\n");
 	return 0;
 }

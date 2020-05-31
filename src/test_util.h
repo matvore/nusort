@@ -23,16 +23,25 @@
 void config_tests(int flags_);
 void set_test_source_file(char const *fn);
 
-void start_test(const char *name);
-
 /*
- * end_test* 関数
+ * expected_content とは、合格と見なすテスト出力
  *
- * テストの出力を expected出力と比較して、違っていれば詳細を標準出力に書きます。
+ * expected_content がヌルの場合、ファイルから合格の出力を読みます。
+ *
+ * 使い方:
+ *
+ * while (run_test("simple_test", "4")) {
+ * 	fprintf(out, "%d", 2 + 2);
+ * }
+ *
+ * 一回目の呼び出しはテスト情報を保存し、true を返す
+ * 二回目は、テストの合格か不合格を判定し、false を返す
+ *
+ * 判定モードはテストの出力を expected_content と比較して、違っていれば詳細を標
+ * 準出力に書きます。
  * 出力が一致していれば、なにもしない。
  */
-void end_test(const char *expected);
-void end_test_expected_content_in_file(void);
+int run_test(char const *name, char const *expected_content);
 
 FILE *open_tmp_file_containing(char const *);
 
