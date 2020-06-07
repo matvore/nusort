@@ -226,12 +226,12 @@ static int is_alt_hands(char first, char second, int six_is_rh)
 	return hand(first, six_is_rh) != hand(second, six_is_rh);
 }
 
-static uint8_t COLUMN_VALUE[] = {3, 2, 1, 0, 4,    4, 0, 1, 2, 3, 4, 5};
+static uint8_t COLUMN_VALUE[] = {3, 2, 1, 0, 4,    4, 0, 1, 2, 3, 5, 7};
 
 static int column_value(int key_index)
 {
 	if (key_index == char_to_key_index_or_die('6'))
-		return 5;
+		return 6;
 
 	return COLUMN_VALUE[col_index(key_index)];
 }
@@ -314,7 +314,7 @@ int ergonomic_lt(const char *a, const char *b, int six_is_rh)
 	return ergonomic_lt_same_first_key(a[0], a[1], b[1], six_is_rh);
 }
 
-int can_use_for_kanji(char c)
+int is_central_kanji_char(char c)
 {
 	switch (c) {
 	case '-': case '=': case '[': case ']': case '\'':

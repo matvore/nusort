@@ -1,3 +1,5 @@
+#include <inttypes.h>
+
 #include "kanji_distribution.h"
 #include "streams.h"
 #include "test_util.h"
@@ -577,4 +579,25 @@ int main(void)
 		check_using_distinct_cutoff("超", "通", 5);
 		check_using_distinct_cutoff("超", "通", 10);
 	}
+
+	while (run_test("busy_right_pinky_line_counts", NULL)) {
+		struct kanji_distribution kd = {
+			.busy_right_pinky = 1,
+		};
+		struct key_mapping_array preexisting_m = {0};
+		int line;
+
+		kanji_distribution_set_preexisting_convs(
+			&kd, &preexisting_m, 1);
+		kanji_distribution_auto_pick_cutoff(&kd);
+		kanji_distribution_populate(&kd);
+
+		fprintf(out, "%d\n", kd.total_chars);
+
+		for (line = 0; line < kd.line_stats_nr; line++)
+			fprintf(out, "%c %"PRIu8"\n",
+				kd.line_stats[line].key_ch,
+				kd.line_stats[line].e_nr);
+	}
+
 }

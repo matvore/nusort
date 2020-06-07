@@ -16,6 +16,13 @@ int parse_kanji_distribution_flags(
 		return 1;
 	}
 
+	if (!strcmp((*argv)[0], "--busy-right-pinky")) {
+		kd->busy_right_pinky = 1;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -83,14 +90,15 @@ static void fill_unused_kanji_origs(
 		struct line_stats *s;
 		char key1_char = KEY_INDEX_TO_CHAR_MAP[key1];
 
-		if (!can_use_for_kanji(key1_char))
+		if (!is_central_kanji_char(key1_char))
 			continue;
 
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
 			int last_index = kd->unused_kanji_origs.cnt;
 			char key2_char = KEY_INDEX_TO_CHAR_MAP[key2];
 
-			if (!can_use_for_kanji(key2_char))
+			if (!is_central_kanji_char(key2_char) &&
+			    !kd->busy_right_pinky)
 				continue;
 
 			if (used->m[key1 * MAPPABLE_CHAR_COUNT + key2])

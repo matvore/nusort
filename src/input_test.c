@@ -44,6 +44,16 @@ int main(void)
 		XFCLOSE(in);
 	}
 
+	while (run_test("busy_right_pinky", NULL)) {
+		char const *argv[] = {
+			"--busy-right-pinky", "--no-show-cutoff-guide",
+		};
+		int argc = 2;
+		in = open_tmp_file_containing("k[" "r'" "9]");
+		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
+		XFCLOSE(in);
+	}
+
 	while (run_test("possible_code_requires_two_more_chars", NULL)) {
 		struct mapping m = {0};
 		struct input_flags f = {

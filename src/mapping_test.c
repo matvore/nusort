@@ -822,4 +822,20 @@ int main(void)
 		for (i = 0; i < 40; i++)
 			check_limit_basic_kanji_per_line(i);
 	}
+
+	while (run_test("busy_right_pinky", NULL)) {
+		struct mapping m = {
+			.include_kanji = 1,
+			.dist = {
+				.busy_right_pinky = 1,
+			},
+		};
+		int i;
+
+		expect_ok(mapping_populate(&m));
+		for (i = 0; i < m.arr.cnt; i++) {
+			if (strchr("-=[]'", m.arr.el[i].orig[1]))
+				fprintf(out, "%s\n", m.arr.el[i].orig);
+		}
+	}
 }
