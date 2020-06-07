@@ -1,6 +1,7 @@
 #include "kanji_distribution.h"
 
 #include "commands.h"
+#include "mapping_util.h"
 #include "rank_coverage.h"
 #include "streams.h"
 #include "util.h"
@@ -82,16 +83,22 @@ static void fill_unused_kanji_origs(
 		struct line_stats *s;
 		char key1_char = KEY_INDEX_TO_CHAR_MAP[key1];
 
+		if (!can_use_for_kanji(key1_char))
+			continue;
+
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
 			int last_index = kd->unused_kanji_origs.cnt;
+			char key2_char = KEY_INDEX_TO_CHAR_MAP[key2];
+
+			if (!can_use_for_kanji(key2_char))
+				continue;
 
 			if (used->m[key1 * MAPPABLE_CHAR_COUNT + key2])
 				continue;
 
 			GROW_ARRAY_BY(kd->unused_kanji_origs, 1);
 			kd->unused_kanji_origs.el[last_index][0] = key1_char;
-			kd->unused_kanji_origs.el[last_index][1] =
-				KEY_INDEX_TO_CHAR_MAP[key2];
+			kd->unused_kanji_origs.el[last_index][1] = key2_char;
 			unused++;
 		}
 

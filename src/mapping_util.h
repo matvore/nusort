@@ -3,6 +3,17 @@
 
 #include <stdio.h>
 
+#define KANJI_KEYS_ROW_0 12
+#define KANJI_KEYS_ROW_1 12
+#define KANJI_KEYS_ROW_2 11
+#define KANJI_KEYS_ROW_3 10
+
+#define KANJI_KEYS_ROWS_01 (KANJI_KEYS_ROW_0 + KANJI_KEYS_ROW_1)
+#define KANJI_KEYS_ROWS_012 (KANJI_KEYS_ROWS_01 + KANJI_KEYS_ROW_2)
+#define KANJI_KEY_COUNT (KANJI_KEYS_ROWS_012 + KANJI_KEYS_ROW_3)
+
+#define MAPPABLE_CHAR_COUNT (KANJI_KEY_COUNT * 2)
+
 /* ヌル終端の入力コード */
 typedef char Orig[5];
 typedef char Conv[7];
@@ -58,5 +69,7 @@ int ergonomic_lt_same_first_key(
 	char first_key, char second_a, char second_b, int six_is_rh);
 
 int ergonomic_lt(const char *a, const char *b, int six_is_rh);
+
+int can_use_for_kanji(char c);
 
 #endif

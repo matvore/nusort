@@ -1,8 +1,8 @@
 #include <string.h>
 
-#include "mapping.h"
-
 #include "kanji_distribution.h"
+#include "mapping.h"
+#include "mapping_util.h"
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
@@ -185,7 +185,7 @@ int mapping_lazy_populate(struct mapping *m, char const *key_prefix)
 
 	line_a = line_stats_for_first_key_i(&m->dist, key_index);
 	if (!line_a)
-		DIE(0, "kanji_distributionで行が見つかりません：%d", key_index);
+		return 0;
 
 	dist.rsc_range_start = kanji_db_rsc_index(line_a->cutoff);
 	if (line_a - m->dist.line_stats == m->dist.line_stats_nr - 1)

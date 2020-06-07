@@ -117,4 +117,20 @@ int main(void)
 
 		DESTROY_ARRAY(m);
 	}
+
+	while (run_test("extra_keys_on_right", NULL)) {
+		struct key_mapping_array m = {0};
+
+		append_mapping(&m, "k]", "作");
+		append_mapping(&m, "k'", "準");
+		append_mapping(&m, "k=", "漢");
+		append_mapping(&m, "k+", "滝");
+		append_mapping(&m, "k\"", "方");
+		append_mapping(&m, "k}", "わ" COMBINING_DAKUTEN);
+		expect_ok(sort_and_validate_no_conflicts(&m));
+		keyboard_update(&m, "k");
+		keyboard_write();
+
+		DESTROY_ARRAY(m);
+	}
 }

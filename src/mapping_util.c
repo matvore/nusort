@@ -185,11 +185,40 @@ unsigned lowest_rsc_index_for_codes_with_first_key(
 	return lowest;
 }
 
+static int col_index(int ki)
+{
+	ki %= KANJI_KEY_COUNT;
+
+	if (ki < KANJI_KEYS_ROW_0)
+		return ki;
+	else if (ki < KANJI_KEYS_ROWS_01)
+		return ki - KANJI_KEYS_ROW_0;
+	else if (ki < KANJI_KEYS_ROWS_012)
+		return ki - KANJI_KEYS_ROWS_01;
+	else
+		return ki - KANJI_KEYS_ROWS_012;
+}
+
+static int row_index(int ki)
+{
+	ki %= KANJI_KEY_COUNT;
+
+	if (ki < KANJI_KEYS_ROW_0)
+		return 0;
+	if (ki < KANJI_KEYS_ROWS_01)
+		return 1;
+	if (ki < KANJI_KEYS_ROWS_012)
+		return 2;
+
+	return 3;
+}
+
 static int hand(char a, int six_is_rh)
 {
 	if (!six_is_rh && a == '6')
 		return 0;
-	return (char_to_key_index_or_die(a) / 5) % 2;
+
+	return col_index(char_to_key_index_or_die(a)) < 5 ? 0 : 1;
 }
 
 static int is_alt_hands(char first, char second, int six_is_rh)
@@ -197,13 +226,14 @@ static int is_alt_hands(char first, char second, int six_is_rh)
 	return hand(first, six_is_rh) != hand(second, six_is_rh);
 }
 
-static uint8_t COLUMN_VALUE[] = {3, 2, 1, 0, 4,    4, 0, 1, 2, 3};
+static uint8_t COLUMN_VALUE[] = {3, 2, 1, 0, 4,    4, 0, 1, 2, 3, 4, 5};
 
 static int column_value(int key_index)
 {
 	if (key_index == char_to_key_index_or_die('6'))
 		return 5;
-	return COLUMN_VALUE[key_index % 10];
+
+	return COLUMN_VALUE[col_index(key_index)];
 }
 
 int ergonomic_lt_same_first_key(
@@ -251,8 +281,8 @@ int ergonomic_lt_same_first_key(
 	/* 3. sort by row of second key */
 	sec_key_i_a = char_to_key_index_or_die(second_a);
 	sec_key_i_b = char_to_key_index_or_die(second_b);
-	sec_key_row_a = sec_key_i_a / 10;
-	sec_key_row_b = sec_key_i_b / 10;
+	sec_key_row_a = row_index(sec_key_i_a);
+	sec_key_row_b = row_index(sec_key_i_b);
 	if (sec_key_row_a != sec_key_row_b) {
 		/* row 0 is worst */
 		if (!sec_key_row_a || !sec_key_row_b)
@@ -282,4 +312,14 @@ int ergonomic_lt(const char *a, const char *b, int six_is_rh)
 		return first_key_cmp < 0;
 
 	return ergonomic_lt_same_first_key(a[0], a[1], b[1], six_is_rh);
+}
+
+int can_use_for_kanji(char c)
+{
+	switch (c) {
+	case '-': case '=': case '[': case ']': case '\'':
+		return 0;
+	default:
+		return 1;
+	}
 }

@@ -29,6 +29,7 @@ struct line_stats {
 struct kanji_distribution {
 	unsigned sort_each_line_by_rsc : 1;
 	unsigned short_shifted_codes : 1;
+	unsigned busy_right_pinky : 1;
 
 	uint16_t total_rank;
 	uint16_t total_chars;

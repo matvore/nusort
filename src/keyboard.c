@@ -19,15 +19,15 @@
 #define vv "╨"
 
 static char const KEYBOARD[] = ""
-	  r"──"T"──"T"──"T"──"T"──"T"──"TT"──"T"──"T"──"T"──""┐\n"
-	  I"　"I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　" I"\n"
-	  LT"─┴"T"─┴"T"─┴"T"─┴"T"─┴"TT"─╨"T"─┴"T"─┴"T"─┴"T"─""┴┐\n"
-	" "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　" I"\n"
-	" "LT"─┴"T"─┴"T"─┴"T"─┴"T"─╨"TT"─┴"T"─┴"T"─┴"T"─┴"T  "─┴┐\n"
-	"  "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　" I"\n"
-	"  "LT"─┴"T"─┴"T"─┴"T"─┴"T"─╨"TT"─┴"T"─┴"T"─┴"T"─┴"T  "─┴┐\n"
-	"   "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　" I"\n"
-	"   "L_ "─┴──""┴──""┴──""┴──" vv "──┴──""┴──""┴──""┴──" "┘";
+	  r"──"T"──"T"──"T"──"T"──"T"──"TT"──"T"──"T"──"T"──"TT"──" T"──" "┐\n"
+	  I"　"I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"II"　" I"　"  I"\n"
+	  LT"─┴"T"─┴"T"─┴"T"─┴"T"─┴"TT"─╨"T"─┴"T"─┴"T"─┴"T"─"vv TT"─┴" T"─┴┐\n"
+	" "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　"  II"　" I"　"I"\n"
+	" "LT"─┴"T"─┴"T"─┴"T"─┴"T"─╨"TT"─┴"T"─┴"T"─┴"T"─┴"T  "─"vv TT"─┴"T"─┘\n"
+	"  "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　"    II"　"I"\n"
+	"  "LT"─┴"T"─┴"T"─┴"T"─┴"T"─╨"TT"─┴"T"─┴"T"─┴"T"─┴"T    "─"vv T"─┘\n"
+	"   "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　"      I"\n"
+	"   "L_ "─┴──""┴──""┴──""┴──" vv "──┴──""┴──""┴──""┴──"      "┘";
 
 #undef I
 #undef II
@@ -38,24 +38,41 @@ static char const KEYBOARD[] = ""
 #undef LT
 #undef vv
 
-/* 合成用の濁点と仮名を合わせれば六バイトを必する。 */
-#define NON_SHIFT_CELL_BYTES 6
-
-static uint16_t const LINE_OFFSET[] = {
-	/* キーインデックス 0-39 - 非シフト */
-	0x064,
-	0x127,
-	0x1ec,
-	0x2b3,
-
-	/* キーインデックス 40-79 - シフト */
-	0x003,
-	0x0c5,
-	0x189,
-	0x24f,
-};
-
 static char keyboard[sizeof(KEYBOARD)] = {0};
+
+static int key_index_to_cell_offset(int ki)
+{
+	int col, line_off;
+	if (ki < KANJI_KEYS_ROW_0) {
+		line_off = 0x076;
+		col = ki;
+	} else if (ki < KANJI_KEYS_ROWS_01) {
+		line_off = 0x15d;
+		col = ki - 12;
+	} else if (ki < KANJI_KEYS_ROWS_012) {
+		line_off = 0x243;
+		col = ki - 24;
+	} else if (ki < KANJI_KEY_COUNT) {
+		line_off = 0x2b3 + 18 + 18 + 18 + 18 + 15 + 9 + 6;
+		col = ki - 35;
+	} else if (ki < KANJI_KEY_COUNT + KANJI_KEYS_ROW_0) {
+		line_off = 0x003;
+		col = ki - 45;
+	} else if (ki < KANJI_KEY_COUNT + KANJI_KEYS_ROWS_01) {
+		line_off = 0x0c5 + 18 + 18;
+		col = ki - 57;
+	} else if (ki < KANJI_KEY_COUNT + KANJI_KEYS_ROWS_012) {
+		line_off = 0x189 + 18 + 18 + 18 + 18;
+		col = ki - 69;
+	} else if (ki < KANJI_KEY_COUNT * 2) {
+		line_off = 0x24f + 18 + 18 + 18 + 18 + 15 + 9;
+		col = ki - 80;
+	} else {
+		DIE(0, "%d\n", ki);
+	}
+
+	return line_off + col * 9;
+}
 
 static struct {
 	/* kanji_db 配列へのインデックス */
@@ -72,28 +89,6 @@ void keyboard_write(void)
 	fwrite(keyboard, sizeof(KEYBOARD), 1, out);
 }
 
-struct keyboard_slice {
-	unsigned offset : 16;
-	unsigned len : 16;
-};
-
-static struct keyboard_slice ki_to_slice(int ki)
-{
-	struct keyboard_slice s;
-
-	s.offset = LINE_OFFSET[ki / 10];
-
-	if (ki < KANJI_KEY_COUNT) {
-		s.offset += (ki % 10) * (NON_SHIFT_CELL_BYTES + 3);
-		s.len = NON_SHIFT_CELL_BYTES;
-	} else {
-		s.offset += (ki % 10) * 9;
-		s.len = 6;
-	}
-
-	return s;
-}
-
 static int needs_padding_space(char const *str, int len)
 {
 	if (len != 3)
@@ -107,8 +102,7 @@ static int needs_padding_space(char const *str, int len)
 
 static void write_cell(KeyIndex ki, char const *str, int len)
 {
-	struct keyboard_slice s = ki_to_slice(ki);
-	char *keyboard_p = keyboard + s.offset;
+	char *keyboard_p = key_index_to_cell_offset(ki) + keyboard;
 
 	memcpy(keyboard_p, str, len);
 	keyboard_p += len;
@@ -117,7 +111,7 @@ static void write_cell(KeyIndex ki, char const *str, int len)
 		*keyboard_p++ = ' ';
 		len++;
 	}
-	memset(keyboard_p, 0, s.len - len);
+	memset(keyboard_p, 0, 6 - len);
 }
 
 void keyboard_update(
@@ -136,8 +130,8 @@ void keyboard_update(
 
 	/* 入力文字列を全てキーから消し、キーを空にします。*/
 	for (ki = 0; ki < MAPPABLE_CHAR_COUNT; ki++) {
-		struct keyboard_slice s = ki_to_slice(ki);
-		memcpy(keyboard + s.offset, KEYBOARD + s.offset, s.len);
+		int offset = key_index_to_cell_offset(ki);
+		memcpy(keyboard + offset, KEYBOARD + offset, 6);
 	}
 
 	for (ki = 0; ki < MAPPABLE_CHAR_COUNT; ki++) {

@@ -110,6 +110,8 @@ static void check_using_distinct_cutoff(
 	DESTROY_ARRAY(preexisting_m);
 }
 
+#define BASE_KANJI_KEY_COUNT 40
+
 int main(void)
 {
 	set_test_source_file(__FILE__);
@@ -190,7 +192,8 @@ int main(void)
 			&kd, &preexisting_m, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
-		if (kd.total_chars != KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1))
+		if (kd.total_chars !=
+		    BASE_KANJI_KEY_COUNT * (BASE_KANJI_KEY_COUNT + 1))
 		        fprintf(out, "%d\n", (int) kd.total_chars);
 
 		kanji_distribution_destroy(&kd);
@@ -208,7 +211,7 @@ int main(void)
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
-		    KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1) - 1)
+		    BASE_KANJI_KEY_COUNT * (BASE_KANJI_KEY_COUNT + 1) - 1)
 		        fprintf(out, "%d\n", (int) kd.total_chars);
 
 		kanji_distribution_destroy(&kd);
@@ -227,7 +230,8 @@ int main(void)
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
-		    KANJI_KEY_COUNT * (KANJI_KEY_COUNT + 1) - KANJI_KEY_COUNT)
+		    BASE_KANJI_KEY_COUNT * (BASE_KANJI_KEY_COUNT + 1)
+		    - BASE_KANJI_KEY_COUNT)
 			fprintf(out, "%d\n", (int) kd.total_chars);
 
 		kanji_distribution_destroy(&kd);
