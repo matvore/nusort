@@ -9,8 +9,12 @@
 #include "util.h"
 
 static const char *ADOBE_JAPAN = "\tkRSAdobe_Japan1_6";
-static int db_out;
-static int quiet;
+
+static struct {
+	unsigned db_out : 1;
+	unsigned quiet : 1;
+	unsigned residual_stroke_counts : 1;
+} flags;
 
 struct sort_key {
 	unsigned rad: 8;
@@ -165,6 +169,9 @@ static int process_rsc_line(char const *line)
 		/* 匚と匸を同一の部首として見なす。*/
 		if (rad == 23)
 			rad = 22;
+		/* 夊と夂を同一の部首として見なす。 */
+		if (rad == 35)
+			rad = 34;
 		/* 日と曰を同一の部首と見なす。*/
 		if (rad == 73)
 			rad = 72;
@@ -231,6 +238,24 @@ static void output_db_line(
 	printf("\t{\"%s\", %5d, %d},\n", k->c, k->ranking, cutoff_type);
 }
 
+struct min_key_info {
+	struct sort_key key;
+	unsigned ki;
+};
+
+static void adjust_consecutive_key_info(
+	struct sort_key const *prev, struct sort_key *curr, char const *k)
+{
+	int cmp;
+	if (curr->rad > prev->rad && curr->strokes != 0)
+		DIE(0, "「%s」の部首が kanji_db に入っていない?", k);
+	cmp = sort_key_cmp(prev, curr);
+	if (!cmp)
+		curr->strokes++;
+	else if (cmp > 0)
+		DIE(0, "「%s」の画数が低すぎます", k);
+}
+
 static int check_order(void)
 {
 	size_t i;
@@ -240,11 +265,17 @@ static int check_order(void)
 	struct kanji_entry const *k = kanji_db();
 	uint16_t const *rsc = kanji_db_rsc_sorted();
 
+	struct min_key_info *min_keys = xcalloc(largest_rsc_sort_key(),
+						sizeof(*min_keys));
+
+	memset(min_keys, 0xff, sizeof(*min_keys) * largest_rsc_sort_key());
+
 	for (i = 0; i < kanji_db_nr(); i++) {
 		struct sort_key smallest_matching = {0xff, 0xff};
 		struct sort_info *si;
 		size_t ki;
 		struct kanji_entry const *ke = k + rsc[i];
+		struct min_key_info *min_key = min_keys + ke->rsc_sort_key - 1;
 
 		BSEARCH(si, sort_infos.el, sort_infos.cnt,
 			strcmp(si->c, ke->c));
@@ -267,18 +298,38 @@ static int check_order(void)
 		if (smallest_matching.rad == 0xff) {
 			fprintf(err, "err: %s\n", ke->c);
 			res = 31;
-			break;
+			goto cleanup;
 		}
 		key = smallest_matching;
-		if (!quiet) {
-			if (!db_out)
+		if (!flags.quiet) {
+			if (!flags.db_out)
 				output_char_line(ke, si);
 			else
 				output_db_line(ke, prev_si, si);
 		}
 
 		prev_si = si;
+
+		if (sort_key_cmp(&smallest_matching, &min_key->key) < 0)
+			min_key->key = smallest_matching;
+		if ((min_key->ki & 0xffff) == 0xffff)
+			min_key->ki = rsc[i];
 	}
+
+	for (i = 0; i < largest_rsc_sort_key(); i++) {
+		struct kanji_entry const *k = kanji_db() + min_keys[i].ki;
+
+		if (i > 0)
+			adjust_consecutive_key_info(
+				&min_keys[i-1].key, &min_keys[i].key, k->c);
+
+		if (flags.residual_stroke_counts)
+			fprintf(out, "%d, /* %s */\n",
+				min_keys[i].key.strokes, k->c);
+	}
+
+cleanup:
+	FREE(min_keys);
 
 	return res;
 }
@@ -289,14 +340,18 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	int res = 0;
 	char line[512];
 
+	memset(&flags, 0, sizeof(flags));
+
 	while (argc > 0 && argv[0][0] == '-') {
 		const char *arg = argv[0];
 		argc--;
 		argv++;
 		if (!strcmp(arg, "-q")) {
-			quiet = 1;
+			flags.quiet = 1;
 		} else if (!strcmp(arg, "--db-out")) {
-			db_out = 1;
+			flags.db_out = 1;
+		} else if (!strcmp(arg, "--residual-stroke-counts")) {
+			flags.residual_stroke_counts = 1;
 		} else if (!strcmp(arg, "--")) {
 			break;
 		} else {

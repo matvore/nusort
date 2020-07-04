@@ -2976,8 +2976,8 @@ static struct kanji_entry kanji[] = {
 	{"荏",  3259, 0},
 	{"荒",  1106, 0},
 	{"荘",  1438, 0},
-	{"荳",  4093, 1},
 	{"荷",   645, 1},
+	{"荳",  4093, 0},
 	{"荻",  2225, 0},
 	{"荼",  3117, 0},
 	{"莉",  2249, 0},
@@ -4208,4 +4208,10 @@ int distinct_rsc_cmp(struct kanji_entry const *a, struct kanji_entry const *b)
 void predictably_sort_by_rsc(struct kanji_entry const **e, size_t count)
 {
 	QSORT(, e, count, distinct_rsc_cmp(e[a], e[b]) < 0);
+}
+
+unsigned largest_rsc_sort_key(void)
+{
+	return kanji_db()[kanji_db_rsc_sorted()[kanji_db_nr() - 1]]
+			.rsc_sort_key;
 }

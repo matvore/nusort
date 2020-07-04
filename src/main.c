@@ -7,7 +7,7 @@
 
 static const char *USAGE =
 "Usage:\n"
-"\tnusort check_kanji_db_order [--db-out] [-q]\n"
+"\tnusort check_kanji_db_order [--db-out] [-q] [--residual-stroke-counts]\n"
 "\tnusort free_kanji_keys\n"
 "\tnusort h2k\n"
 "\tnusort input\n"

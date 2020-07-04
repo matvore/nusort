@@ -11,9 +11,7 @@ int rsc_sort_key(char const *const *argv, int argc)
 		return 1;
 	}
 
-	fprintf(out, "最大値: %u\n",
-		kanji_db()[kanji_db_rsc_sorted()[kanji_db_nr() - 1]]
-			.rsc_sort_key);
+	fprintf(out, "最大値: %u\n", largest_rsc_sort_key());
 
 	return 0;
 }

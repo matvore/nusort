@@ -61,4 +61,6 @@ int distinct_rsc_cmp(
  */
 void predictably_sort_by_rsc(struct kanji_entry const **, size_t count);
 
+unsigned largest_rsc_sort_key(void);
+
 #endif
