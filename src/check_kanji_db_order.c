@@ -5,6 +5,7 @@
 
 #include "commands.h"
 #include "kanji_db.h"
+#include "residual_stroke_count.h"
 #include "streams.h"
 #include "util.h"
 
@@ -276,6 +277,7 @@ static int check_order(void)
 		size_t ki;
 		struct kanji_entry const *ke = k + rsc[i];
 		struct min_key_info *min_key = min_keys + ke->rsc_sort_key - 1;
+		int residual_stroke_count_in_unihan_data = 0;
 
 		BSEARCH(si, sort_infos.el, sort_infos.cnt,
 			strcmp(si->c, ke->c));
@@ -290,6 +292,8 @@ static int check_order(void)
 		}
 
 		for (ki = 0; ki < MAX_K && si->k[ki].rad; ki++) {
+			if (si->k[ki].strokes == residual_stroke_count(ke))
+				residual_stroke_count_in_unihan_data = 1;
 			if (sort_key_cmp(&si->k[ki], &key) < 0)
 				continue;
 			if (sort_key_cmp(&si->k[ki], &smallest_matching) < 0)
@@ -299,6 +303,12 @@ static int check_order(void)
 			fprintf(err, "err: %s\n", ke->c);
 			res = 31;
 			goto cleanup;
+		}
+		if (!residual_stroke_count_in_unihan_data) {
+			res = 32;
+			fprintf(err, "部首外画数が Unihan に認められていない: "
+				     "%s (%d)\n",
+				ke->c, residual_stroke_count(ke));
 		}
 		key = smallest_matching;
 		if (!flags.quiet) {
