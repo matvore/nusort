@@ -133,4 +133,22 @@ int main(void)
 
 		DESTROY_ARRAY(m);
 	}
+
+	while (run_test("some_radicals_skipped_in_rsc_guide", NULL)) {
+		struct key_mapping_array m = {0};
+
+		expect_ok(sort_and_validate_no_conflicts(&m));
+
+		append_mapping(&m, "/a", "龍");
+		append_mapping(&m, "/b", "黒");
+		append_mapping(&m, "/c", "麻");
+		append_mapping(&m, "/d", "麗");
+		append_mapping(&m, "/e", "魅");
+		append_mapping(&m, "/f", "髪");
+		append_mapping(&m, "/g", "飯");
+		keyboard_update(&m, "/");
+		keyboard_show_rsc_list();
+
+		DESTROY_ARRAY(m);
+	}
 }

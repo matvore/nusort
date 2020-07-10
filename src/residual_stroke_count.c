@@ -1389,7 +1389,12 @@ static const uint8_t counts[] = {
 
 int residual_stroke_count(struct kanji_entry const *k)
 {
-	unsigned index = k->rsc_sort_key - 1;
+	return residual_stroke_count_from_rsc_sort_key(k->rsc_sort_key);
+}
+
+int residual_stroke_count_from_rsc_sort_key(unsigned rsc_sort_key)
+{
+	unsigned index = rsc_sort_key - 1;
 	if (index >= sizeof(counts))
 		DIE(0, "%u >= %zu", index, sizeof(counts));
 	return counts[index];

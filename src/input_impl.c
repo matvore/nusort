@@ -5,6 +5,7 @@
 #include "mapping.h"
 #include "mapping_util.h"
 #include "radicals.h"
+#include "residual_stroke_count.h"
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
@@ -131,6 +132,12 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 	}
 
 	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
+		fputc(cutoffs[ki].key, out);
+		fputc(' ', out);
+	}
+	fputc('\n', out);
+
+	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
 		struct kanji_entry const *first_rad;
 
 		cutoffs[ki].rads.rsc_key_start =
@@ -138,22 +145,21 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 		radical_coverage_next(&cutoffs[ki].rads);
 
 		first_rad = kanji_db() + cutoffs[ki].rads.current;
-		if (cutoffs[ki].k != first_rad)
-			fputs(first_rad->c, out);
-		else
-			fputs("  ", out);
+		fputs(first_rad->c, out);
 
 		radical_coverage_next(&cutoffs[ki].rads);
 	}
 	fputc('\n', out);
 	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
-		fputc(cutoffs[ki].key, out);
-		fputc(' ', out);
+		struct kanji_entry const *k = cutoffs[ki].k;
+		if (k->cutoff_type >= 2)
+			fputs("  ", out);
+		else
+			fprintf(out, "\e[%dm%2d",
+				(ki & 1) ? ANSI_BRIGHT_YELLOW_FG : ANSI_RESET,
+				residual_stroke_count(k));
 	}
-	fputc('\n', out);
-	for (ki = cutoffs_nr - 1; ki >= 0; ki--)
-		fputs(cutoffs[ki].k->c, out);
-	fputc('\n', out);
+	fprintf(out, "\e[%dm\n", ANSI_RESET);
 	while (last_line) {
 		int this_line = 0;
 		for (ki = cutoffs_nr - 1; ki >= 0; ki--) {

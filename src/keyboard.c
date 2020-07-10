@@ -1,6 +1,8 @@
 #include "chars.h"
 #include "kanji_db.h"
 #include "keyboard.h"
+#include "radicals.h"
+#include "residual_stroke_count.h"
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
@@ -170,11 +172,63 @@ void keyboard_update(
 	}
 }
 
-static void maybe_print_preceding_space(int rsc_i)
+#define RSC_GUIDE_SHOW_BUSHU 0
+#define RSC_GUIDE_SHOW_STROKE_COUNT 1
+#define RSC_GUIDE_SHOW_INPUT_KANJI 2
+
+static struct {
+	struct {
+		unsigned type;
+
+		union {
+			unsigned bushu_kanji_index;
+			unsigned stroke_count;
+			struct {
+				unsigned ki;
+				char input_c;
+			} input_kanji;
+		} u;
+	} *el;
+	size_t cnt, alloc;
+} rsc_guide;
+
+static void maybe_add_radical_transition(int rsc_i)
 {
-	if (rsc_i && (kanji_db()[rsc_list[rsc_i    ].k].rsc_sort_key !=
-		      kanji_db()[rsc_list[rsc_i - 1].k].rsc_sort_key))
-		fputc(' ', out);
+	unsigned start, end = kanji_db()[rsc_list[rsc_i].k].rsc_sort_key + 1;
+	struct radical_coverage c = {0};
+	int iters_needed = rsc_i ? 2 : 1;
+	unsigned last_rad;
+
+	if (!rsc_i)
+		start = end - 1;
+	else
+		start = kanji_db()[rsc_list[rsc_i - 1].k].rsc_sort_key;
+
+	c.rsc_key_start = start;
+	c.rsc_key_end = end;
+	while (1) {
+		radical_coverage_next(&c);
+		if (radical_coverage_done(&c))
+			break;
+		last_rad = c.current;
+		iters_needed--;
+	}
+
+	if (iters_needed > 0)
+		return;
+
+	GROW_ARRAY_BY(rsc_guide, 1);
+	rsc_guide.el[rsc_guide.cnt - 1].type = RSC_GUIDE_SHOW_BUSHU;
+	rsc_guide.el[rsc_guide.cnt - 1].u.bushu_kanji_index = last_rad;
+}
+
+static unsigned rsc_sort_key_change(int rsc_i)
+{
+	unsigned prev, curr = kanji_db()[rsc_list[rsc_i].k].rsc_sort_key;
+	if (!rsc_i)
+		return curr;
+	prev = kanji_db()[rsc_list[rsc_i - 1].k].rsc_sort_key;
+	return curr != prev ? curr : 0;
 }
 
 void keyboard_show_rsc_list(void)
@@ -183,16 +237,78 @@ void keyboard_show_rsc_list(void)
 
 	QSORT(, rsc_list, rsc_list_nr,
 	      distinct_rsc_cmp(kanji_db() + rsc_list[a].k,
-			       kanji_db() + rsc_list[b].k) > 0);
+			       kanji_db() + rsc_list[b].k) < 0);
+	rsc_guide.cnt = 0;
 
 	for (i = 0; i < rsc_list_nr; i++) {
-		maybe_print_preceding_space(i);
-		fputc(rsc_list[i].c, out);
-		fputc(' ', out);
+		unsigned key_change = rsc_sort_key_change(i);
+
+		maybe_add_radical_transition(i);
+
+		if (key_change) {
+			unsigned r = residual_stroke_count_from_rsc_sort_key(
+				key_change);
+			if (r) {
+				GROW_ARRAY_BY(rsc_guide, 1);
+				rsc_guide.el[rsc_guide.cnt - 1].type =
+					RSC_GUIDE_SHOW_STROKE_COUNT;
+				rsc_guide.el[rsc_guide.cnt - 1].u.stroke_count =
+					r;
+			}
+		}
+
+		GROW_ARRAY_BY(rsc_guide, 1);
+		rsc_guide.el[rsc_guide.cnt - 1].type =
+			RSC_GUIDE_SHOW_INPUT_KANJI;
+		rsc_guide.el[rsc_guide.cnt - 1].u.input_kanji.ki =
+			rsc_list[i].k;
+		rsc_guide.el[rsc_guide.cnt - 1].u.input_kanji.input_c =
+			rsc_list[i].c;
 	}
+
+	for (i = rsc_guide.cnt - 1; i >= 0; i--) {
+		switch (rsc_guide.el[i].type) {
+		case RSC_GUIDE_SHOW_BUSHU:
+			fprintf(out, "\e[%d;%dm%s部\e[%dm",
+				ANSI_BRIGHT_MAGENTA_FG,
+				ANSI_BOLD,
+				kanji_db()[rsc_guide.el[i].u.bushu_kanji_index]
+					.c,
+				ANSI_RESET);
+			break;
+		case RSC_GUIDE_SHOW_STROKE_COUNT:
+			fprintf(out, "\e[%dm%d \e[%dm",
+				ANSI_BRIGHT_YELLOW_FG,
+				rsc_guide.el[i].u.stroke_count,
+				ANSI_RESET);
+			break;
+		case RSC_GUIDE_SHOW_INPUT_KANJI:
+			fputs(kanji_db()[rsc_guide.el[i].u.input_kanji.ki].c,
+			      out);
+			break;
+		default:
+			DIE(0, "");
+		}
+	}
+
 	fputc('\n', out);
-	for (i = 0; i < rsc_list_nr; i++) {
-		maybe_print_preceding_space(i);
-		fputs(kanji_db()[rsc_list[i].k].c, out);
+
+	for (i = rsc_guide.cnt - 1; i >= 0; i--) {
+		switch (rsc_guide.el[i].type) {
+		case RSC_GUIDE_SHOW_BUSHU:
+			fputs("    ", out);
+			break;
+		case RSC_GUIDE_SHOW_STROKE_COUNT:
+			fputs("  ", out);
+			if (rsc_guide.el[i].u.stroke_count >= 10)
+				fputc(' ', out);
+			break;
+		case RSC_GUIDE_SHOW_INPUT_KANJI:
+			fprintf(out, "%c ",
+				rsc_guide.el[i].u.input_kanji.input_c);
+			break;
+		default:
+			DIE(0, "");
+		}
 	}
 }
