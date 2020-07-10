@@ -8,13 +8,19 @@ static struct {
 	unsigned hide_kanji : 1;
 	unsigned show_per_line_kanji_count : 1;
 	unsigned show_space_for_cutoff_points : 1;
+	unsigned tab_separated_values : 1;
 } flags;
 
 static void print_line_stats(const struct line_stats *s)
 {
 	size_t i;
+	char sep = flags.tab_separated_values ? '\t' : ' ';
 
-	fprintf(out, "[ %s ] %c ", s->cutoff->c, s->key_ch);
+	if (flags.tab_separated_values)
+		fprintf(out, "%s\t%c", s->cutoff->c, s->key_ch);
+	else
+		fprintf(out, "[ %s ] %c", s->cutoff->c, s->key_ch);
+	fputc(sep, out);
 
 	if (!flags.hide_kanji) {
 		for (i = 0; i < s->e_nr; i++) {
@@ -25,15 +31,20 @@ static void print_line_stats(const struct line_stats *s)
 
 			fputs(s->e[i]->c, out);
 		}
-		fputc(' ', out);
+		fputc(sep, out);
 	}
 
-	fprintf(out, "(%d . %d . %d",
+	if (!flags.tab_separated_values)
+		fputc('(', out);
+
+	fprintf(out, "%d . %d . %d",
 		 s->last_char_rank, s->offset_to_target, s->cumulative_offset);
 	if (flags.show_per_line_kanji_count)
 		fprintf(out, " . %d", s->e_nr);
 
-	fprintf(out, ")\n");
+	if (!flags.tab_separated_values)
+		fputc(')', out);
+	fputc('\n', out);
 }
 
 static void print_stats_summary(struct kanji_distribution *kd)
@@ -70,6 +81,11 @@ int print_last_rank_contained(char const *const *argv, int argc)
 		} else if (!strcmp(argv[0], "-c")) {
 			kanji_distribution.sort_each_line_by_rsc = 1;
 			flags.show_space_for_cutoff_points = 1;
+			argc--;
+			argv++;
+		} else if (!strcmp(argv[0], "--tsv")) {
+			kanji_distribution.sort_each_line_by_rsc = 1;
+			flags.tab_separated_values = 1;
 			argc--;
 			argv++;
 		} else if (!strcmp(argv[0], "--")) {

@@ -118,6 +118,12 @@ static struct {
 	0
 },
 
+{
+	"tab_separated_values",
+	{"--tsv"},
+	0
+},
+
 };
 
 int main(void)
