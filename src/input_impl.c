@@ -177,6 +177,15 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 		fputc('\n', out);
 }
 
+static void eat_escape_sequence(void)
+{
+	int c = fgetc(in);
+
+	if (c == '[')
+		/* 矢印キー */
+		fgetc(in);
+}
+
 int input_impl(struct mapping *mapping, struct input_flags const *flags)
 {
 	Orig so_far_input = {0};
@@ -214,10 +223,12 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 		ch = fgetc(in);
 
 		switch (ch) {
+		case '\e':
+			eat_escape_sequence();
+			continue;
 		case EOF:
 		case 4:
-		case '\e':
-			/* EOF、 ^D 又は Escape の場合は終了します。 */
+			/* EOF 又は ^D の場合は終了します。 */
 			goto cleanup;
 		case '\b':
 		case '\x7f':
