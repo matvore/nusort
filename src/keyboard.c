@@ -231,9 +231,55 @@ static unsigned rsc_sort_key_change(int rsc_i)
 	return curr != prev ? curr : 0;
 }
 
+static void print_kanji_line(int i)
+{
+	switch (rsc_guide.el[i].type) {
+	case RSC_GUIDE_SHOW_BUSHU:
+		fprintf(out, "\e[%d;%dm%s\e[%dm",
+			ANSI_BRIGHT_MAGENTA_FG, ANSI_BOLD,
+			kanji_db()[rsc_guide.el[i].u.bushu_kanji_index].c,
+			ANSI_RESET);
+		break;
+	case RSC_GUIDE_SHOW_STROKE_COUNT:
+		fprintf(out, "\e[%dm%d \e[%dm",
+			ANSI_BRIGHT_YELLOW_FG,
+			rsc_guide.el[i].u.stroke_count,
+			ANSI_RESET);
+		break;
+	case RSC_GUIDE_SHOW_INPUT_KANJI:
+		fputs(kanji_db()[rsc_guide.el[i].u.input_kanji.ki].c, out);
+		break;
+	default:
+		DIE(0, "");
+	}
+}
+
+static void print_key_line(int i)
+{
+	switch (rsc_guide.el[i].type) {
+	case RSC_GUIDE_SHOW_BUSHU:
+		fprintf(out, "\e[%d;%dm部\e[%dm", ANSI_BRIGHT_MAGENTA_FG,
+			ANSI_BOLD, ANSI_RESET);
+		break;
+	case RSC_GUIDE_SHOW_STROKE_COUNT:
+		fputs("  ", out);
+		if (rsc_guide.el[i].u.stroke_count >= 10)
+			fputc(' ', out);
+		break;
+	case RSC_GUIDE_SHOW_INPUT_KANJI:
+		fprintf(out, "%c ",
+			rsc_guide.el[i].u.input_kanji.input_c);
+		break;
+	default:
+		DIE(0, "");
+	}
+}
+
+#define RSC_LIST_WRAP_WIDTH 60
+
 void keyboard_show_rsc_list(void)
 {
-	int i;
+	int i, amount_printed = 0;
 
 	QSORT(, rsc_list, rsc_list_nr,
 	      distinct_rsc_cmp(kanji_db() + rsc_list[a].k,
@@ -266,49 +312,46 @@ void keyboard_show_rsc_list(void)
 			rsc_list[i].c;
 	}
 
-	for (i = rsc_guide.cnt - 1; i >= 0; i--) {
-		switch (rsc_guide.el[i].type) {
-		case RSC_GUIDE_SHOW_BUSHU:
-			fprintf(out, "\e[%d;%dm%s部\e[%dm",
-				ANSI_BRIGHT_MAGENTA_FG,
-				ANSI_BOLD,
-				kanji_db()[rsc_guide.el[i].u.bushu_kanji_index]
-					.c,
-				ANSI_RESET);
-			break;
-		case RSC_GUIDE_SHOW_STROKE_COUNT:
-			fprintf(out, "\e[%dm%d \e[%dm",
-				ANSI_BRIGHT_YELLOW_FG,
-				rsc_guide.el[i].u.stroke_count,
-				ANSI_RESET);
-			break;
-		case RSC_GUIDE_SHOW_INPUT_KANJI:
-			fputs(kanji_db()[rsc_guide.el[i].u.input_kanji.ki].c,
-			      out);
-			break;
-		default:
-			DIE(0, "");
-		}
-	}
+	while (amount_printed < rsc_guide.cnt) {
+		int remaining_width = RSC_LIST_WRAP_WIDTH, last_fitting_padding;
+		unsigned cursor = amount_printed, last_fitting_chunk = 0;
 
-	fputc('\n', out);
+		while (cursor < rsc_guide.cnt &&
+		       (remaining_width >= 2 || !last_fitting_chunk)) {
+			switch (rsc_guide.el[cursor].type) {
+			case RSC_GUIDE_SHOW_BUSHU:
+				remaining_width -= 2;
+				break;
+			case RSC_GUIDE_SHOW_INPUT_KANJI:
+				remaining_width -= 2;
+				last_fitting_chunk = cursor;
+				last_fitting_padding = remaining_width;
+				break;
+			case RSC_GUIDE_SHOW_STROKE_COUNT:
+				remaining_width -= 2;
+				if (rsc_guide.el[cursor].u.stroke_count >= 10)
+					remaining_width -= 1;
+				break;
+			default:
+				DIE(0, "");
+			}
 
-	for (i = rsc_guide.cnt - 1; i >= 0; i--) {
-		switch (rsc_guide.el[i].type) {
-		case RSC_GUIDE_SHOW_BUSHU:
-			fputs("    ", out);
-			break;
-		case RSC_GUIDE_SHOW_STROKE_COUNT:
-			fputs("  ", out);
-			if (rsc_guide.el[i].u.stroke_count >= 10)
-				fputc(' ', out);
-			break;
-		case RSC_GUIDE_SHOW_INPUT_KANJI:
-			fprintf(out, "%c ",
-				rsc_guide.el[i].u.input_kanji.input_c);
-			break;
-		default:
-			DIE(0, "");
+			cursor++;
 		}
+
+		if (amount_printed)
+			fputc('\n', out);
+		for (i = 0; i < last_fitting_padding; i++)
+			fputc(' ', out);
+		for (i = last_fitting_chunk; i >= amount_printed; i--)
+			print_kanji_line(i);
+		fputc('\n', out);
+
+		for (i = 0; i < last_fitting_padding; i++)
+			fputc(' ', out);
+		for (i = last_fitting_chunk; i >= amount_printed; i--)
+			print_key_line(i);
+
+		amount_printed = last_fitting_chunk + 1;
 	}
 }
