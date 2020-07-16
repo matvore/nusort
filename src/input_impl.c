@@ -9,6 +9,7 @@
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
+#include "windows.h"
 
 #include <errno.h>
 #include <stddef.h>
@@ -119,6 +120,9 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 		cutoffs_nr++;
 	}
 
+	to_top_of_screen();
+	start_window(WINDOW_CUTOFF_GUIDE);
+
 	key[so_far_len] = 1;
 	FIND_HASHMAP_ENTRY(mapping->cutoff_map, key, found_key);
 	if (!strcmp(*found_key, key)) {
@@ -128,14 +132,14 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 			? 0xffff : kanji_db()[end_ki].rsc_sort_key;
 		cutoffs[cutoffs_nr - 1].rads.rsc_key_end = rsc_key_end;
 	} else {
-		return;
+		goto cleanup;
 	}
 
 	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
 		fputc(cutoffs[ki].key, out);
 		fputc(' ', out);
 	}
-	fputc('\n', out);
+	add_window_newline();
 
 	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
 		struct kanji_entry const *first_rad;
@@ -149,7 +153,7 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 
 		radical_coverage_next(&cutoffs[ki].rads);
 	}
-	fputc('\n', out);
+	add_window_newline();
 	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
 		struct kanji_entry const *k = cutoffs[ki].k;
 		if (k->cutoff_type >= 2)
@@ -159,7 +163,8 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 				(ki & 1) ? ANSI_BRIGHT_YELLOW_FG : ANSI_RESET,
 				residual_stroke_count(k));
 	}
-	fprintf(out, "\e[%dm\n", ANSI_RESET);
+	fprintf(out, "\e[%dm", ANSI_RESET);
+	add_window_newline();
 	while (last_line) {
 		int this_line = 0;
 		for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
@@ -176,11 +181,14 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 			radical_coverage_next(r);
 		}
 		if (!fold_mode)
-			fputc('\n', out);
+			add_window_newline();
 		last_line = this_line;
 	}
 	if (fold_mode)
-		fputc('\n', out);
+		add_window_newline();
+
+cleanup:
+	finish_window();
 }
 
 static void eat_escape_sequence(void)
@@ -205,6 +213,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 		keyboard_update(&mapping->arr, so_far_input);
 		if (flags->show_cutoff_guide)
 			show_cutoff_guide(mapping, so_far_input);
+		start_window(WINDOW_INPUT_LINE);
 		if (flags->show_pending_and_converted) {
 			if (converted.cnt)
 				fwrite(converted.el, converted.cnt, 1, out);
@@ -212,12 +221,11 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 				fprintf(out, "<%s>", so_far_input);
 			if (so_far_input[0] || did_delete_orig ||
 			    converted.cnt || did_delete_conv)
-				fputc('\n', out);
+				add_window_newline();
 		}
-		if (flags->show_rsc_list) {
+		finish_window();
+		if (flags->show_rsc_list)
 			keyboard_show_rsc_list();
-			fputc('\n', out);
-		}
 		if (flags->show_keyboard) {
 			keyboard_write();
 			fputc('\n', out);
@@ -233,6 +241,10 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 			eat_escape_sequence();
 			continue;
 		case EOF:
+			if (ferror(in)) {
+				clearerr(in);
+				continue;
+			}
 		case 4:
 			/* EOF 又は ^D の場合は終了します。 */
 			goto cleanup;

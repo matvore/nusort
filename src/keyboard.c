@@ -6,6 +6,7 @@
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
+#include "windows.h"
 
 #include <errno.h>
 #include <stdint.h>
@@ -312,6 +313,8 @@ void keyboard_show_rsc_list(void)
 			rsc_list[i].c;
 	}
 
+	start_window(WINDOW_RSC_LIST);
+
 	while (amount_printed < rsc_guide.cnt) {
 		int remaining_width = RSC_LIST_WRAP_WIDTH, last_fitting_padding;
 		unsigned cursor = amount_printed, last_fitting_chunk = 0;
@@ -339,19 +342,20 @@ void keyboard_show_rsc_list(void)
 			cursor++;
 		}
 
-		if (amount_printed)
-			fputc('\n', out);
 		for (i = 0; i < last_fitting_padding; i++)
 			fputc(' ', out);
 		for (i = last_fitting_chunk; i >= amount_printed; i--)
 			print_kanji_line(i);
-		fputc('\n', out);
+		add_window_newline();
 
 		for (i = 0; i < last_fitting_padding; i++)
 			fputc(' ', out);
 		for (i = last_fitting_chunk; i >= amount_printed; i--)
 			print_key_line(i);
+		add_window_newline();
 
 		amount_printed = last_fitting_chunk + 1;
 	}
+
+	finish_window();
 }

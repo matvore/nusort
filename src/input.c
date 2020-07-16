@@ -7,6 +7,7 @@
 #include "mapping.h"
 #include "streams.h"
 #include "util.h"
+#include "windows.h"
 
 static void check_term_op(int res)
 {
@@ -104,6 +105,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 	if (set_raw_mode) {
 		check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));
 		customize_term_attributes(orig_termios);
+		enable_windows();
 	}
 	res = input_impl(&mapping, &flags);
 	if (set_raw_mode)

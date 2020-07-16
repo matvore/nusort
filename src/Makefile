@@ -42,7 +42,8 @@ SHARED_OBJS = \
 	romazi.o \
 	rsc_sort_key.o \
 	streams.o \
-	util.o
+	util.o \
+	windows.o
 
 HDRS = \
 	chars.h \
@@ -54,11 +55,14 @@ HDRS = \
 	keyboard.h \
 	mapping.h \
 	mapping_util.h \
+	radicals.h \
 	rank_coverage.h \
+	residual_stroke_count.h \
 	romazi.h \
 	streams.h \
 	test_util.h \
-	util.h
+	util.h \
+	windows.h
 
 %.o: %.c $(HDRS)
 	$(CC) -c $(CPPFLAGS) $(ALL_CFLAGS) $<
