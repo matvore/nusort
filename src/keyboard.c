@@ -1,4 +1,5 @@
 #include "chars.h"
+#include "dict_guide.h"
 #include "kanji_db.h"
 #include "keyboard.h"
 #include "radicals.h"
@@ -173,32 +174,13 @@ void keyboard_update(
 	}
 }
 
-#define RSC_GUIDE_SHOW_BUSHU 0
-#define RSC_GUIDE_SHOW_STROKE_COUNT 1
-#define RSC_GUIDE_SHOW_INPUT_KANJI 2
-
-static struct {
-	struct {
-		unsigned type;
-
-		union {
-			unsigned bushu_kanji_index;
-			unsigned stroke_count;
-			struct {
-				unsigned ki;
-				char input_c;
-			} input_kanji;
-		} u;
-	} *el;
-	size_t cnt, alloc;
-} rsc_guide;
-
 static void maybe_add_radical_transition(int rsc_i)
 {
 	unsigned start, end = kanji_db()[rsc_list[rsc_i].k].rsc_sort_key + 1;
 	struct radical_coverage c = {0};
 	int iters_needed = rsc_i ? 2 : 1;
 	unsigned last_rad;
+	struct dict_guide_el *guide_el;
 
 	if (!rsc_i)
 		start = end - 1;
@@ -218,9 +200,9 @@ static void maybe_add_radical_transition(int rsc_i)
 	if (iters_needed > 0)
 		return;
 
-	GROW_ARRAY_BY(rsc_guide, 1);
-	rsc_guide.el[rsc_guide.cnt - 1].type = RSC_GUIDE_SHOW_BUSHU;
-	rsc_guide.el[rsc_guide.cnt - 1].u.bushu_kanji_index = last_rad;
+	guide_el = dict_guide_add_el();
+	guide_el->type = DICT_GUIDE_RSC_LIST_BUSHU;
+	guide_el->u.rsc_list_bushu_ki = last_rad;
 }
 
 static unsigned rsc_sort_key_change(int rsc_i)
@@ -232,62 +214,18 @@ static unsigned rsc_sort_key_change(int rsc_i)
 	return curr != prev ? curr : 0;
 }
 
-static void print_kanji_line(int i)
-{
-	switch (rsc_guide.el[i].type) {
-	case RSC_GUIDE_SHOW_BUSHU:
-		fprintf(out, "\e[%d;%dm%s\e[%dm",
-			ANSI_BRIGHT_MAGENTA_FG, ANSI_BOLD,
-			kanji_db()[rsc_guide.el[i].u.bushu_kanji_index].c,
-			ANSI_RESET);
-		break;
-	case RSC_GUIDE_SHOW_STROKE_COUNT:
-		fprintf(out, "\e[%dm%d \e[%dm",
-			ANSI_BRIGHT_YELLOW_FG,
-			rsc_guide.el[i].u.stroke_count,
-			ANSI_RESET);
-		break;
-	case RSC_GUIDE_SHOW_INPUT_KANJI:
-		fputs(kanji_db()[rsc_guide.el[i].u.input_kanji.ki].c, out);
-		break;
-	default:
-		DIE(0, "");
-	}
-}
-
-static void print_key_line(int i)
-{
-	switch (rsc_guide.el[i].type) {
-	case RSC_GUIDE_SHOW_BUSHU:
-		fprintf(out, "\e[%d;%dm部\e[%dm", ANSI_BRIGHT_MAGENTA_FG,
-			ANSI_BOLD, ANSI_RESET);
-		break;
-	case RSC_GUIDE_SHOW_STROKE_COUNT:
-		fputs("  ", out);
-		if (rsc_guide.el[i].u.stroke_count >= 10)
-			fputc(' ', out);
-		break;
-	case RSC_GUIDE_SHOW_INPUT_KANJI:
-		fprintf(out, "%c ",
-			rsc_guide.el[i].u.input_kanji.input_c);
-		break;
-	default:
-		DIE(0, "");
-	}
-}
-
-#define RSC_LIST_WRAP_WIDTH 60
-
 void keyboard_show_rsc_list(void)
 {
-	int i, amount_printed = 0;
+	int i;
 
 	QSORT(, rsc_list, rsc_list_nr,
 	      distinct_rsc_cmp(kanji_db() + rsc_list[a].k,
 			       kanji_db() + rsc_list[b].k) < 0);
-	rsc_guide.cnt = 0;
+
+	dict_guide_clear();
 
 	for (i = 0; i < rsc_list_nr; i++) {
+		struct dict_guide_el *guide_el;
 		unsigned key_change = rsc_sort_key_change(i);
 
 		maybe_add_radical_transition(i);
@@ -296,66 +234,21 @@ void keyboard_show_rsc_list(void)
 			unsigned r = residual_stroke_count_from_rsc_sort_key(
 				key_change);
 			if (r) {
-				GROW_ARRAY_BY(rsc_guide, 1);
-				rsc_guide.el[rsc_guide.cnt - 1].type =
-					RSC_GUIDE_SHOW_STROKE_COUNT;
-				rsc_guide.el[rsc_guide.cnt - 1].u.stroke_count =
-					r;
+				dict_guide_add_el()->type = DICT_GUIDE_SPACE;
+				guide_el = dict_guide_add_el();
+				guide_el->type = DICT_GUIDE_STROKE_COUNT;
+				guide_el->u.stroke_count = r;
 			}
 		}
 
-		GROW_ARRAY_BY(rsc_guide, 1);
-		rsc_guide.el[rsc_guide.cnt - 1].type =
-			RSC_GUIDE_SHOW_INPUT_KANJI;
-		rsc_guide.el[rsc_guide.cnt - 1].u.input_kanji.ki =
-			rsc_list[i].k;
-		rsc_guide.el[rsc_guide.cnt - 1].u.input_kanji.input_c =
-			rsc_list[i].c;
+		guide_el = dict_guide_add_el();
+		guide_el->type = DICT_GUIDE_KANJI;
+		guide_el->u.kanji.ki = rsc_list[i].k;
+		guide_el->u.kanji.input_c = rsc_list[i].c;
+		dict_guide_add_el()->type = DICT_GUIDE_LINE_WRAPPABLE_POINT;
 	}
 
 	start_window(WINDOW_RSC_LIST);
-
-	while (amount_printed < rsc_guide.cnt) {
-		int remaining_width = RSC_LIST_WRAP_WIDTH, last_fitting_padding;
-		unsigned cursor = amount_printed, last_fitting_chunk = 0;
-
-		while (cursor < rsc_guide.cnt &&
-		       (remaining_width >= 2 || !last_fitting_chunk)) {
-			switch (rsc_guide.el[cursor].type) {
-			case RSC_GUIDE_SHOW_BUSHU:
-				remaining_width -= 2;
-				break;
-			case RSC_GUIDE_SHOW_INPUT_KANJI:
-				remaining_width -= 2;
-				last_fitting_chunk = cursor;
-				last_fitting_padding = remaining_width;
-				break;
-			case RSC_GUIDE_SHOW_STROKE_COUNT:
-				remaining_width -= 2;
-				if (rsc_guide.el[cursor].u.stroke_count >= 10)
-					remaining_width -= 1;
-				break;
-			default:
-				DIE(0, "");
-			}
-
-			cursor++;
-		}
-
-		for (i = 0; i < last_fitting_padding; i++)
-			fputc(' ', out);
-		for (i = last_fitting_chunk; i >= amount_printed; i--)
-			print_kanji_line(i);
-		add_window_newline();
-
-		for (i = 0; i < last_fitting_padding; i++)
-			fputc(' ', out);
-		for (i = last_fitting_chunk; i >= amount_printed; i--)
-			print_key_line(i);
-		add_window_newline();
-
-		amount_printed = last_fitting_chunk + 1;
-	}
-
+	dict_guide_show(/*include_second_line=*/1);
 	finish_window();
 }

@@ -21,6 +21,7 @@ all: test nusort
 SHARED_OBJS = \
 	chars.o \
 	check_kanji_db_order.o \
+	dict_guide.o \
 	free_kanji_keys.o \
 	h2k.o \
 	input.o \
@@ -48,6 +49,7 @@ SHARED_OBJS = \
 HDRS = \
 	chars.h \
 	commands.h \
+	dict_guide.h \
 	input_impl.h \
 	kana_stats_util.h \
 	kanji_db.h \

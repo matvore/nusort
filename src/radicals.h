@@ -34,6 +34,9 @@ struct radical_coverage {
 	/* kanji_db() へのインデックス */
 	unsigned current;
 
+	/* current の画数 */
+	unsigned stroke_cnt;
+
 	unsigned rad_i;
 };
 

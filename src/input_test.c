@@ -539,5 +539,19 @@ int main(void)
 		XFCLOSE(in);
 	}
 
+	while (run_test("kugiri_share_same_rsc_sort_key_mizu_and_iu", NULL)) {
+		struct mapping m = {
+			.include_kanji = 1,
+		};
+		struct input_flags f = {
+			.show_rsc_list = 1,
+			.show_cutoff_guide = 1,
+		};
+		in = open_tmp_file_containing("s \b\bc ");
+		expect_ok(mapping_populate(&m));
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+	}
+
 	return 0;
 }

@@ -5,6 +5,7 @@
 #include <string.h>
 
 #define ANSI_BOLD 1
+#define ANSI_REVERSE_VIDEO 7
 #define ANSI_BRIGHT_YELLOW_FG 93
 #define ANSI_BRIGHT_MAGENTA_FG 95
 #define ANSI_RESET 0

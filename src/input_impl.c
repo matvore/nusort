@@ -1,5 +1,6 @@
 #include "chars.h"
 #include "commands.h"
+#include "dict_guide.h"
 #include "input_impl.h"
 #include "keyboard.h"
 #include "mapping.h"
@@ -83,25 +84,82 @@ static void save_with_osc52(void)
 	}
 }
 
+static void add_rsc_range_to_cutoff_guide(
+	unsigned start_rsc, unsigned end_rsc, unsigned *rad_stroke_cnt)
+{
+	struct radical_coverage rads = {
+		.rsc_key_start = start_rsc,
+		.rsc_key_end = end_rsc,
+	};
+	unsigned start_strokes =
+		residual_stroke_count_from_rsc_sort_key(start_rsc);
+	unsigned end_strokes = end_rsc == 0xffff ? 0 :
+		residual_stroke_count_from_rsc_sort_key(end_rsc);
+	int rad_cnt = 0;
+	struct dict_guide_el *guide_el;
+
+	while (1) {
+		radical_coverage_next(&rads);
+		if (radical_coverage_done(&rads))
+			break;
+		rad_cnt++;
+
+		if (rads.stroke_cnt != *rad_stroke_cnt) {
+			guide_el = dict_guide_add_el();
+			guide_el->type = DICT_GUIDE_BUSHU_STROKE_COUNT;
+			guide_el->u.stroke_count = rads.stroke_cnt;
+			*rad_stroke_cnt = rads.stroke_cnt;
+		}
+		guide_el = dict_guide_add_el();
+		guide_el->type = DICT_GUIDE_KANJI;
+		guide_el->u.kanji.ki = rads.current;
+
+		if (rad_cnt > 1) {
+			guide_el = dict_guide_add_el();
+			guide_el->type = DICT_GUIDE_LINE_WRAPPABLE_POINT;
+			continue;
+		}
+		if (!start_strokes)
+			continue;
+		guide_el = dict_guide_add_el();
+		guide_el->type = DICT_GUIDE_STROKE_COUNT;
+		guide_el->u.stroke_count = start_strokes;
+		guide_el = dict_guide_add_el();
+		guide_el->type = DICT_GUIDE_ELLIPSIS;
+	}
+
+	if (!end_strokes || (rad_cnt == 1 && start_rsc + 1 >= end_rsc)) {
+		guide_el->type = DICT_GUIDE_LINE_WRAPPABLE_POINT;
+		return;
+	}
+
+	if (guide_el->type != DICT_GUIDE_ELLIPSIS) {
+		/* 省略符号直前で改行をしない */
+		if (guide_el->type != DICT_GUIDE_LINE_WRAPPABLE_POINT)
+			guide_el = dict_guide_add_el();
+		guide_el->type = DICT_GUIDE_ELLIPSIS;
+	}
+	guide_el = dict_guide_add_el();
+	guide_el->type = DICT_GUIDE_STROKE_COUNT;
+	guide_el->u.stroke_count = residual_stroke_count_from_rsc_sort_key(
+		start_rsc == end_rsc ? start_rsc : end_rsc - 1);
+}
+
 static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 {
 	int ki;
 	int so_far_len = strlen(so_far_input);
 	Orig key = {0};
-	struct {
-		struct kanji_entry const *k;
-		char key;
-		struct radical_coverage rads;
-	} cutoffs[KANJI_KEY_COUNT] = {0};
-	int cutoffs_nr = 0;
-	Orig *found_key;
-	int last_line = -1;
-	int fold_mode = 0;
+	unsigned prev_rsc_sort_key = 0, rad_stroke_cnt = 0;
 
+	dict_guide_clear();
 	memcpy(key, so_far_input, so_far_len);
 
-	for (ki = 0; ki < KANJI_KEY_COUNT; ki++) {
-		char ch = KEY_INDEX_TO_CHAR_MAP[ki];
+	for (ki = 0; ki <= KANJI_KEY_COUNT; ki++) {
+		char ch = ki == KANJI_KEY_COUNT ? 1 : KEY_INDEX_TO_CHAR_MAP[ki];
+		Orig *found_key;
+		struct dict_guide_el *guide_el;
+		unsigned end_ki, rsc_key_end;
 
 		key[so_far_len] = ch;
 
@@ -109,85 +167,30 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 		if (strcmp(*found_key, key))
 			continue;
 
-		cutoffs[cutoffs_nr].k = kanji_db() + *VALUE_PTR_FOR_HASH_KEY(
+		end_ki = *VALUE_PTR_FOR_HASH_KEY(
 			mapping->cutoff_map, found_key);
-		cutoffs[cutoffs_nr].key = ch;
-
-		if (cutoffs_nr)
-			cutoffs[cutoffs_nr - 1].rads.rsc_key_end =
-				cutoffs[cutoffs_nr].k->rsc_sort_key;
-
-		cutoffs_nr++;
-	}
-
-	to_top_of_screen();
-	start_window(WINDOW_CUTOFF_GUIDE);
-
-	key[so_far_len] = 1;
-	FIND_HASHMAP_ENTRY(mapping->cutoff_map, key, found_key);
-	if (!strcmp(*found_key, key)) {
-		unsigned end_ki =
-			*VALUE_PTR_FOR_HASH_KEY(mapping->cutoff_map, found_key);
-		unsigned rsc_key_end = end_ki == kanji_db_nr()
+		rsc_key_end = end_ki == kanji_db_nr()
 			? 0xffff : kanji_db()[end_ki].rsc_sort_key;
-		cutoffs[cutoffs_nr - 1].rads.rsc_key_end = rsc_key_end;
-	} else {
-		goto cleanup;
+
+		if (prev_rsc_sort_key)
+			add_rsc_range_to_cutoff_guide(
+				prev_rsc_sort_key, rsc_key_end,
+				&rad_stroke_cnt);
+
+		dict_guide_add_el()->type = DICT_GUIDE_LINE_WRAPPABLE_POINT;
+
+		if (ki == KANJI_KEY_COUNT)
+			continue;
+		guide_el = dict_guide_add_el();
+		guide_el->type = DICT_GUIDE_KUGIRI_INPUT_KEY;
+		guide_el->u.kugiri_input_key = ch;
+
+		prev_rsc_sort_key = rsc_key_end;
 	}
 
-	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
-		fputc(cutoffs[ki].key, out);
-		fputc(' ', out);
-	}
-	add_window_newline();
+	start_window(WINDOW_CUTOFF_GUIDE);
+	dict_guide_show(/*include_second_line=*/0);
 
-	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
-		struct kanji_entry const *first_rad;
-
-		cutoffs[ki].rads.rsc_key_start =
-			cutoffs[ki].k->rsc_sort_key;
-		radical_coverage_next(&cutoffs[ki].rads);
-
-		first_rad = kanji_db() + cutoffs[ki].rads.current;
-		fputs(first_rad->c, out);
-
-		radical_coverage_next(&cutoffs[ki].rads);
-	}
-	add_window_newline();
-	for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
-		struct kanji_entry const *k = cutoffs[ki].k;
-		if (k->cutoff_type >= 2)
-			fputs("  ", out);
-		else
-			fprintf(out, "\e[%dm%2d",
-				(ki & 1) ? ANSI_BRIGHT_YELLOW_FG : ANSI_RESET,
-				residual_stroke_count(k));
-	}
-	fprintf(out, "\e[%dm", ANSI_RESET);
-	add_window_newline();
-	while (last_line) {
-		int this_line = 0;
-		for (ki = cutoffs_nr - 1; ki >= 0; ki--) {
-			struct radical_coverage *r = &cutoffs[ki].rads;
-			if (radical_coverage_done(r)) {
-				if (!fold_mode)
-					fputs("  ", out);
-				continue;
-			}
-			fputs(kanji_db()[r->current].c, out);
-			if (last_line == 1)
-				fold_mode = 1;
-			this_line++;
-			radical_coverage_next(r);
-		}
-		if (!fold_mode)
-			add_window_newline();
-		last_line = this_line;
-	}
-	if (fold_mode)
-		add_window_newline();
-
-cleanup:
 	finish_window();
 }
 
@@ -211,6 +214,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 		int pressed_bs = 0;
 
 		keyboard_update(&mapping->arr, so_far_input);
+		to_top_of_screen();
 		if (flags->show_cutoff_guide)
 			show_cutoff_guide(mapping, so_far_input);
 		start_window(WINDOW_INPUT_LINE);
