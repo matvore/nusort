@@ -4,7 +4,6 @@
 #include "util.h"
 
 #include <errno.h>
-#include <execinfo.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,8 +85,6 @@ void _Noreturn die(
 {
 	char const *preamble = "致命的なエラー";
 	va_list argp;
-	void *trace_symbols[256];
-	int trace_size;
 
 	if (show_errno && errno)
 		perror(preamble);
@@ -102,11 +99,7 @@ void _Noreturn die(
 
 	fputc('\n', stderr);
 
-	trace_size =
-		backtrace(trace_symbols, sizeof(trace_symbols) / sizeof(void*));
-	backtrace_symbols_fd(trace_symbols + 1, trace_size - 1, STDERR_FILENO);
-
-	exit(228);
+	abort();
 }
 
 int bytes_are_zero(void const *buf_, size_t s)
