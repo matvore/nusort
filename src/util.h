@@ -180,7 +180,7 @@ do { \
 		DIE(0, "hashmapのフィールドが０に設定されていない"); \
 	(hashmap).bucket_cnt = (bc); \
 	(hashmap).keys = \
-		xcalloc((hashmap).bucket_cnt, sizeof((hashmap).keys)); \
+		xcalloc((hashmap).bucket_cnt, sizeof((hashmap).keys[0])); \
 } while (0)
 
 /*

@@ -623,6 +623,8 @@ int main(void)
 			fprintf(out, "%c %"PRIu8"\n",
 				kd.line_stats[line].key_ch,
 				kd.line_stats[line].e_nr);
+
+		kanji_distribution_destroy(&kd);
 	}
 
 }

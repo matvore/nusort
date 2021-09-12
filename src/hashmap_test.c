@@ -148,6 +148,8 @@ int main(void)
 		FIND_HASHMAP_ENTRY(h, key, found_key);
 		found_value = VALUE_PTR_FOR_HASH_KEY(h, found_key);
 		fprintf(out, "<%d %d>", *found_key, *found_value);
+
+		DESTROY_HASHMAP(h);
 	}
 
 	while (run_test("string_hashmap",

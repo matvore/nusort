@@ -272,14 +272,16 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 		} else if (!pressed_bs) {
 			so_far_input[strlen(so_far_input)] = ch;
 		} else if (converted.cnt) {
+			int cdiff;
 			if (is_complete_utf8(converted.el[converted.cnt-1], 1))
-				converted.cnt--;
+				cdiff = 1;
 			else if (is_complete_utf8(converted.el[converted.cnt-2],
 						  2))
-				converted.cnt -= 2;
+				cdiff = 2;
 			else
-				converted.cnt -= 3;
-			memset(converted.el + converted.cnt, 0, 3);
+				cdiff = 3;
+			converted.cnt -= cdiff;
+			memset(converted.el + converted.cnt, 0, cdiff);
 			did_delete_conv = 1;
 		}
 
