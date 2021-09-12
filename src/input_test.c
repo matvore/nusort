@@ -449,7 +449,7 @@ int main(void)
 		XFCLOSE(in);
 	}
 
-	while (run_test("use_osc52_to_save_include_kanji", "\e]52;c;44Gm44GZ44Go5oiQ5Yqf\a")) {
+	while (run_test("use_osc52_to_save_include_kanji", "\x1b]52;c;44Gm44GZ44Go5oiQ5Yqf\a")) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.save_with_osc52 = 1,
@@ -468,10 +468,10 @@ int main(void)
 	}
 
 	while (run_test("use_osc52_to_save_with_padding",
-			"\e]52;c;44GC44GE\a"
-			"\e]52;c;44GC44GEdQ==\a"
-			"\e]52;c;QeOBhOOCjU4=\a"
-			"\e]52;c;44GC44KN44Gv\a")) {
+			"\x1b]52;c;44GC44GE\a"
+			"\x1b]52;c;44GC44GEdQ==\a"
+			"\x1b]52;c;QeOBhOOCjU4=\a"
+			"\x1b]52;c;44GC44KN44Gv\a")) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.save_with_osc52 = 1,
@@ -497,10 +497,10 @@ int main(void)
 	}
 
 	while (run_test("use_osc52_to_save_use_plus_and_slash_in_output",
-			"\e]52;c;eHk+\a"
-			"\e]52;c;ams/\a"
-			"\e]52;c;zp/Onw==\a"
-			"\e]52;c;M+OCjQ==\a")) {
+			"\x1b]52;c;eHk+\a"
+			"\x1b]52;c;ams/\a"
+			"\x1b]52;c;zp/Onw==\a"
+			"\x1b]52;c;M+OCjQ==\a")) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.save_with_osc52 = 1,

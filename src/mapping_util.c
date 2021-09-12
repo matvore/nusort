@@ -91,7 +91,7 @@ struct key_mapping const *incomplete_code_is_prefix_for_code_len(
 	int len)
 {
 	int so_far_len = strlen(incomplete_code);
-	ssize_t extended_i;
+	long extended_i;
 	int i;
 	Orig extended_input = {0};
 	struct key_mapping const *found;
@@ -239,8 +239,8 @@ static int column_value(int key_index)
 int ergonomic_lt_same_first_key(
 	char first_key, char second_a, char second_b, int six_is_rh)
 {
-	ssize_t sec_key_i_a, sec_key_i_b;
-	ssize_t sec_key_row_a, sec_key_row_b;
+	long sec_key_i_a, sec_key_i_b;
+	long sec_key_row_a, sec_key_row_b;
 	int alt_hands_a, alt_hands_b;
 	int column_val_a, column_val_b;
 

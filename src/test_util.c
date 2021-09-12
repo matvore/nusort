@@ -4,15 +4,28 @@
 #include "util.h"
 
 #include <errno.h>
-#include <pthread.h>
 #include <stdint.h>
 #include <string.h>
+
+#ifdef _MSC_VER
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+#include <fcntl.h>
+#include <io.h>
+#include <synchapi.h>
+
+#else
+
+#include <pthread.h>
 #include <unistd.h>
+
+#endif
 
 static char *actual_fn;
 static FILE *test_output_pipe_read;
 /* Thread that takes test output and removes binary-looking bytes. */
-static pthread_t test_output_processor;
 static const char *test_source_file;
 static const char *test_name;
 static int flags;
@@ -79,7 +92,7 @@ static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 		       actual_fn, expected_fn);
 }
 
-static void *start_output_processor(void *unused)
+static void process_output(void)
 {
 	FILE *output = xfopen(actual_fn, "w");
 	int b;
@@ -92,18 +105,88 @@ static void *start_output_processor(void *unused)
 	report_output_errors("実際テスト出力", output, stdout);
 	XFCLOSE(output);
 	XFCLOSE(test_output_pipe_read);
+}
 
+#ifdef _MSC_VER
+
+static PTP_WORK opp_work;
+
+void CALLBACK opp_cb(
+	PTP_CALLBACK_INSTANCE inst, void *unused, PTP_WORK work)
+{
+	process_output();
+}
+
+static void start_output_processor(void)
+{
+	if (!(opp_work = CreateThreadpoolWork(opp_cb, NULL, NULL)))
+		DIE(0, "CreateThreadpoolWork: %lu", GetLastError());
+	SubmitThreadpoolWork(opp_work);
+}
+
+static void join_output_processor(void)
+{
+	WaitForThreadpoolWorkCallbacks(opp_work, FALSE);
+}
+
+static void make_pipe(int *ps)
+{
+	HANDLE read, write;
+
+	if (!CreatePipe(&read, &write, NULL, 512))
+		DIE(0, "CreatePipe: %lu", GetLastError());
+
+	ps[0] = _open_osfhandle((intptr_t)read, _O_RDONLY);
+	if (ps[0] == -1) DIE(1, "_open_osfhandle");
+	ps[1] = _open_osfhandle((intptr_t)write, 0);
+	if (ps[1] == -1) DIE(1, "_open_osfhandle");
+}
+
+#else
+
+static pthread_t test_output_processor;
+
+static void *opp_cb(void *unused)
+{
+	process_output();
 	return NULL;
 }
 
+static void start_output_processor(void)
+{
+	if (pthread_create(&test_output_processor, NULL, opp_cb, NULL))
+		DIE(1, "pthread_create");
+}
+
+static void join_output_processor(void)
+{
+	errno = pthread_join(test_output_processor, NULL);
+	if (errno)
+		DIE(1, "pthread_join");
+}
+
+static void make_pipe(int *ps)
+{
+	if (pipe(ps)) DIE(1, "pipe");
+}
+
+#endif
+
 void config_tests(int flags_) { flags = flags_; }
 
-void set_test_source_file(char const *fn) {
+void set_test_source_file(char const *fn)
+{
+	int ci, last_bs = -1;
+
 	if (!fn || !strlen(fn))
 		DIE(0, "test_source_file が無効です");
 	if (test_source_file)
 		DIE(0, "test_source_file が期に設定されています。");
-	test_source_file = fn;
+
+	for (ci = 0; fn[ci]; ci++)
+		if (fn[ci] == '\\') last_bs = ci;
+
+	test_source_file = fn + last_bs + 1;
 }
 
 static void start_test(char const *name)
@@ -118,15 +201,12 @@ static void start_test(char const *name)
 		  test_source_file, name);
 	fprintf(stderr, "テスト：(%s) %s\n", test_source_file, name);
 
-	if (pipe(test_output_pipe))
-		DIE(1, "pipe");
+	make_pipe(test_output_pipe);
 
 	test_output_pipe_read = xfdopen(test_output_pipe[0], "r");
 	out = err = xfdopen(test_output_pipe[1], "w");
 
-	if (pthread_create(&test_output_processor, NULL, start_output_processor,
-			   NULL))
-		DIE(1, "pthread_create");
+	start_output_processor();
 
 	if (flags & CONFIG_TESTS_STDIN_FROM_FILE) {
 		char *input_fn;
@@ -152,24 +232,24 @@ static void end_test_common(void)
 	report_output_errors("未処理実際テスト出力", out, stdout);
 	XFCLOSE(out);
 	out = err = NULL;
-	errno = pthread_join(test_output_processor, NULL);
-	if (errno)
-		DIE(1, "pthread_join");
+	join_output_processor();
 	test_name = NULL;
 
 	if (report_output_errors("標準出力", stdout, stderr))
 		exit(204);
 }
 
-static void store_in_tmp_file(char const *str, char *tmp_file_template);
+static char *store_in_tmp_file(
+	char const *str, const char *tmp_file_pref);
 
 static void end_test(const char *expected)
 {
-	char expected_fn[] = "/tmp/expected-XXXXXX";
+	char *expected_fn;
 
 	end_test_common();
-	store_in_tmp_file(expected, expected_fn);
+	expected_fn = store_in_tmp_file(expected, "expected-");
 	verify_contents(expected_fn, 0);
+	FREE(expected_fn);
 	FREE(actual_fn);
 }
 
@@ -184,21 +264,35 @@ static void end_test_expected_content_in_file(void)
 	FREE(actual_fn);
 }
 
-static void store_in_tmp_file(char const *str, char *tmp_file_template)
+static char *store_in_tmp_file(char const *str, const char *tmp_file_pref)
 {
-	int fd = mkstemp(tmp_file_template);
+	int fd;
 	size_t str_size = strlen(str);
-	ssize_t written;
+	long written;
+	char *fn;
+#ifdef _MSC_VER
+	char fnbuf[L_tmpnam_s+1];
+#endif
 
-	if (fd == -1)
-		DIE(1, "mkstemp");
+#ifdef _MSC_VER
+	errno = tmpnam_s(fnbuf, sizeof(fnbuf));
+	if (errno) DIE(1, "tmpnam_s");
+	fn = strdup(fnbuf);
+	if (!fn) DIE(0, "strdup: %s", fnbuf);
+	fd = open(fn, O_CREAT | O_WRONLY);
+	if (fd == -1) DIE(1, "open: %s", fn);
+#else
+	xasprintf(&fn, "/tmp/%sXXXXXX", tmp_file_pref);
+	fd = mkstemp(fn);
+	if (fd == -1) DIE(1, "mkstemp: %s", fn);
+#endif
 
 	written = write(fd, str, str_size);
-	if (written == -1)
-		DIE(1, "一時ファイルの %s に書き込む", tmp_file_template);
+	if (written == -1) DIE(1, "一時ファイルの %s に書き込む", fn);
 
-	if (close(fd) == -1)
-		DIE(1, "一時ファイルの %s を閉じる", tmp_file_template);
+	if (close(fd) == -1) DIE(1, "一時ファイルの %s を閉じる", fn);
+
+	return fn;
 }
 
 int run_test(char const *name, char const *expected_content)
@@ -222,9 +316,13 @@ int run_test(char const *name, char const *expected_content)
 
 FILE *open_tmp_file_containing(char const *str)
 {
-	char fn[] = "/tmp/nusort_test_tmp_XXXXXX";
-	store_in_tmp_file(str, fn);
-	return xfopen(fn, "r");
+	char *fn;
+	FILE *f;
+
+	fn = store_in_tmp_file(str, "nusort_test_tmp_");
+	f = xfopen(fn, "r");
+	FREE(fn);
+	return f;
 }
 
 void expect_ok(int exit_code)

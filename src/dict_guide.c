@@ -30,13 +30,13 @@ static void print_kanji_line(int i)
 {
 	switch (guide.el[i].type) {
 	case DICT_GUIDE_RSC_LIST_BUSHU:
-		fprintf(out, "\e[%d;%dm%s\e[%dm",
+		fprintf(out, "\x1b[%d;%dm%s\x1b[%dm",
 			ANSI_BRIGHT_MAGENTA_FG, ANSI_BOLD,
 			kanji_db()[guide.el[i].u.rsc_list_bushu_ki].c,
 			ANSI_RESET);
 		break;
 	case DICT_GUIDE_STROKE_COUNT:
-		fprintf(out, "\e[%dm%d\e[%dm",
+		fprintf(out, "\x1b[%dm%d\x1b[%dm",
 			ANSI_BRIGHT_YELLOW_FG,
 			guide.el[i].u.stroke_count,
 			ANSI_RESET);
@@ -48,12 +48,12 @@ static void print_kanji_line(int i)
 		fputs("⋯", out);
 		break;
 	case DICT_GUIDE_BUSHU_STROKE_COUNT:
-		fprintf(out, "\e[%d;%dm %d画 \e[%dm",
+		fprintf(out, "\x1b[%d;%dm %d画 \x1b[%dm",
 			ANSI_BRIGHT_MAGENTA_FG, ANSI_BOLD,
 			guide.el[i].u.stroke_count, ANSI_RESET);
 		break;
 	case DICT_GUIDE_KUGIRI_INPUT_KEY:
-		fprintf(out, "\e[%dm %c \e[%dm", ANSI_REVERSE_VIDEO,
+		fprintf(out, "\x1b[%dm %c \x1b[%dm", ANSI_REVERSE_VIDEO,
 			guide.el[i].u.kugiri_input_key, ANSI_RESET);
 		break;
 	case DICT_GUIDE_SPACE:
@@ -70,7 +70,7 @@ static void print_key_line(int i)
 {
 	switch (guide.el[i].type) {
 	case DICT_GUIDE_RSC_LIST_BUSHU:
-		fprintf(out, "\e[%d;%dm部\e[%dm", ANSI_BRIGHT_MAGENTA_FG,
+		fprintf(out, "\x1b[%d;%dm部\x1b[%dm", ANSI_BRIGHT_MAGENTA_FG,
 			ANSI_BOLD, ANSI_RESET);
 		break;
 	case DICT_GUIDE_STROKE_COUNT:

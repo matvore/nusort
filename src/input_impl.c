@@ -47,7 +47,7 @@ static void save_with_osc52(void)
 {
 	size_t conv_i = 0;
 
-	fputs("\e]52;c;", out);
+	fputs("\x1b]52;c;", out);
 
 	while (conv_i < converted.cnt) {
 		int bits = 0, i;
@@ -241,7 +241,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 		ch = fgetc(in);
 
 		switch (ch) {
-		case '\e':
+		case '\x1b':
 			eat_escape_sequence();
 			continue;
 		case EOF:

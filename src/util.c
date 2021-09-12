@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 void *xcalloc(size_t count, size_t size)
 {
@@ -67,7 +66,13 @@ int xasprintf(char **strp, const char *format, ...)
 
 	va_list argp;
 	va_start(argp, format);
+#ifdef _MSC_VER
+	res = vsnprintf(NULL, 0, format, argp);
+	*strp = xcalloc(res+1, 1);
+	res = vsnprintf(*strp, res+1, format, argp);
+#else
 	res = vasprintf(strp, format, argp);
+#endif
 	va_end(argp);
 
 	if (res < 0)

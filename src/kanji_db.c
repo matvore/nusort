@@ -4174,7 +4174,7 @@ uint16_t const *kanji_db_rsc_sorted(void)
 
 uint16_t kanji_db_rsc_index(struct kanji_entry const *e)
 {
-	ssize_t index;
+	long index;
 	verify_codepoint_sorted();
 	verify_rsc_sorted();
 	BSEARCH_INDEX(index, kanji_db_nr(), ,

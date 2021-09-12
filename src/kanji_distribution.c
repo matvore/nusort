@@ -39,7 +39,7 @@ static void fill_used_bit_map(
 		DIE(0, "!bytes_are_zero");
 
 	for (i = 0; i < m->cnt; i++) {
-		ssize_t first_key_off = char_to_key_index(m->el[i].orig[0]);
+		long first_key_off = char_to_key_index(m->el[i].orig[0]);
 
 		if (first_key_off == -1)
 			continue;
@@ -388,7 +388,7 @@ int kanji_distribution_parse_user_cutoff(
 
 	if (argc != kd->line_stats_nr - 1) {
 		fprintf(err,
-			 "%ld個の区切り漢字を必するけれど、%d個が渡された。\n",
+			 "%zd個の区切り漢字を必するけれど、%d個が渡された。\n",
 			 kd->line_stats_nr - 1, argc);
 		return 1;
 	}

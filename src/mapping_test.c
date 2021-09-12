@@ -104,7 +104,7 @@ static long rsc_sort_key_for_any_4_key_code(
 	struct key_mapping_array const *m, char first_key, int third_key_index)
 {
 	Orig find = {first_key, ' ', KEY_INDEX_TO_CHAR_MAP[third_key_index], 1};
-	ssize_t km_i;
+	long km_i;
 	struct key_mapping const *km;
 
 	BSEARCH_INDEX(km_i, m->cnt, , code_cmp(m->el[km_i].orig, find));
@@ -127,7 +127,7 @@ static void test_6_is_rh_setting(int six_is_rh)
 	};
 	struct key_mapping_array subarr = {0};
 	Orig find = {'z', ' ', 1, 1};
-	ssize_t find_i;
+	long find_i;
 	struct {
 		char *keys;
 		unsigned *values;

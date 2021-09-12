@@ -2,6 +2,7 @@
 #define ROMAZI_H
 
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 #include "mapping_util.h"

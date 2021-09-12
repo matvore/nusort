@@ -4,8 +4,10 @@
 
 #include <signal.h>
 #include <stdio.h>
+#ifndef _MSC_VER
 #include <termios.h>
 #include <sys/ioctl.h>
+#endif
 
 static int enabled;
 
@@ -33,12 +35,14 @@ static void handle_sigwinch(int signal)
 
 void enable_windows(void)
 {
+#ifndef _MSC_VER
 	struct sigaction sigact = {0};
 
 	sigemptyset(&sigact.sa_mask);
 	sigact.sa_handler = handle_sigwinch;
 	if (sigaction(SIGWINCH, &sigact, NULL) == -1)
 		DIE(1, "sigaction");
+#endif
 
 	enabled = 1;
 }
@@ -51,10 +55,10 @@ void to_top_of_screen(void)
 		return;
 
 	if (require_clear_screen) {
-		fputs("\e[2J", out);
+		fputs("\x1b[2J", out);
 		require_clear_screen = 0;
 	}
-	fputs("\e[0;0H", out);
+	fputs("\x1b[0;0H", out);
 }
 
 void start_window(int window_id)
@@ -70,7 +74,7 @@ void add_window_newline(void)
 {
 	check_has_current_window();
 	if (enabled)
-		fputs("\e[0K", out);
+		fputs("\x1b[0K", out);
 	fputc('\n', out);
 	current_window_newlines++;
 }

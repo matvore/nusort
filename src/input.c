@@ -1,6 +1,14 @@
+#ifndef _MSC_VER
+#define HAVE_TERMIOS 1
+#else
+#undef HAVE_TERMIOS
+#endif
+
 #include <errno.h>
+#if HAVE_TERMIOS
 #include <termios.h>
 #include <unistd.h>
+#endif
 
 #include "commands.h"
 #include "input_impl.h"
@@ -20,16 +28,20 @@ static void check_term_op(int res)
 	DIE(0, "規定に反する戻り値");
 }
 
+#if HAVE_TERMIOS
 static void customize_term_attributes(struct termios t)
 {
 	t.c_lflag &= ~(ICANON | ECHO);
 	check_term_op(tcsetattr(STDIN_FILENO, TCSANOW, &t));
 }
+#endif
 
 int input(char const *const *argv, int argc, int set_raw_mode)
 {
 	struct mapping mapping = {0};
+#if HAVE_TERMIOS
 	struct termios orig_termios;
+#endif
 	struct romazi_config romazi_config = {0};
 	struct input_flags flags = {
 		.show_pending_and_converted = 1,
@@ -103,13 +115,17 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 		return res;
 
 	if (set_raw_mode) {
+#if HAVE_TERMIOS
 		check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));
 		customize_term_attributes(orig_termios);
+#endif
 		enable_windows();
 	}
 	res = input_impl(&mapping, &flags);
+#if HAVE_TERMIOS
 	if (set_raw_mode)
 		check_term_op(tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios));
+#endif
 
 	destroy_mapping(&mapping);
 

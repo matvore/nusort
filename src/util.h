@@ -17,10 +17,14 @@ void report_fopen_failure(char const *pathname);
 FILE *xfopen(const char *pathname, const char *mode);
 FILE *xfdopen(int fd, char const *mode);
 
+#ifndef _MSC_VER
 __attribute__((format (printf, 2, 3)))
+#endif
 int xasprintf(char **strp, const char *format, ...);
 
+#ifndef _MSC_VER
 __attribute__((format (printf, 4, 5)))
+#endif
 void _Noreturn die(
 	int show_errno, char const *file, long line, char const *format, ...);
 
@@ -144,7 +148,7 @@ do { \
 } while (0)
 
 #define BSEARCH(e, el, cnt, cmp) do { \
-	ssize_t index; \
+	intptr_t index; \
 	BSEARCH_INDEX(index, cnt, (e) = (el) + (index), cmp); \
 	if (index < 0) \
 		(e) = 0; \

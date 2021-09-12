@@ -11,26 +11,26 @@ int main(void)
 	set_test_source_file(__FILE__);
 
 	while (run_test("index_found_item", "0 2 4 ")) {
-		ssize_t index;
+		long index;
 		BSEARCH_INDEX(index, size, , arr[index] - 5);
-		fprintf(out, "%zu ", index);
+		fprintf(out, "%ld ", index);
 
 		BSEARCH_INDEX(index, size, , arr[index] - 15);
-		fprintf(out, "%zu ", index);
+		fprintf(out, "%ld ", index);
 
 		BSEARCH_INDEX(index, size, , arr[index] - 20);
-		fprintf(out, "%zu ", index);
+		fprintf(out, "%ld ", index);
 	}
 
 	while (run_test("index_did_not_find", "0 3 5 ")) {
-		ssize_t index;
+		long index;
 		BSEARCH_INDEX(index, size, , arr[index] - 1);
-		fprintf(out, "%zu ", ~index);
+		fprintf(out, "%ld ", ~index);
 
 		BSEARCH_INDEX(index, size, , arr[index] - 16);
-		fprintf(out, "%zu ", ~index);
+		fprintf(out, "%ld ", ~index);
 
 		BSEARCH_INDEX(index, size, , arr[index] - 25);
-		fprintf(out, "%zu ", ~index);
+		fprintf(out, "%ld ", ~index);
 	}
 }
