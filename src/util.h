@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ANSI_BOLD 1
-#define ANSI_REVERSE_VIDEO 7
-#define ANSI_BRIGHT_YELLOW_FG 93
-#define ANSI_BRIGHT_MAGENTA_FG 95
-#define ANSI_RESET 0
+#define ANSI_BOLD "1"
+#define ANSI_REVERSE_VIDEO "7"
+#define ANSI_BRIGHT_YELLOW_FG "93"
+#define ANSI_BRIGHT_MAGENTA_FG "95"
+#define ANSI_RESET "0"
 
 void *xcalloc(size_t count, size_t size);
 void *xreallocarray(void *ptr, size_t count, size_t el_size);

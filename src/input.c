@@ -72,6 +72,12 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 			flags.show_rsc_list = 0;
 			continue;
 		}
+		if (!strcmp(argv[0], "--rpc-mode")) {
+			argv++;
+			argc--;
+			flags.rpc_mode = 1;
+			continue;
+		}
 
 		fprintf(err,
 			 "フラグを認識できませんでした：%s\n", argv[0]);

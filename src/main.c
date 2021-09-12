@@ -1,6 +1,11 @@
 #include "commands.h"
 #include "streams.h"
 
+#ifdef _MSC_VER
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +30,15 @@ int main(int argc, const char **argv)
 	err = stderr;
 	out = stdout;
 	in = stdin;
+
+	/* Windows で改行を特別に扱わないようにする。Linuxでは何もしない。
+	 * 上記 (in, out, err) 以外のストリームでも渡せます。
+	 */
+#ifdef _MSC_VER
+	setmode(fileno(stdin), O_BINARY);
+	setmode(fileno(stdout), O_BINARY);
+	setmode(fileno(stderr), O_BINARY);
+#endif
 
 	if (argc >= 2 && !strcmp(argv[1], "free_kanji_keys"))
 		return free_kanji_keys(argv + 2, argc - 2);

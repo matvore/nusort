@@ -5,6 +5,7 @@
 #include "keyboard.h"
 #include "mapping.h"
 #include "mapping_util.h"
+#include "packetized_out.h"
 #include "radicals.h"
 #include "residual_stroke_count.h"
 #include "romazi.h"
@@ -22,14 +23,24 @@ struct {
 	size_t alloc;
 } converted = {0};
 
-static void append_to_converted(char const *s, int len)
+static void append_to_converted(char const *s, int len,
+				const struct input_flags *f)
 {
-	GROW_ARRAY_BY(converted, len);
-	memcpy(converted.el + converted.cnt - len, s, len);
+	if (f->rpc_mode) {
+		fputc('\x02', out);
+		fputc(len, out);
+		fwrite(s, len, 1, out);
+		fflush(out);
+	}
+	else {
+		GROW_ARRAY_BY(converted, len);
+		memcpy(converted.el + converted.cnt - len, s, len);
+	}
 }
 
 static int is_done(
-	struct key_mapping_array const *mapping, Orig const so_far_input)
+	struct key_mapping_array const *mapping, Orig const so_far_input,
+	const struct input_flags *f)
 {
 	struct key_mapping const *m;
 
@@ -38,7 +49,7 @@ static int is_done(
 	if (!m)
 		return 0;
 
-	append_to_converted(m->conv, strlen(m->conv));
+	append_to_converted(m->conv, strlen(m->conv), f);
 
 	return 1;
 }
@@ -209,6 +220,8 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 	int did_delete_orig = 0;
 	int did_delete_conv = 0;
 
+	use_packetized_out = flags->rpc_mode;
+
 	while (1) {
 		int ch;
 		int pressed_bs = 0;
@@ -219,10 +232,13 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 			show_cutoff_guide(mapping, so_far_input);
 		start_window(WINDOW_INPUT_LINE);
 		if (flags->show_pending_and_converted) {
-			if (converted.cnt)
-				fwrite(converted.el, converted.cnt, 1, out);
-			if (so_far_input[0] || did_delete_orig)
-				fprintf(out, "<%s>", so_far_input);
+			add_packetized_out(converted.el, converted.cnt);
+			if (so_far_input[0] || did_delete_orig) {
+				add_packetized_out("<", 1);
+				add_packetized_out(
+					so_far_input, strlen(so_far_input));
+				add_packetized_out(">", 1);
+			}
 			if (so_far_input[0] || did_delete_orig ||
 			    converted.cnt || did_delete_conv)
 				add_window_newline();
@@ -232,16 +248,24 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 			keyboard_show_rsc_list();
 		if (flags->show_keyboard) {
 			keyboard_write();
-			fputc('\n', out);
+			add_packetized_out_null_terminated("\n");
 		}
 
 		did_delete_orig = 0;
 		did_delete_conv = 0;
 
+		dump_packetized_out();
+
+		if (flags->rpc_mode) fputc('\x01', out);
+
+		fflush(out);
+
 		ch = fgetc(in);
 
 		switch (ch) {
 		case '\x1b':
+			if (flags->rpc_mode)
+				DIE(0, "rpc_mode の入力では Esc が無効です");
 			eat_escape_sequence();
 			continue;
 		case EOF:
@@ -286,7 +310,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 		}
 
 		while (1) {
-			if (is_done(&mapping->arr, so_far_input)) {
+			if (is_done(&mapping->arr, so_far_input, flags)) {
 				memset(&so_far_input, 0, sizeof(so_far_input));
 				break;
 			}
@@ -297,7 +321,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 						      so_far_input))
 				break;
 
-			append_to_converted(so_far_input, 1);
+			append_to_converted(so_far_input, 1, flags);
 			memmove(so_far_input, so_far_input + 1,
 				sizeof(so_far_input) - 1);
 		}
@@ -305,6 +329,9 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 
 cleanup:
 	DESTROY_ARRAY(converted);
+
+	dump_packetized_out();
+	use_packetized_out = 0;
 
 	return 0;
 }

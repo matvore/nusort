@@ -53,8 +53,8 @@ static int report_output_errors(
 
 static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 {
-	FILE *act = xfopen(actual_fn, "r");
-	FILE *exp = fopen(expected_fn, "r");
+	FILE *act = xfopen(actual_fn, "rb");
+	FILE *exp = fopen(expected_fn, "rb");
 	int failed = 0;
 	int exp_opened = !!exp;
 
@@ -94,7 +94,7 @@ static void verify_contents(const char *expected_fn, int can_fix_with_cp)
 
 static void process_output(void)
 {
-	FILE *output = xfopen(actual_fn, "w");
+	FILE *output = xfopen(actual_fn, "wb");
 	int b;
 
 	while ((b = fgetc(test_output_pipe_read)) != EOF) {
@@ -136,9 +136,9 @@ static void make_pipe(int *ps)
 	if (!CreatePipe(&read, &write, NULL, 512))
 		DIE(0, "CreatePipe: %lu", GetLastError());
 
-	ps[0] = _open_osfhandle((intptr_t)read, _O_RDONLY);
+	ps[0] = _open_osfhandle((intptr_t)read, O_RDONLY | O_BINARY);
 	if (ps[0] == -1) DIE(1, "_open_osfhandle");
-	ps[1] = _open_osfhandle((intptr_t)write, 0);
+	ps[1] = _open_osfhandle((intptr_t)write, O_BINARY);
 	if (ps[1] == -1) DIE(1, "_open_osfhandle");
 }
 
@@ -181,7 +181,7 @@ void set_test_source_file(char const *fn)
 	if (!fn || !strlen(fn))
 		DIE(0, "test_source_file が無効です");
 	if (test_source_file)
-		DIE(0, "test_source_file が期に設定されています。");
+		DIE(0, "test_source_file が既に設定されています。");
 
 	for (ci = 0; fn[ci]; ci++)
 		if (fn[ci] == '\\') last_bs = ci;
@@ -203,8 +203,8 @@ static void start_test(char const *name)
 
 	make_pipe(test_output_pipe);
 
-	test_output_pipe_read = xfdopen(test_output_pipe[0], "r");
-	out = err = xfdopen(test_output_pipe[1], "w");
+	test_output_pipe_read = xfdopen(test_output_pipe[0], "rb");
+	out = err = xfdopen(test_output_pipe[1], "wb");
 
 	start_output_processor();
 
@@ -212,7 +212,7 @@ static void start_test(char const *name)
 		char *input_fn;
 		xasprintf(&input_fn, "test_input/%s.%s",
 			  test_source_file, name);
-		in = xfopen(input_fn, "r");
+		in = xfopen(input_fn, "rb");
 		FREE(input_fn);
 	}
 
@@ -279,7 +279,7 @@ static char *store_in_tmp_file(char const *str, const char *tmp_file_pref)
 	if (errno) DIE(1, "tmpnam_s");
 	fn = strdup(fnbuf);
 	if (!fn) DIE(0, "strdup: %s", fnbuf);
-	fd = open(fn, O_CREAT | O_WRONLY);
+	fd = open(fn, O_CREAT | O_WRONLY | O_BINARY);
 	if (fd == -1) DIE(1, "open: %s", fn);
 #else
 	xasprintf(&fn, "/tmp/%sXXXXXX", tmp_file_pref);
@@ -320,7 +320,7 @@ FILE *open_tmp_file_containing(char const *str)
 	FILE *f;
 
 	fn = store_in_tmp_file(str, "nusort_test_tmp_");
-	f = xfopen(fn, "r");
+	f = xfopen(fn, "rb");
 	FREE(fn);
 	return f;
 }

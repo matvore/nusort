@@ -1,6 +1,6 @@
 #include "dict_guide.h"
 #include "kanji_db.h"
-#include "streams.h"
+#include "packetized_out.h"
 #include "util.h"
 #include "windows.h"
 
@@ -26,38 +26,57 @@ struct dict_guide_el *dict_guide_add_el(void)
 
 #define RSC_LIST_WRAP_WIDTH 60
 
+static void out_stroke_count(int guide_el_i)
+{
+	unsigned sc;
+	char dig[3];
+
+	sc = guide.el[guide_el_i].u.stroke_count;
+
+	if (sc > 99) DIE(0, "画数が無効です: %u", sc);
+	sprintf(dig, "%u", sc);
+
+	add_packetized_out_null_terminated(dig);
+}
+
 static void print_kanji_line(int i)
 {
 	switch (guide.el[i].type) {
 	case DICT_GUIDE_RSC_LIST_BUSHU:
-		fprintf(out, "\x1b[%d;%dm%s\x1b[%dm",
-			ANSI_BRIGHT_MAGENTA_FG, ANSI_BOLD,
-			kanji_db()[guide.el[i].u.rsc_list_bushu_ki].c,
-			ANSI_RESET);
+		add_packetized_out_null_terminated(
+			"\x1b[" ANSI_BRIGHT_MAGENTA_FG ";" ANSI_BOLD "m");
+		add_packetized_out_null_terminated(
+			kanji_db()[guide.el[i].u.rsc_list_bushu_ki].c);
+		add_packetized_out_null_terminated("\x1b[" ANSI_RESET "m");
 		break;
 	case DICT_GUIDE_STROKE_COUNT:
-		fprintf(out, "\x1b[%dm%d\x1b[%dm",
-			ANSI_BRIGHT_YELLOW_FG,
-			guide.el[i].u.stroke_count,
-			ANSI_RESET);
+		add_packetized_out_null_terminated(
+			"\x1b[" ANSI_BRIGHT_YELLOW_FG "m");
+		out_stroke_count(i);
+		add_packetized_out_null_terminated("\x1b[" ANSI_RESET "m");
 		break;
 	case DICT_GUIDE_KANJI:
-		fputs(kanji_db()[guide.el[i].u.kanji.ki].c, out);
+		add_packetized_out_null_terminated(
+			kanji_db()[guide.el[i].u.kanji.ki].c);
 		break;
 	case DICT_GUIDE_ELLIPSIS:
-		fputs("⋯", out);
+		add_packetized_out_null_terminated("⋯");
 		break;
 	case DICT_GUIDE_BUSHU_STROKE_COUNT:
-		fprintf(out, "\x1b[%d;%dm %d画 \x1b[%dm",
-			ANSI_BRIGHT_MAGENTA_FG, ANSI_BOLD,
-			guide.el[i].u.stroke_count, ANSI_RESET);
+		add_packetized_out_null_terminated(
+			"\x1b[" ANSI_BRIGHT_MAGENTA_FG ";" ANSI_BOLD "m ");
+
+		out_stroke_count(i);
+		add_packetized_out_null_terminated("画 \x1b[" ANSI_RESET "m");
 		break;
 	case DICT_GUIDE_KUGIRI_INPUT_KEY:
-		fprintf(out, "\x1b[%dm %c \x1b[%dm", ANSI_REVERSE_VIDEO,
-			guide.el[i].u.kugiri_input_key, ANSI_RESET);
+		add_packetized_out_null_terminated(
+			"\x1b[" ANSI_REVERSE_VIDEO "m ");
+		add_packetized_out(&guide.el[i].u.kugiri_input_key, 1);
+		add_packetized_out_null_terminated(" \x1b[" ANSI_RESET "m");
 		break;
 	case DICT_GUIDE_SPACE:
-		fputc(' ', out);
+		add_packetized_out_null_terminated(" ");
 		break;
 	case DICT_GUIDE_LINE_WRAPPABLE_POINT:
 		break;
@@ -70,19 +89,20 @@ static void print_key_line(int i)
 {
 	switch (guide.el[i].type) {
 	case DICT_GUIDE_RSC_LIST_BUSHU:
-		fprintf(out, "\x1b[%d;%dm部\x1b[%dm", ANSI_BRIGHT_MAGENTA_FG,
-			ANSI_BOLD, ANSI_RESET);
+		add_packetized_out_null_terminated(
+			"\x1b[" ANSI_BRIGHT_MAGENTA_FG ";" ANSI_BOLD "m部\x1b["
+			ANSI_RESET "m");
 		break;
 	case DICT_GUIDE_STROKE_COUNT:
-		fputc(' ', out);
-		if (guide.el[i].u.stroke_count >= 10)
-			fputc(' ', out);
+		add_packetized_out("  ",
+				   guide.el[i].u.stroke_count >= 10 ? 2 : 1);
 		break;
 	case DICT_GUIDE_KANJI:
-		fprintf(out, "%c ", guide.el[i].u.kanji.input_c);
+		add_packetized_out(&guide.el[i].u.kanji.input_c, 1);
+		add_packetized_out_null_terminated(" ");
 		break;
 	case DICT_GUIDE_SPACE:
-		fputc(' ', out);
+		add_packetized_out_null_terminated(" ");
 		break;
 	case DICT_GUIDE_LINE_WRAPPABLE_POINT:
 		break;
@@ -146,14 +166,14 @@ void dict_guide_show(int include_second_line)
 		}
 
 		for (i = 0; i < last_fitting_padding; i++)
-			fputc(' ', out);
+			add_packetized_out_null_terminated(" ");
 		for (i = last_fitting_chunk; i >= amount_printed; i--)
 			print_kanji_line(i);
 		add_window_newline();
 
 		if (include_second_line) {
 			for (i = 0; i < last_fitting_padding; i++)
-				fputc(' ', out);
+				add_packetized_out_null_terminated(" ");
 			for (i = last_fitting_chunk; i >= amount_printed; i--)
 				print_key_line(i);
 			add_window_newline();

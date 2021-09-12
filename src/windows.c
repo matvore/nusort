@@ -1,4 +1,4 @@
-#include "streams.h"
+#include "packetized_out.h"
 #include "util.h"
 #include "windows.h"
 
@@ -55,10 +55,10 @@ void to_top_of_screen(void)
 		return;
 
 	if (require_clear_screen) {
-		fputs("\x1b[2J", out);
+		add_packetized_out_null_terminated("\x1b[2J");
 		require_clear_screen = 0;
 	}
-	fputs("\x1b[0;0H", out);
+	add_packetized_out_null_terminated("\x1b[0;0H");
 }
 
 void start_window(int window_id)
@@ -74,8 +74,8 @@ void add_window_newline(void)
 {
 	check_has_current_window();
 	if (enabled)
-		fputs("\x1b[0K", out);
-	fputc('\n', out);
+		add_packetized_out_null_terminated("\x1b[0K");
+	add_packetized_out_null_terminated("\n");
 	current_window_newlines++;
 }
 

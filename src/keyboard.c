@@ -2,6 +2,7 @@
 #include "dict_guide.h"
 #include "kanji_db.h"
 #include "keyboard.h"
+#include "packetized_out.h"
 #include "radicals.h"
 #include "residual_stroke_count.h"
 #include "romazi.h"
@@ -88,10 +89,7 @@ static struct {
 
 static int rsc_list_nr;
 
-void keyboard_write(void)
-{
-	fwrite(keyboard, sizeof(KEYBOARD), 1, out);
-}
+void keyboard_write(void) { add_packetized_out(keyboard, sizeof(KEYBOARD)); }
 
 static int needs_padding_space(char const *str, int len)
 {
