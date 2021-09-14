@@ -79,8 +79,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 			continue;
 		}
 
-		fprintf(err,
-			 "フラグを認識できませんでした：%s\n", argv[0]);
+		fprintf(err, "フラグを認識できませんでした：%s\n", argv[0]);
 		return 3;
 	}
 
