@@ -41,6 +41,7 @@ SHARED_OBJS = \
 	rank_coverage.o \
 	residual_stroke_count.o \
 	romazi.o \
+	packetized_out.o \
 	rsc_sort_key.o \
 	streams.o \
 	util.o \
