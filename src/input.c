@@ -17,18 +17,18 @@
 #include "util.h"
 #include "windows.h"
 
+#if HAVE_TERMIOS
 static void check_term_op(int res)
 {
 	if (res == 0)
 		return;
 
 	if (res == -1)
-		DIE(1, "ターミナルの属性を設定する際にエラーが発生しました。");
-
-	DIE(0, "規定に反する戻り値");
+		perror("ターミナルの属性を設定する際にエラーが発生しました");
+	else
+		DIE(0, "規定に反する戻り値");
 }
 
-#if HAVE_TERMIOS
 static void customize_term_attributes(struct termios t)
 {
 	t.c_lflag &= ~(ICANON | ECHO);
