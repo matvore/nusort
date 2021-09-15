@@ -73,4 +73,75 @@ int main(int argc, char **argv)
 
 		destroy_mapping(&m);
 	}
+
+	while (run_test("show_cutoff_guide", NULL)) {
+		struct mapping m = {
+			.include_kanji = 1,
+		};
+		struct input_flags f = {
+			.rpc_mode = 1,
+			.show_pending_and_converted = 1,
+			.show_cutoff_guide = 1,
+		};
+
+		expect_ok(mapping_populate(&m));
+		in = open_tmp_file_containing("");
+		expect_ok(input_impl(&m, &f));
+
+		destroy_mapping(&m);
+	}
+
+	while (run_test("show_rsc_list", NULL)) {
+		struct mapping m = {
+			.include_kanji = 1,
+		};
+		struct input_flags f = {
+			.rpc_mode = 1,
+			.show_pending_and_converted = 1,
+			.show_rsc_list = 1,
+		};
+
+		expect_ok(mapping_populate(&m));
+		in = open_tmp_file_containing("k");
+		expect_ok(input_impl(&m, &f));
+
+		destroy_mapping(&m);
+	}
+
+	while (run_test("propagate_newline", "\x01"
+					     "\x02" "\x03" "あ"
+					     "\x01"
+					     "\x02" "\x01" "\n"
+					     "\x01")) {
+		struct mapping m = {0};
+		struct input_flags f = {
+			.rpc_mode = 1,
+		};
+
+		append_mapping(&m.arr, "a", "あ");
+		in = open_tmp_file_containing("a\n");
+		expect_ok(input_impl(&m, &f));
+
+		destroy_mapping(&m);
+	}
+
+	while (run_test("process_or_propagate_backspace", "\x01"
+							  "\x04" "\x04" "<x>\n"
+							  "\x01"
+							  "\x04" "\x03" "<>\n"
+							  "\x01"
+							  "\x02" "\x01" "\b"
+							  "\x01")) {
+		struct mapping m = {0};
+		struct input_flags f = {
+			.rpc_mode = 1,
+			.show_pending_and_converted = 1,
+		};
+
+		append_mapping(&m.arr, "xa", "あ");
+		in = open_tmp_file_containing("x\b\b");
+		expect_ok(input_impl(&m, &f));
+
+		destroy_mapping(&m);
+	}
 }

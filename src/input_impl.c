@@ -23,15 +23,19 @@ struct {
 	size_t alloc;
 } converted = {0};
 
+static void send_propagated_input(char const *s, int len)
+{
+	fputc('\x02', out);
+	fputc(len, out);
+	fwrite(s, len, 1, out);
+	fflush(out);
+}
+
 static void append_to_converted(char const *s, int len,
 				const struct input_flags *f)
 {
-	if (f->rpc_mode) {
-		fputc('\x02', out);
-		fputc(len, out);
-		fwrite(s, len, 1, out);
-		fflush(out);
-	}
+	if (f->rpc_mode)
+		send_propagated_input(s, len);
 	else {
 		GROW_ARRAY_BY(converted, len);
 		memcpy(converted.el + converted.cnt - len, s, len);
@@ -264,8 +268,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 
 		switch (ch) {
 		case '\x1b':
-			if (flags->rpc_mode)
-				DIE(0, "rpc_mode の入力では Esc が無効です");
+			if (flags->rpc_mode) goto cleanup;
 			eat_escape_sequence();
 			continue;
 		case EOF:
@@ -288,6 +291,8 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 				converted.el[0] = 0;
 				converted.cnt = 0;
 			}
+			else if (flags->rpc_mode)
+				send_propagated_input("\n", 1);
 			continue;
 		}
 
@@ -307,7 +312,8 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 			converted.cnt -= cdiff;
 			memset(converted.el + converted.cnt, 0, cdiff);
 			did_delete_conv = 1;
-		}
+		} else if (flags->rpc_mode)
+			send_propagated_input("\b", 1);
 
 		while (1) {
 			if (is_done(&mapping->arr, so_far_input, flags)) {
