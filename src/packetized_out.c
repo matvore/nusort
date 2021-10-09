@@ -13,9 +13,9 @@ int use_packetized_out;
 void add_packetized_out(const char *s, unsigned len)
 {
 	while (len) {
-		if (pack_out_sz == sizeof(pack_out)) dump_packetized_out();
-
 		unsigned cplen;
+
+		if (pack_out_sz == sizeof(pack_out)) dump_packetized_out();
 
 		if (len + pack_out_sz > sizeof(pack_out))
 			cplen = sizeof(pack_out) - pack_out_sz;
