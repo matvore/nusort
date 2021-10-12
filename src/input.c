@@ -17,16 +17,15 @@
 #include "util.h"
 #include "windows.h"
 
+static int hide_term_warn;
+
 #if HAVE_TERMIOS
 static void check_term_op(int res)
 {
-	if (res == 0)
-		return;
-
-	if (res == -1)
+	if (res == 0) return;
+	if (res != -1) DIE(0, "規定に反する戻り値");
+	if (!hide_term_warn)
 		perror("ターミナルの属性を設定する際にエラーが発生しました");
-	else
-		DIE(0, "規定に反する戻り値");
 }
 
 static void customize_term_attributes(struct termios t)
@@ -75,6 +74,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 		if (!strcmp(argv[0], "--rpc-mode")) {
 			argv++;
 			argc--;
+			hide_term_warn = 1;
 			flags.rpc_mode = 1;
 			continue;
 		}
