@@ -144,4 +144,25 @@ int main(int argc, char **argv)
 
 		destroy_mapping(&m);
 	}
+
+	while (run_test("propagate_arrow_keys_1",
+			"\x01"
+			"\x02" "\x03" "\x1b[A"
+			"\x01"
+			"\x02" "\x03" "\x1b[B"
+			"\x01"
+			"\x02" "\x02" "\x1ba"
+			"\x01")) {
+		struct mapping m = {0};
+		struct input_flags f = {
+			.rpc_mode = 1,
+			.show_pending_and_converted = 1,
+		};
+
+		append_mapping(&m.arr, "xa", "あ");
+		in = open_tmp_file_containing("\x1b[A" "\x1b[B" "\x1ba");
+		expect_ok(input_impl(&m, &f));
+
+		destroy_mapping(&m);
+	}
 }

@@ -209,13 +209,22 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 	finish_window();
 }
 
-static void eat_escape_sequence(void)
+static void eat_escape_sequence(int rpc_mode)
 {
-	int c = fgetc(in);
+	char prop_buf[3] = "\x1b";
+	int prop_size;
 
-	if (c == '[')
-		/* 矢印キー */
-		fgetc(in);
+	prop_buf[1] = fgetc(in);
+
+	if (prop_buf[1] == '[') {
+		prop_size = 3;
+		/* 矢印キーなど */
+		prop_buf[2] = fgetc(in);
+	}
+	else
+		prop_size = 2;
+
+	if (rpc_mode) send_propagated_input(prop_buf, prop_size);
 }
 
 int input_impl(struct mapping *mapping, struct input_flags const *flags)
@@ -268,8 +277,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 
 		switch (ch) {
 		case '\x1b':
-			if (flags->rpc_mode) goto cleanup;
-			eat_escape_sequence();
+			eat_escape_sequence(flags->rpc_mode);
 			continue;
 		case EOF:
 			if (ferror(in)) {

@@ -12,6 +12,8 @@ int use_packetized_out;
 
 void add_packetized_out(const char *s, unsigned len)
 {
+	if (len == -1) len = strlen(s);
+
 	while (len) {
 		unsigned cplen;
 
