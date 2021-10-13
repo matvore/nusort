@@ -100,7 +100,8 @@ test: \
 	mapping_util_test \
 	radicals_test \
 	rank_coverage_test \
-	romazi_test
+	romazi_test \
+	rpc_mode_test
 
 clean:
 	rm -f *_test_bin actual_test_out/*.out *.o

@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 			"\x01"
 			"\x02" "\x03" "\x1b[B"
 			"\x01"
-			"\x02" "\x02" "\x1ba"
+			"\x02" "\x02" "\x1b" "a"
 			"\x01")) {
 		struct mapping m = {0};
 		struct input_flags f = {
@@ -160,7 +160,21 @@ int main(int argc, char **argv)
 		};
 
 		append_mapping(&m.arr, "xa", "あ");
-		in = open_tmp_file_containing("\x1b[A" "\x1b[B" "\x1ba");
+		in = open_tmp_file_containing("\x1b[A" "\x1b[B" "\x1b" "a");
+		expect_ok(input_impl(&m, &f));
+
+		destroy_mapping(&m);
+	}
+
+	while (run_test("no_extra_output_after_esc_eof", "\x01")) {
+		struct mapping m = {0};
+		struct input_flags f = {
+			.rpc_mode = 1,
+			.show_pending_and_converted = 1,
+		};
+
+		append_mapping(&m.arr, "xa", "あ");
+		in = open_tmp_file_containing("\x1b");
 		expect_ok(input_impl(&m, &f));
 
 		destroy_mapping(&m);
