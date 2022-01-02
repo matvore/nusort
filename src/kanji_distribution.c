@@ -223,10 +223,7 @@ void kanji_distribution_set_preexisting_convs(
 	struct kanji_distribution *kd, struct key_mapping_array const *m,
 	int block_already_used)
 {
-	int i;
 	struct used_bit_map used = {0};
-
-	Conv *preexisting_convs = xcalloc(m->cnt, sizeof(Conv));
 
 	if (!kd->rsc_range_end)
 		kd->rsc_range_end = kanji_db_nr();
@@ -247,35 +244,8 @@ void kanji_distribution_set_preexisting_convs(
 		fill_used_bit_map(m, &used);
 	fill_unused_kanji_origs(kd, &used);
 
-	for (i = 0; i < m->cnt; i++)
-		memcpy(preexisting_convs[i], m->el[i].conv, sizeof(Conv));;
-
-	QSORT(, preexisting_convs, m->cnt,
-	      strcmp(preexisting_convs[a], preexisting_convs[b]) < 0);
-
-	if (!bytes_are_zero(&kd->available, sizeof(kd->available)))
-		DIE(0, "!bytes_are_zero");
-
-	for (i = 0; i < kanji_db_nr(); i++) {
-		const struct kanji_entry *e = kanji_db() + i;
-		unsigned rsc_index = kanji_db_rsc_index(e);
-		Conv *prec = NULL;
-
-		if (rsc_index >= kd->rsc_range_end)
-			continue;
-		if (rsc_index < kd->rsc_range_start)
-			continue;
-
-		BSEARCH(prec, preexisting_convs, m->cnt, strcmp(*prec, e->c));
-
-		if (prec)
-			continue;
-
-		GROW_ARRAY_BY(kd->available, 1);
-		kd->available.el[kd->available.cnt - 1] = e;
-	}
-
-	FREE(preexisting_convs);
+	add_available_kanji(
+		&kd->available, m, kd->rsc_range_start, kd->rsc_range_end);
 
 	QSORT(, kd->available.el, kd->available.cnt,
 	      kd->available.el[a]->ranking < kd->available.el[b]->ranking);

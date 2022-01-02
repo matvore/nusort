@@ -3,6 +3,7 @@
 #include "kanji_distribution.h"
 #include "mapping.h"
 #include "mapping_util.h"
+#include "residual_stroke_count.h"
 #include "romazi.h"
 #include "streams.h"
 #include "util.h"
@@ -101,6 +102,7 @@ void init_mapping_config_for_cli_flags(struct mapping *m)
 	if (!bytes_are_zero(m, sizeof(*m)))
 		DIE(0, "mapping_config not initialized to zero bytes");
 	m->include_kanji = 1;
+	m->resid_sc_3rd_key = 1;
 }
 
 int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *m)
@@ -113,6 +115,12 @@ int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *m)
 	}
 	if (!strcmp((*argv)[0], "--no-kanji")) {
 		m->include_kanji = 0;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+	if (!strcmp((*argv)[0], "--recurs-ksort")) {
+		m->resid_sc_3rd_key = 0;
 		(*argv)++;
 		(*argc)--;
 		return 1;
@@ -165,11 +173,78 @@ int mapping_populate(struct mapping *m)
 	return sort_and_validate_no_conflicts(&m->arr);
 }
 
+static void lazy_pop_rad_sc(
+	struct mapping *m,
+	char const *key_prefix,
+	unsigned rsc_ndx_lo, unsigned rsc_ndx_hi)
+{
+	struct kanji_distribution dist = {
+		.rsc_range_start = rsc_ndx_lo,
+		.rsc_range_end = rsc_ndx_hi,
+	};
+
+	get_kanji_codes(
+		key_prefix, m->dist.total_chars, &dist, &m->arr, m->six_is_rh);
+
+	add_cutoffs(m, key_prefix, &dist);
+
+	kanji_distribution_destroy(&dist);
+}
+
+#define RESID_SC_CELLS 20
+#define RESID_SC_CELL_CHARS "qwertyuiopasdfghjkl;"
+
+static void lazy_pop_sc(
+	struct mapping *m, char const *key_prefix,
+	unsigned rsc_ndx_lo, unsigned rsc_ndx_hi)
+{
+	unsigned ki;
+	struct {
+		uint8_t used;
+		char c[MAPPABLE_CHAR_COUNT / 2];
+	} ergo_sorted_4th[RESID_SC_CELLS], *fourth;
+	int sc;
+	char suff[3];
+	struct kanji_entries avail = {0};
+
+	add_available_kanji(&avail, &m->arr, rsc_ndx_lo, rsc_ndx_hi);
+	QSORT(, avail.el, avail.cnt,
+	      avail.el[a]->ranking < avail.el[b]->ranking);
+
+	for (sc = 0; sc < RESID_SC_CELLS; sc++) {
+		fourth = ergo_sorted_4th + sc;
+		fourth->used = 0;
+		memcpy(fourth->c, KEY_INDEX_TO_CHAR_MAP, sizeof(fourth->c));
+		QSORT(, fourth->c, sizeof(fourth->c),
+		      ergonomic_lt_same_first_key(RESID_SC_CELL_CHARS[sc],
+						  fourth->c[a], fourth->c[b],
+						  m->six_is_rh));
+	}
+
+	for (ki = 0; ki < avail.cnt; ki++) {
+		sc = residual_stroke_count(avail.el[ki]);
+		if (sc > 0) sc--;
+		if (sc >= RESID_SC_CELLS) sc = RESID_SC_CELLS-1;
+
+		suff[0] = RESID_SC_CELL_CHARS[sc];
+
+		fourth = ergo_sorted_4th + sc;
+		if (fourth->used >= sizeof(fourth->c))
+			DIE(0, "入力コードがたりない: %s", key_prefix);
+
+		suff[1] = fourth->c[fourth->used++];
+		suff[2] = 0;
+		add_code(&m->arr, key_prefix, suff, avail.el[ki]->c);
+	}
+
+	DESTROY_ARRAY(avail);
+}
+
 int mapping_lazy_populate(struct mapping *m, char const *key_prefix)
 {
 	int key_index = char_to_key_index(key_prefix[0]);
 	struct line_stats const *line_a;
-	struct kanji_distribution dist = {0};
+	unsigned rsc_ndx_lo, rsc_ndx_hi;
 
 	if (!m->include_kanji)
 		return 0;
@@ -184,21 +259,18 @@ int mapping_lazy_populate(struct mapping *m, char const *key_prefix)
 		DIE(0, "接頭辞の長さが2ではない: %s", key_prefix);
 
 	line_a = line_stats_for_first_key_i(&m->dist, key_index);
-	if (!line_a)
-		return 0;
+	if (!line_a) return 0;
 
-	dist.rsc_range_start = kanji_db_rsc_index(line_a->cutoff);
+	rsc_ndx_lo = kanji_db_rsc_index(line_a->cutoff);
 	if (line_a - m->dist.line_stats == m->dist.line_stats_nr - 1)
-		dist.rsc_range_end = kanji_db_nr();
+		rsc_ndx_hi = kanji_db_nr();
 	else
-		dist.rsc_range_end = kanji_db_rsc_index((line_a + 1)->cutoff);
+		rsc_ndx_hi = kanji_db_rsc_index((line_a + 1)->cutoff);
 
-	get_kanji_codes(key_prefix, m->dist.total_chars, &dist, &m->arr,
-		        m->six_is_rh);
-
-	add_cutoffs(m, key_prefix, &dist);
-
-	kanji_distribution_destroy(&dist);
+	if (m->resid_sc_3rd_key)
+		lazy_pop_sc(m, key_prefix, rsc_ndx_lo, rsc_ndx_hi);
+	else
+		lazy_pop_rad_sc(m, key_prefix, rsc_ndx_lo, rsc_ndx_hi);
 
 	return sort_and_validate_no_conflicts(&m->arr);
 }

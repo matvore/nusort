@@ -44,11 +44,7 @@ struct kanji_distribution {
 	 */
 	uint16_t rsc_range_start, rsc_range_end;
 
-	struct {
-		struct kanji_entry const **el;
-		size_t cnt;
-		size_t alloc;
-	} available;
+	struct kanji_entries available;
 
 	struct {
 		char (*el)[2];

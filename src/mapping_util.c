@@ -6,6 +6,43 @@
 #include "streams.h"
 #include "util.h"
 
+void add_available_kanji(
+	struct kanji_entries *dest, struct key_mapping_array const *unavail,
+	unsigned rsc_range_start, unsigned rsc_range_end)
+{
+	Conv *unavail_convs, *prec;
+	struct kanji_entry const *e;
+	unsigned rsc_index, convi, ki;
+
+	unavail_convs = xcalloc(unavail->cnt, sizeof(Conv));
+
+	for (convi = 0; convi < unavail->cnt; convi++)
+		memcpy(unavail_convs[convi], unavail->el[convi].conv,
+		       sizeof(Conv));
+
+	QSORT(, unavail_convs, unavail->cnt,
+	      strcmp(unavail_convs[a], unavail_convs[b]) < 0);
+
+	if (!bytes_are_zero(dest, sizeof(*dest)))
+		DIE(0, "!bytes_are_zero");
+
+	for (ki = 0; ki < kanji_db_nr(); ki++) {
+		e = kanji_db() + ki;
+
+		rsc_index = kanji_db_rsc_index(e);
+		if (rsc_index >= rsc_range_end) continue;
+		if (rsc_index < rsc_range_start) continue;
+
+		BSEARCH(prec, unavail_convs, unavail->cnt, strcmp(*prec, e->c));
+		if (prec) continue;
+
+		GROW_ARRAY_BY(*dest, 1);
+		dest->el[dest->cnt - 1] = e;
+	}
+
+	free(unavail_convs);
+}
+
 int code_cmp(char const *a, char const *b)
 {
 	size_t a_len = strlen(a);

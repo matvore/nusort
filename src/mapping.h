@@ -10,6 +10,13 @@ struct mapping {
 	unsigned six_is_rh : 1;
 	unsigned include_kanji : 1;
 
+	/*
+	 * 三打鍵以上のコードの生成を影響します。
+	 * オンの場合: 三打鍵目が部首外画数に該当する
+	 * オフの場合: 三打鍵目が部首続いて部首外画数 (rsc) の順番によって決まる
+	 */
+	unsigned resid_sc_3rd_key : 1;
+
 	struct key_mapping_array arr;
 	struct kanji_distribution dist;
 
@@ -48,7 +55,7 @@ int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *);
 /* エラーの時は非0を返す */
 int mapping_populate(struct mapping *);
 
-/* Returns 0 on success. */
+/* エラーの時は非0を返す */
 int mapping_lazy_populate(struct mapping *, char const *key_prefix);
 
 void destroy_mapping(struct mapping *);

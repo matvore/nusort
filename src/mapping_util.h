@@ -29,6 +29,15 @@ struct key_mapping_array {
 	size_t alloc;
 };
 
+struct kanji_entries {
+	struct kanji_entry const **el;
+	size_t cnt, alloc;
+};
+
+void add_available_kanji(
+	struct kanji_entries *dest, struct key_mapping_array const *unavail,
+	unsigned rsc_range_start, unsigned rsc_range_end);
+
 /*
  * ２つの入力コードを比較します。
  *

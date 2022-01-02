@@ -100,6 +100,7 @@ test: \
 	mapping_util_test \
 	radicals_test \
 	rank_coverage_test \
+	resid_sc_3rd_key_test \
 	romazi_test \
 	rpc_mode_test
 
