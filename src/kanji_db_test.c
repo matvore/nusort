@@ -263,4 +263,8 @@ int main(void)
 		if (count != expected)
 			fprintf(out, "%d != %d\n", count, expected);
 	}
+
+	while (run_test("mushi_no_shi_radical", "")) {
+		verify_rsc_order("見", "視", "覚");
+	}
 }
