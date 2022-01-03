@@ -5,12 +5,19 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	while (run_test("error_for_non_number_kanji_count", "正の整数ではない: 10a\n")) {
+	while (run_test("error_for_non_number_kanji_count",
+			"正の整数かゼロが必要です: 10a\n")) {
 		const char *argv[] = {"10a"};
 		expect_fail(kanji_db_chart(argv, 1));
 	}
 
-	while (run_test("error_for_negative_kanji_count", "正の整数ではない: -2\n")) {
+	while (run_test("no_output_for_zero_kanji_count", "")) {
+		const char *argv[] = {"0"};
+		expect_ok(kanji_db_chart(argv, 1));
+	}
+
+	while (run_test("error_for_negative_kanji_count",
+			"フラグの形式が無効です: -2\n")) {
 		const char *argv[] = {"-2"};
 		expect_fail(kanji_db_chart(argv, 1));
 	}
@@ -28,5 +35,10 @@ int main(void)
 	while (run_test("200_kanji", NULL)) {
 		const char *argv[] = {"200"};
 		expect_ok(kanji_db_chart(argv, 1));
+	}
+
+	while (run_test("table_view", NULL)) {
+		const char *argv[] = {"-t", "200"};
+		expect_ok(kanji_db_chart(argv, 2));
 	}
 }
