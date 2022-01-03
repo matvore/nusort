@@ -837,5 +837,7 @@ int main(void)
 			if (strchr("-=[]'", m.arr.el[i].orig[1]))
 				fprintf(out, "%s\n", m.arr.el[i].orig);
 		}
+
+		destroy_mapping(&m);
 	}
 }
