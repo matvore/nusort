@@ -214,6 +214,8 @@ static void check_limit_basic_kanji_per_line(int key_index)
 		}
 	}
 
+	destroy_mapping(&m);
+
 	for (i = 0; i < 128; i++) {
 		unsigned basic_count = basic_kanji_per_first_char[i];
 		if (basic_count > 10)

@@ -61,6 +61,7 @@ int print_last_rank_contained(char const *const *argv, int argc)
 	size_t i;
 	struct romazi_config romazi_config = {0};
 	struct key_mapping_array romazi_m = {0};
+	int res = 0;
 
 	memset(&flags, 0, sizeof(flags));
 	init_romazi_config_for_cli_flags(&romazi_config);
@@ -97,7 +98,7 @@ int print_last_rank_contained(char const *const *argv, int argc)
 				&argc, &argv, &kanji_distribution)) {
 			fprintf(err,
 				 "フラグを認識できませんでした：%s\n", argv[0]);
-			return 3;
+			res = 3;
 		}
 	}
 
@@ -106,10 +107,9 @@ int print_last_rank_contained(char const *const *argv, int argc)
 		&kanji_distribution, &romazi_m, 1);
 
 	if (argc) {
-		int res = kanji_distribution_parse_user_cutoff(
+		res = kanji_distribution_parse_user_cutoff(
 			&kanji_distribution, argv, argc);
-		if (res)
-			return res;
+		if (res) goto cleanup;
 	} else {
 		kanji_distribution_auto_pick_cutoff(&kanji_distribution);
 	}
@@ -120,8 +120,9 @@ int print_last_rank_contained(char const *const *argv, int argc)
 		print_line_stats(&kanji_distribution.line_stats[i]);
 	print_stats_summary(&kanji_distribution);
 
+cleanup:
 	kanji_distribution_destroy(&kanji_distribution);
 	DESTROY_ARRAY(romazi_m);
 
-	return 0;
+	return res;
 }
