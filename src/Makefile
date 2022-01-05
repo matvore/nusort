@@ -12,7 +12,8 @@ CFLAGS = \
 	-Wpointer-arith \
 	-Wstrict-prototypes \
 	-Wunused \
-	-Wvla
+	-Wvla \
+	$(EXTRA_CFLAGS)
 
 ALL_CFLAGS=-pthread $(CFLAGS)
 
