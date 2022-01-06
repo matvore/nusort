@@ -130,21 +130,26 @@ do { \
 #define BSEARCH_INDEX(index, cnt, cmp_prelude, cmp) do { \
 	size_t min = 0, max = (cnt); \
 	int cmp_res; \
-	while (min != max) { \
-		(index) = (max + min) / 2; \
-		cmp_prelude; \
-		cmp_res = (cmp); \
-		if (!cmp_res) \
-			break; \
-		if (cmp_res < 0) \
-			min = (index) + 1; \
-		else \
-			max = (index); \
+	if (!max) { \
+		(index) = -1; \
 	} \
-	if (cmp_res > 0) \
-		(index) = ~(index); \
-	else if (cmp_res < 0) \
-		(index) = ~((index) + 1); \
+	else { \
+		do { \
+			(index) = (max + min) / 2; \
+			cmp_prelude; \
+			cmp_res = (cmp); \
+			if (!cmp_res) \
+				break; \
+			if (cmp_res < 0) \
+				min = (index) + 1; \
+			else \
+				max = (index); \
+		} while (min != max); \
+		if (cmp_res > 0) \
+			(index) = ~(index); \
+		else if (cmp_res < 0) \
+			(index) = ~((index) + 1); \
+	} \
 } while (0)
 
 #define BSEARCH(e, el, cnt, cmp) do { \
