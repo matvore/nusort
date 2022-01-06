@@ -14,7 +14,8 @@ static struct {
 
 void dict_guide_clear(void)
 {
-	memset(guide.el, 0, sizeof(*guide.el) * guide.cnt);
+	/* memset にヌルポインターを渡すのは未定義行動 */
+	if (guide.cnt) memset(guide.el, 0, sizeof(*guide.el) * guide.cnt);
 	guide.cnt = 0;
 }
 
