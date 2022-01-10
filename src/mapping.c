@@ -191,8 +191,8 @@ static void lazy_pop_rad_sc(
 	kanji_distribution_destroy(&dist);
 }
 
-#define RESID_SC_CELLS 20
-#define RESID_SC_CELL_CHARS "qwertyuiopasdfghjkl;"
+#define RESID_SC_CELLS 14
+#define RESID_SC_CELL_CHARS "qwertyuiopasdf"
 
 static void lazy_pop_sc(
 	struct mapping *m, char const *key_prefix,
