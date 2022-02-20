@@ -350,13 +350,3 @@ int ergonomic_lt(const char *a, const char *b, int six_is_rh)
 
 	return ergonomic_lt_same_first_key(a[0], a[1], b[1], six_is_rh);
 }
-
-int is_central_kanji_char(char c)
-{
-	switch (c) {
-	case '-': case '=': case '[': case ']': case '\'':
-		return 0;
-	default:
-		return 1;
-	}
-}

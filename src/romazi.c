@@ -94,6 +94,7 @@ void init_romazi_config_for_cli_flags(struct romazi_config *config)
 
 	config->include_kanji_numerals = 1;
 	config->classic_wo = 1;
+	config->kakko = 's';
 }
 
 int parse_romazi_flags(
@@ -120,6 +121,18 @@ int parse_romazi_flags(
 	}
 	if (!strcmp((*argv)[0], "--romazi-optimize-keystrokes")) {
 		config->optimize_keystrokes = 1;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+	if (!strcmp((*argv)[0], "--pack-kakko")) {
+		config->kakko = 'p';
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+	if (!strcmp((*argv)[0], "--no-kakko")) {
+		config->kakko = 0;
 		(*argv)++;
 		(*argc)--;
 		return 1;
@@ -371,4 +384,63 @@ void get_romazi_codes(
 	append_mapping(c, "XXC", "ヹ");
 	append_mapping(c, "XX,", "ヸ");
 	append_mapping(c, "XX.", "ヺ");
+
+	switch (config->kakko) {
+	case 0: break;
+	case 'p':
+		append_mapping(c, "]1", "‘");
+		append_mapping(c, "]2", "’");
+		append_mapping(c, "]3", "“");
+		append_mapping(c, "]4", "”");
+		append_mapping(c, "]q", "〈");
+		append_mapping(c, "]w", "〉");
+		append_mapping(c, "]e", "《");
+		append_mapping(c, "]r", "》");
+		append_mapping(c, "]a", "「");
+		append_mapping(c, "]s", "」");
+		append_mapping(c, "]d", "『");
+		append_mapping(c, "]f", "』");
+		append_mapping(c, "]z", "【");
+		append_mapping(c, "]x", "】");
+		append_mapping(c, "]c", "〔");
+		append_mapping(c, "]v", "〕");
+		append_mapping(c, "]y", "〖");
+		append_mapping(c, "]u", "〗");
+		append_mapping(c, "]h", "〘");
+		append_mapping(c, "]j", "〙");
+		append_mapping(c, "]n", "〝");
+		append_mapping(c, "]m", "〟");
+		append_mapping(c, "]7", "｟");
+		append_mapping(c, "]8", "｠");
+		break;
+	case 's':
+		append_mapping(c, "[q", "‘");
+		append_mapping(c, "]q", "’");
+		append_mapping(c, "[a", "“");
+		append_mapping(c, "]a", "”");
+		append_mapping(c, "[e", "〈");
+		append_mapping(c, "]e", "〉");
+		append_mapping(c, "[r", "《");
+		append_mapping(c, "]r", "》");
+		append_mapping(c, "[s", "「");
+		append_mapping(c, "]s", "」");
+		append_mapping(c, "[d", "『");
+		append_mapping(c, "]d", "』");
+		append_mapping(c, "[f", "【");
+		append_mapping(c, "]f", "】");
+		append_mapping(c, "[w", "〔");
+		append_mapping(c, "]w", "〕");
+		append_mapping(c, "[v", "〖");
+		append_mapping(c, "]v", "〗");
+		append_mapping(c, "[c", "〘");
+		append_mapping(c, "]c", "〙");
+		append_mapping(c, "[g", "〝");
+		append_mapping(c, "]g", "〟");
+		append_mapping(c, "[x", "｟");
+		append_mapping(c, "]x", "｠");
+		break;
+	default:
+		DIE(0, "括弧の入力設定が無効です: %d (%c)",
+		    (int) config->kakko, config->kakko);
+	}
 }

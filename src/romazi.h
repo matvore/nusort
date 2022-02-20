@@ -32,6 +32,17 @@ struct romazi_config {
 	 * （例えば「Q」と「V」）を一打鍵のローマ字に使います。
 	 */
 	unsigned optimize_keystrokes : 1;
+
+	/*
+	 * \0: 括弧がマッピングに含まれません。
+	 *
+	 * 's'pread: 括弧やクォートを "[?" と "]?" で入力する。"?"の打鍵は左手に
+	 * なるので入力が楽です
+	 *
+	 * 'p'ack: 括弧やクォートを "]?" のみで入力する。めずらしい括弧はいくつか
+	 * 打ちづらくなります。
+	 */
+	char kakko;
 };
 
 void init_romazi_config_for_cli_flags(struct romazi_config *config);

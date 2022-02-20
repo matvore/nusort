@@ -16,6 +16,13 @@ int parse_kanji_distribution_flags(
 		return 1;
 	}
 
+	if (!strcmp((*argv)[0], "--allow-left-bracket-key1")) {
+		kd->allow_left_bracket_key1 = 1;
+		(*argv)++;
+		(*argc)--;
+		return 1;
+	}
+
 	if (!strcmp((*argv)[0], "--busy-right-pinky")) {
 		kd->busy_right_pinky = 1;
 		(*argv)++;
@@ -75,6 +82,20 @@ static int maybe_add_short_shifted_code(
 	return 1;
 }
 
+static int is_central_kanji_char(char c)
+{
+	switch (c) {
+	case '[': DIE(0, "この関数では判定できない");
+	case '-': case '=': case ']': case '\'': return 0;
+	case ';': case ',': case '.': case '/': return 1;
+	}
+
+	if (c >= 'a' && c <= 'z') return 1;
+	if (c >= '0' && c <= '9') return 1;
+
+	DIE(0, "予期しない字: %c (%d)", c, (int) c);
+}
+
 static void fill_unused_kanji_origs(
 	struct kanji_distribution *kd, struct used_bit_map const *used)
 {
@@ -90,16 +111,20 @@ static void fill_unused_kanji_origs(
 		struct line_stats *s;
 		char key1_char = KEY_INDEX_TO_CHAR_MAP[key1];
 
-		if (!is_central_kanji_char(key1_char))
+		if (key1_char == '[') {
+			if (!kd->allow_left_bracket_key1) continue;
+		}
+		else if (!is_central_kanji_char(key1_char))
 			continue;
 
 		for (key2 = 0; key2 < KANJI_KEY_COUNT; key2++) {
 			int last_index = kd->unused_kanji_origs.cnt;
 			char key2_char = KEY_INDEX_TO_CHAR_MAP[key2];
 
-			if (!is_central_kanji_char(key2_char) &&
-			    !kd->busy_right_pinky)
-				continue;
+			if (!kd->busy_right_pinky) {
+				if (key2_char == '[') continue;
+				if (!is_central_kanji_char(key2_char)) continue;
+			}
 
 			if (used->m[key1 * MAPPABLE_CHAR_COUNT + key2])
 				continue;

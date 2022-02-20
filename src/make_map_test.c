@@ -23,43 +23,49 @@ int main(void)
 	}
 
 	while (run_test("six_is_rh", NULL)) {
-		char const *argv[] = {"-s", "--short-shifted-codes"};
-		expect_ok(make_map(argv, 2));
+		char const *argv[] = {
+			"-s", "--short-shifted-codes", "--no-kakko",
+		};
+		expect_ok(make_map(argv, 3));
 	}
 
 	while (run_test("no_kanji", NULL)) {
 		char const *argv[] = {
-			"--no-kanji",
-			"--short-shifted-codes",
-		};
-		expect_ok(make_map(argv, 2));
-	}
-
-	while (run_test("no_classic_wo", NULL)) {
-		char const *argv[] = {
-			"--no-classic-wo",
+			"--no-kakko",
 			"--no-kanji",
 			"--short-shifted-codes",
 		};
 		expect_ok(make_map(argv, 3));
 	}
 
-	while (run_test("hiragana_wo_key", NULL)) {
+	while (run_test("no_classic_wo", NULL)) {
 		char const *argv[] = {
-			"--hiragana-wo-key", "=",
+			"--no-kakko",
+			"--no-classic-wo",
 			"--no-kanji",
 			"--short-shifted-codes",
 		};
 		expect_ok(make_map(argv, 4));
 	}
 
+	while (run_test("hiragana_wo_key", NULL)) {
+		char const *argv[] = {
+			"--no-kakko",
+			"--hiragana-wo-key", "=",
+			"--no-kanji",
+			"--short-shifted-codes",
+		};
+		expect_ok(make_map(argv, 5));
+	}
+
 	while (run_test("conflict_in_romazi_map", "コード衝突: w->を と wa->わ\n")) {
 		char const *argv[] = {
+			"--no-kakko",
 			"--hiragana-wo-key", "w",
 			"--no-classic-wo",
 			"--short-shifted-codes",
 		};
-		expect_fail(make_map(argv, 3));
+		expect_fail(make_map(argv, 5));
 	}
 	return 0;
 }

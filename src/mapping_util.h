@@ -79,6 +79,4 @@ int ergonomic_lt(const char *a, const char *b, int six_is_rh);
 int ergonomic_lt_same_first_key(
 	char first_key, char second_a, char second_b, int six_is_rh);
 
-int is_central_kanji_char(char c);
-
 #endif
