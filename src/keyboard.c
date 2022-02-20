@@ -149,8 +149,8 @@ void keyboard_update(
 			continue;
 
 		str_bytes = strlen(m->conv);
-		if (str_bytes > 6)
-			DIE(0, "conv が長すぎます(%d): %s", str_bytes, m->conv);
+		if (str_bytes > 6) continue;
+			//DIE(0, "conv が長すぎます(%d): %s", str_bytes, m->conv);
 
 		if (str_bytes == 6 && (m->conv[5] !=
 				       LAST_BYTE_OF_COMBINING_DAKUTEN)) {

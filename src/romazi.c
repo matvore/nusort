@@ -151,6 +151,10 @@ static void append_secondary_i_retsu_mappings(
 	o[2] = 'a';
 	memcpy(c + 3, "ゃ", 3);
 	append_mapping_auto_kata(codes, o, c);
+	o[2] = 's';
+	memcpy(c + 6, "う", 3);
+	append_mapping_auto_kata(codes, o, c);
+	c[6] = 0;
 
 	o[2] = 'i';
 	memcpy(c + 3, "ぃ", 3);
@@ -159,6 +163,10 @@ static void append_secondary_i_retsu_mappings(
 	o[2] = 'u';
 	memcpy(c + 3, "ゅ", 3);
 	append_mapping_auto_kata(codes, o, c);
+	o[2] = 'y';
+	memcpy(c + 6, "う", 3);
+	append_mapping_auto_kata(codes, o, c);
+	c[6] = 0;
 
 	o[2] = 'e';
 	memcpy(c + 3, "ぇ", 3);
@@ -166,6 +174,9 @@ static void append_secondary_i_retsu_mappings(
 
 	o[2] = 'o';
 	memcpy(c + 3, "ょ", 3);
+	append_mapping_auto_kata(codes, o, c);
+	o[2] = 'p';
+	memcpy(c + 6, "う", 3);
 	append_mapping_auto_kata(codes, o, c);
 }
 

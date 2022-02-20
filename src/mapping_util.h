@@ -16,7 +16,7 @@
 
 /* ヌル終端の入力コード */
 typedef char Orig[5];
-typedef char Conv[7];
+typedef char Conv[10];
 
 struct key_mapping {
 	Orig orig;
