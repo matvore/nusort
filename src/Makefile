@@ -38,6 +38,7 @@ SHARED_OBJS = \
 	make_map.o \
 	mapping.o \
 	mapping_util.o \
+	practice_set.o \
 	radicals.o \
 	rank_coverage.o \
 	residual_stroke_count.o \
@@ -99,6 +100,7 @@ test: \
 	make_map_test \
 	mapping_test \
 	mapping_util_test \
+	practice_set_test \
 	radicals_test \
 	rank_coverage_test \
 	resid_sc_3rd_key_test \

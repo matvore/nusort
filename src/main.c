@@ -32,6 +32,7 @@ static const struct {
 	{&print_last_rank_contained, "last_rank_contained", " [-c] [-s] [-k] [-n] CUTOFF_KANJI_1..CUTOFF_KANJI_n"},
 	{&longest_rsc_block, "longest_rsc_block", ""},
 	{&make_map, "make_map", ""},
+	{&practice_set, "practice_set", ""},
 	{&rsc_sort_key, "rsc_sort_key", ""},
 	{0},
 };
