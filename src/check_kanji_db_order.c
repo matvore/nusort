@@ -329,6 +329,9 @@ static int check_order(void)
 	for (i = 0; i < largest_rsc_sort_key(); i++) {
 		struct kanji_entry const *k = kanji_db() + min_keys[i].ki;
 
+		if (min_keys[i].ki >= 0xffff)
+			DIE(0, "並べ替えキー %zu に該当する漢字がない?", i);
+
 		if (i > 0)
 			adjust_consecutive_key_info(
 				&min_keys[i-1].key, &min_keys[i].key, k->c);
@@ -384,6 +387,9 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	GROW_ARRAY_BY(sort_infos, 1);
 	strncpy(last_si()->c, "⺍", sizeof(last_si()->c));
 	add_key(0x1e, 0x00);
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, "夠", sizeof(last_si()->c));
+	add_key(0x25, 0x08);
 
 	XFCLOSE(db_stream);
 

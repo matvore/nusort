@@ -38,7 +38,7 @@ int main(void)
 	}
 
 	while (run_test("table_view", NULL)) {
-		const char *argv[] = {"-t", "200"};
+		const char *argv[] = {"-T", "200"};
 		expect_ok(kanji_db_chart(argv, 2));
 	}
 }

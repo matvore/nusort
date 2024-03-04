@@ -202,8 +202,6 @@ static unsigned find_best_cutoff_for_rank_target(
 
 	for (ki = start_from_kanji; ki < kd->available.cnt; ki++) {
 		int next_offset;
-		if (kd->available.el[ki]->ranking == 0x3fff)
-			continue;
 		next_offset = rank_coverage_add_kanji(
 			kd->available.el[ki]->ranking);
 		if (!kd->available.el[ki + 1]->cutoff_type)
