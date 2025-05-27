@@ -396,6 +396,9 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	GROW_ARRAY_BY(sort_infos, 1);
 	strncpy(last_si()->c, "查", sizeof(last_si()->c));
 	add_key(0x4c, 0x05);
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, "跺", sizeof(last_si()->c));
+	add_key(0x9e, 0x06);
 
 	XFCLOSE(db_stream);
 
