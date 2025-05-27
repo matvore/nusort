@@ -17,8 +17,16 @@ struct kanji_entry {
 
 	unsigned cutoff_type : 2;
 
-	/* 追加する予定のあるフィールド：
+	/* [1, 4]	の場合、JIS 第 X 水準
+	   0		の場合、JIS に含まれていない */
 	unsigned jis_suijun : 3;
+
+	/* 1: 常用國字標準字体
+	 * 2: 次常用國字標準字體
+	 * 0: 台湾教育部に国字として認まっていない */
+	unsigned taiwan_kib: 2;
+
+	/* 追加する予定のあるフィールド：
 	char zh_simplified[5];
 	const char *zh_traditional;
 	*/
