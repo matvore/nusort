@@ -340,7 +340,7 @@ int main(void)
 			struct kanji_entry const *cutoff =
 				kd.line_stats[line].cutoff;
 			int i = kanji_db_rsc_index(cutoff);
-			if (i >= 3020) fprintf(out, "%s %d\n", cutoff->c, i);
+			if (i >= 3030) fprintf(out, "%s %d\n", cutoff->c, i);
 		}
 
 		kanji_distribution_destroy(&kd);
