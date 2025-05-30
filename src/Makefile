@@ -20,34 +20,34 @@ ALL_CFLAGS=-pthread $(CFLAGS)
 all: test nusort
 
 SHARED_OBJS = \
-	chars.o \
-	check_kanji_db_order.o \
-	dict_guide.o \
-	free_kanji_keys.o \
-	h2k.o \
-	input.o \
-	input_impl.o \
-	kana_stats.o \
-	kana_stats_util.o \
-	kanji_db.o \
-	kanji_db_chart.o \
-	kanji_distribution.o \
-	keyboard.o \
-	last_rank_contained.o \
-	longest_rsc_block.o \
-	make_map.o \
-	mapping.o \
-	mapping_util.o \
-	practice_set.o \
-	radicals.o \
-	rank_coverage.o \
-	residual_stroke_count.o \
-	romazi.o \
-	packetized_out.o \
-	rsc_sort_key.o \
-	streams.o \
-	util.o \
-	windows.o
+	obj/chars.o \
+	obj/check_kanji_db_order.o \
+	obj/dict_guide.o \
+	obj/free_kanji_keys.o \
+	obj/h2k.o \
+	obj/input.o \
+	obj/input_impl.o \
+	obj/kana_stats.o \
+	obj/kana_stats_util.o \
+	obj/kanji_db.o \
+	obj/kanji_db_chart.o \
+	obj/kanji_distribution.o \
+	obj/keyboard.o \
+	obj/last_rank_contained.o \
+	obj/longest_rsc_block.o \
+	obj/make_map.o \
+	obj/mapping.o \
+	obj/mapping_util.o \
+	obj/practice_set.o \
+	obj/radicals.o \
+	obj/rank_coverage.o \
+	obj/residual_stroke_count.o \
+	obj/romazi.o \
+	obj/packetized_out.o \
+	obj/rsc_sort_key.o \
+	obj/streams.o \
+	obj/util.o \
+	obj/windows.o
 
 HDRS = \
 	chars.h \
@@ -69,10 +69,10 @@ HDRS = \
 	util.h \
 	windows.h
 
-%.o: %.c $(HDRS)
-	$(CC) -c $(CPPFLAGS) $(ALL_CFLAGS) $<
+obj/%.o: %.c $(HDRS)
+	$(CC) -o $@ -c $(CPPFLAGS) $(ALL_CFLAGS) $<
 
-nusort: $(SHARED_OBJS) main.o
+nusort: $(SHARED_OBJS) main.c
 	$(CC) $(ALL_CFLAGS) -o nusort $^
 
 %_test_bin: %_test.o $(SHARED_OBJS) test_util.o

@@ -1,5 +1,4 @@
 nusort
-*.o
 actual_test_out/*.out
 *_test_bin
 test_errors/*
