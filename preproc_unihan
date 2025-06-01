@@ -1,0 +1,34 @@
+#!/bin/sh
+
+< `dirname $0`/third_party/Unihan_RadicalStrokeCounts.txt \
+tr '\t' @ \
+| sed '
+	/^#/d
+
+	/kRSAdobe_Japan1_6/{
+		s///
+		s/\([CV]\)+[0-9]*+\([0-9]*\)[.][^.]*/\1\2/g
+		bt
+	}
+
+	/kRSKangXi/{
+		s//kx/
+		s/kx[^0-9]*/Z/
+		bt
+	}
+
+	d
+
+:t
+	s/[ @]\{1,\}/,/g
+' | perl -C -pe '
+	/U\+([A-F0-9]{4,})/ or die "bad line: $_";
+	$c = chr(hex($1));
+	s//$c/;
+' >/tmp/separ.$$
+
+grep [CV]	/tmp/separ.$$ >/tmp/only.j.$$
+grep Z		/tmp/separ.$$ >/tmp/only.z.$$
+
+LC_COLLATE=C join -t, -a 1 -a 2 -1 1 -2 1 /tmp/only.*.$$ \
+| sed 's/ /,/g; s/,/ /'
