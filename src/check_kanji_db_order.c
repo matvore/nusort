@@ -402,6 +402,24 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	GROW_ARRAY_BY(sort_infos, 1);
 	strncpy(last_si()->c, "孓", sizeof(last_si()->c));
 	add_key(0x28, 0x00);
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, "涳", sizeof(last_si()->c));
+	add_key(0x56, 0x08);
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, "涾", sizeof(last_si()->c));
+	add_key(0x56, 0x08);
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, "淔", sizeof(last_si()->c));
+	add_key(0x56, 0x08);
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, "淜", sizeof(last_si()->c));
+	add_key(0x56, 0x08);
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, "淭", sizeof(last_si()->c));
+	add_key(0x56, 0x08);
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, "湴", sizeof(last_si()->c));
+	add_key(0x56, 0x08);
 
 	XFCLOSE(db_stream);
 

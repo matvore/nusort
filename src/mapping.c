@@ -193,15 +193,17 @@ static void lazy_pop_rad_sc(
 
 #define RESID_SC_CELLS 14
 #define RESID_SC_CELL_CHARS "qwertyuiopasdf"
+#define RESID_SC_XCEL_CHARS "1234567890zxcv"
 
 static void lazy_pop_sc(
 	struct mapping *m, char const *key_prefix,
 	unsigned rsc_ndx_lo, unsigned rsc_ndx_hi)
 {
-	unsigned ki;
+	unsigned ki, usd;
 	struct {
 		uint8_t used;
 		char c[MAPPABLE_CHAR_COUNT / 2];
+		char x[MAPPABLE_CHAR_COUNT / 2];
 	} ergo_sorted_4th[RESID_SC_CELLS], *fourth;
 	int sc;
 	char suff[3];
@@ -215,9 +217,14 @@ static void lazy_pop_sc(
 		fourth = ergo_sorted_4th + sc;
 		fourth->used = 0;
 		memcpy(fourth->c, KEY_INDEX_TO_CHAR_MAP, sizeof(fourth->c));
+		memcpy(fourth->x, KEY_INDEX_TO_CHAR_MAP, sizeof(fourth->x));
 		QSORT(, fourth->c, sizeof(fourth->c),
 		      ergonomic_lt_same_first_key(RESID_SC_CELL_CHARS[sc],
 						  fourth->c[a], fourth->c[b],
+						  m->six_is_rh));
+		QSORT(, fourth->x, sizeof(fourth->x),
+		      ergonomic_lt_same_first_key(RESID_SC_XCEL_CHARS[sc],
+						  fourth->x[a], fourth->x[b],
 						  m->six_is_rh));
 	}
 
@@ -226,13 +233,19 @@ static void lazy_pop_sc(
 		if (sc > 0) sc--;
 		if (sc >= RESID_SC_CELLS) sc = RESID_SC_CELLS-1;
 
-		suff[0] = RESID_SC_CELL_CHARS[sc];
-
 		fourth = ergo_sorted_4th + sc;
-		if (fourth->used >= sizeof(fourth->c))
-			DIE(0, "入力コードがたりない: %s", key_prefix);
 
-		suff[1] = fourth->c[fourth->used++];
+		usd = fourth->used++;
+		if (usd < sizeof(fourth->c)) {
+			suff[0] = RESID_SC_CELL_CHARS[sc];
+			suff[1] = fourth->c[usd];
+		} else {
+			usd -= sizeof(fourth->c);
+			if (usd >= sizeof(fourth->x))
+				DIE(0, "入力コードがたりない: %s", key_prefix);
+			suff[0] = RESID_SC_XCEL_CHARS[sc];
+			suff[1] = fourth->x[usd];
+		}
 		suff[2] = 0;
 		add_code(&m->arr, key_prefix, suff, avail.el[ki]->c);
 	}
