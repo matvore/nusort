@@ -12,7 +12,8 @@ mkfifo $wd/join-1
 
 ced=third_party/cedict_1_0_ts_utf-8_mdbg.txt
 
-sed 's/,//; s/[{"]//g'	missing	| sort			>> $wd/witkey &
+./missing |
+sed 's/,//; s/[{"]//g'		| sort			>> $wd/witkey &
 sed 's/ [^ ]*//'	$ced	| sort | uniq -w 3	>> $wd/wosimp &
 ./preproc_unihan					>> $wd/unihan &
 join -j 1 $wd/witkey $wd/unihan				>> $wd/join-1 &

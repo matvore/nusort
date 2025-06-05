@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export LC_ALL=C
+
 < `dirname $0`/third_party/Unihan_RadicalStrokeCounts.txt \
 tr '\t' @ \
 | sed '
@@ -21,7 +23,8 @@ tr '\t' @ \
 
 :t
 	s/[ @]\{1,\}/,/g
-' | perl -C -pe '
+' | perl -pC -e '
+	BEGIN { binmode(STDOUT, ":utf8") }
 	/U\+([A-F0-9]{4,})/ or die "bad line: $_";
 	$c = chr(hex($1));
 	s//$c/;
@@ -30,5 +33,5 @@ tr '\t' @ \
 grep [CV]	/tmp/separ.$$ >/tmp/only.j.$$
 grep Z		/tmp/separ.$$ >/tmp/only.z.$$
 
-LC_COLLATE=C join -t, -a 1 -a 2 -1 1 -2 1 /tmp/only.*.$$ \
+join -t, -a 1 -a 2 -1 1 -2 1 /tmp/only.*.$$ \
 | sed 's/ /,/g; s/,/ /'
