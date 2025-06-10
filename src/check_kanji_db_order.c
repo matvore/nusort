@@ -347,6 +347,12 @@ cleanup:
 	return res;
 }
 
+static void addkj(const char *c)
+{
+	GROW_ARRAY_BY(sort_infos, 1);
+	strncpy(last_si()->c, c, sizeof(last_si()->c));
+}
+
 int check_kanji_db_order(char const *const *argv, int argc)
 {
 	FILE *db_stream = NULL;
@@ -384,42 +390,31 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	/*
 	 * 部首の「⺍」はkRSAdobe_Japan1_6辞書に入ってないため、手動で定義する。
 	 */
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "⺍", sizeof(last_si()->c));
-	add_key(0x1e, 0x00);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "夠", sizeof(last_si()->c));
-	add_key(0x25, 0x08);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "值", sizeof(last_si()->c));
-	add_key(0x09, 0x08);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "查", sizeof(last_si()->c));
-	add_key(0x4c, 0x05);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "跺", sizeof(last_si()->c));
-	add_key(0x9e, 0x06);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "孓", sizeof(last_si()->c));
-	add_key(0x28, 0x00);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "涳", sizeof(last_si()->c));
-	add_key(0x56, 0x08);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "涾", sizeof(last_si()->c));
-	add_key(0x56, 0x08);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "淔", sizeof(last_si()->c));
-	add_key(0x56, 0x08);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "淜", sizeof(last_si()->c));
-	add_key(0x56, 0x08);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "淭", sizeof(last_si()->c));
-	add_key(0x56, 0x08);
-	GROW_ARRAY_BY(sort_infos, 1);
-	strncpy(last_si()->c, "湴", sizeof(last_si()->c));
-	add_key(0x56, 0x08);
+	addkj("值"); add_key(0x09, 0x08);
+	addkj("⺍"); add_key(0x1e, 0x00);
+	addkj("墣"); add_key(0x21, 0x0c);
+	addkj("墬"); add_key(0x21, 0x0c);
+	addkj("墯"); add_key(0x21, 0x0c);
+	addkj("夠"); add_key(0x25, 0x08);
+	addkj("孓"); add_key(0x28, 0x00);
+	addkj("揍"); add_key(0x41, 0x09);
+	addkj("啟"); add_key(0x43, 0x07);
+	addkj("查"); add_key(0x4c, 0x05);
+	addkj("汦"); add_key(0x56, 0x04);
+	addkj("汩"); add_key(0x56, 0x04);
+	addkj("汱"); add_key(0x56, 0x04);
+	addkj("沋"); add_key(0x56, 0x04);
+	addkj("沏"); add_key(0x56, 0x04);
+	addkj("涳"); add_key(0x56, 0x08);
+	addkj("涾"); add_key(0x56, 0x08);
+	addkj("淔"); add_key(0x56, 0x08);
+	addkj("淜"); add_key(0x56, 0x08);
+	addkj("淭"); add_key(0x56, 0x08);
+	addkj("湴"); add_key(0x56, 0x08);
+	addkj("碄"); add_key(0x71, 0x08);
+	addkj("碅"); add_key(0x71, 0x08);
+	addkj("碉"); add_key(0x71, 0x08);
+	addkj("跺"); add_key(0x9e, 0x06);
 
 	XFCLOSE(db_stream);
 
