@@ -391,6 +391,8 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	 * 部首の「⺍」はkRSAdobe_Japan1_6辞書に入ってないため、手動で定義する。
 	 */
 	addkj("值"); add_key(0x09, 0x08);
+	addkj("刜"); add_key(0x12, 0x05);
+	addkj("刞"); add_key(0x12, 0x05);
 	addkj("⺍"); add_key(0x1e, 0x00);
 	addkj("墣"); add_key(0x21, 0x0c);
 	addkj("墬"); add_key(0x21, 0x0c);
@@ -414,7 +416,11 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	addkj("碄"); add_key(0x71, 0x08);
 	addkj("碅"); add_key(0x71, 0x08);
 	addkj("碉"); add_key(0x71, 0x08);
+	addkj("賮"); add_key(0x9b, 0x09);
 	addkj("跺"); add_key(0x9e, 0x06);
+	addkj("惾"); add_key(0x3e, 0x09);
+	addkj("愅"); add_key(0x3e, 0x09);
+	addkj("愣"); add_key(0x3e, 0x09);
 
 	XFCLOSE(db_stream);
 
