@@ -400,6 +400,14 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	addkj("墯"); add_key(0x21, 0x0c);
 	addkj("夠"); add_key(0x25, 0x08);
 	addkj("孓"); add_key(0x28, 0x00);
+	addkj("怋"); add_key(0x3e, 0x05);
+	addkj("怬"); add_key(0x3e, 0x05);
+	addkj("怮"); add_key(0x3e, 0x05);
+	addkj("怴"); add_key(0x3e, 0x05);
+	addkj("怷"); add_key(0x3e, 0x05);
+	addkj("怲"); add_key(0x3e, 0x05);
+	addkj("怹"); add_key(0x3e, 0x05);
+	addkj("怞"); add_key(0x3e, 0x05);
 	addkj("揍"); add_key(0x41, 0x09);
 	addkj("搌"); add_key(0x41, 0x0a);
 	addkj("搕"); add_key(0x41, 0x0a);
@@ -417,6 +425,9 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	addkj("搋"); add_key(0x41, 0x0a);
 	addkj("啟"); add_key(0x43, 0x07);
 	addkj("查"); add_key(0x4c, 0x05);
+	addkj("棳"); add_key(0x4c, 0x08);
+	addkj("棸"); add_key(0x4c, 0x08);
+	addkj("椔"); add_key(0x4c, 0x08);
 	addkj("汦"); add_key(0x56, 0x04);
 	addkj("汩"); add_key(0x56, 0x04);
 	addkj("汱"); add_key(0x56, 0x04);

@@ -18,4 +18,20 @@ sed 's/ [^ ]*//'	$ced	| sort | uniq -w 3	>> $wd/wosimp &
 ./preproc_unihan					>> $wd/unihan &
 join -j 1 $wd/witkey $wd/unihan				>> $wd/join-1 &
 
-join -j1 -a1 $wd/join-1 $wd/wosimp
+join -j1 -a1 $wd/join-1 $wd/wosimp | sed '
+	s/1, .},/P00.&/
+	s/2, 1},/P01.&/
+	s/2, 2},/P02.&/
+	s/2, 0},/P03.&/
+	s/3, 1},/P04.&/
+	s/4, 1},/P05.&/
+	s/0, 1},/P06.&/
+	s/3, 2},/P07.&/
+	s/4, 2},/P08.&/
+	s/0, 2},/P09.&/
+	s/3, 0},/P10.&/
+	s/4, 0},/P11.&/
+	s/0, 0},/P12.&/
+' | sort -sk 4 | sed '
+	s/\<P..[.]\(., .},\)/\1/
+'
