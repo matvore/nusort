@@ -10,8 +10,8 @@ int main(void)
 	set_test_source_file(__FILE__);
 
 	while (run_test("check_kanji_db_order_test_quiet",
-			"13511字の並べ替えキーを読み込み済み\n"
-			 "exit: 0\n")) {
+			"13549字の並べ替えキーを読み込み済み\n"
+			"exit: 0\n")) {
 		const char *argv[] = {"-q"};
 		int exit = check_kanji_db_order(argv, 1);
 		fprintf(out, "exit: %d\n", exit);
