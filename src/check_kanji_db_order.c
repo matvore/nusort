@@ -387,10 +387,13 @@ int check_kanji_db_order(char const *const *argv, int argc)
 		res = process_rsc_line(line);
 	}
 
-	/*
-	 * 部首の「⺍」はkRSAdobe_Japan1_6辞書に入ってないため、手動で定義する。
-	 */
+	/* kRSAdobe_Japan1_6辞書に入ってない字を手動で定義する。*/
 	addkj("值"); add_key(0x09, 0x08);
+	addkj("倕"); add_key(0x09, 0x08);
+	addkj("倠"); add_key(0x09, 0x08);
+	addkj("俷"); add_key(0x09, 0x08);
+	addkj("俴"); add_key(0x09, 0x08);
+	addkj("倷"); add_key(0x09, 0x08);
 	addkj("刜"); add_key(0x12, 0x05);
 	addkj("刞"); add_key(0x12, 0x05);
 	addkj("厬"); add_key(0x1b, 0x0c);
@@ -462,6 +465,26 @@ int check_kanji_db_order(char const *const *argv, int argc)
 	addkj("碄"); add_key(0x71, 0x08);
 	addkj("碅"); add_key(0x71, 0x08);
 	addkj("碉"); add_key(0x71, 0x08);
+	addkj("萭"); add_key(0x8d, 0x09);
+	addkj("萷"); add_key(0x8d, 0x09);
+	addkj("萺"); add_key(0x8d, 0x09);
+	addkj("萿"); add_key(0x8d, 0x09);
+	addkj("葀"); add_key(0x8d, 0x09);
+	addkj("葂"); add_key(0x8d, 0x09);
+	addkj("葃"); add_key(0x8d, 0x09);
+	addkj("葋"); add_key(0x8d, 0x09);
+	addkj("葌"); add_key(0x8d, 0x09);
+	addkj("葝"); add_key(0x8d, 0x09);
+	addkj("葞"); add_key(0x8d, 0x09);
+	addkj("蒆"); add_key(0x8d, 0x09);
+	addkj("蒍"); add_key(0x8d, 0x09);
+	addkj("蒏"); add_key(0x8d, 0x09);
+	addkj("蒏"); add_key(0x8d, 0x09);
+	addkj("蒏"); add_key(0x8d, 0x09);
+	addkj("蒏"); add_key(0x8d, 0x09);
+	addkj("萴"); add_key(0x8d, 0x09);
+	addkj("萰"); add_key(0x8d, 0x09);
+	addkj("萲"); add_key(0x8d, 0x09);
 	addkj("蓨"); add_key(0x8d, 0x0b);
 	addkj("蓩"); add_key(0x8d, 0x0b);
 	addkj("蓳"); add_key(0x8d, 0x0b);
