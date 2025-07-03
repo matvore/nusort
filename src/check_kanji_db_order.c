@@ -288,7 +288,7 @@ static int check_order(void)
 				 "ませんでした: %s\n",
 				 ke->c);
 			res = 30;
-			break;
+			continue;
 		}
 
 		for (ki = 0; ki < MAX_K && si->k[ki].rad; ki++) {
