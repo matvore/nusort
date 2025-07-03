@@ -191,12 +191,12 @@ static void lazy_pop_rad_sc(
 	kanji_distribution_destroy(&dist);
 }
 
-#define RESID_SC_CELLS 14
-#define RESID_SC_CELL_CHARS "qwertyuiopasdf"
-#define RESID_SC_XCEL_CHARS "1234567890zxcv"
+#define RESID_SC_CELLS 16
+#define RESID_SC_CELL_CHARS "qwertyuiopasdfgh"
+#define RESID_SC_XCEL_CHARS "1234567890zxcvbn"
 
 static void lazy_pop_sc(
-	struct mapping *m, char const *key_prefix,
+	struct mapping *m, char first_key,
 	unsigned rsc_ndx_lo, unsigned rsc_ndx_hi)
 {
 	unsigned ki, usd;
@@ -206,7 +206,7 @@ static void lazy_pop_sc(
 		char x[MAPPABLE_CHAR_COUNT / 2];
 	} ergo_sorted_4th[RESID_SC_CELLS], *fourth;
 	int sc;
-	char suff[3];
+	char suff[3], pref[3];
 	struct kanji_entries avail = {0};
 
 	add_available_kanji(&avail, &m->arr, rsc_ndx_lo, rsc_ndx_hi);
@@ -228,6 +228,9 @@ static void lazy_pop_sc(
 						  m->six_is_rh));
 	}
 
+	pref[0] = first_key;
+	pref[2] = 0;
+	suff[2] = 0;
 	for (ki = 0; ki < avail.cnt; ki++) {
 		sc = residual_stroke_count(avail.el[ki]);
 		if (sc > 0) sc--;
@@ -236,18 +239,26 @@ static void lazy_pop_sc(
 		fourth = ergo_sorted_4th + sc;
 
 		usd = fourth->used++;
+		pref[1] = ' ';
+		if (usd >= MAPPABLE_CHAR_COUNT) {
+			usd -= MAPPABLE_CHAR_COUNT;
+			pref[1] = '\\';
+		}
+
 		if (usd < sizeof(fourth->c)) {
 			suff[0] = RESID_SC_CELL_CHARS[sc];
 			suff[1] = fourth->c[usd];
 		} else {
 			usd -= sizeof(fourth->c);
-			if (usd >= sizeof(fourth->x))
-				DIE(0, "入力コードがたりない: %s", key_prefix);
+			if (usd >= sizeof(fourth->x)) {
+				fprintf(err, "first_key='%c'\n", first_key);
+				fprintf(err, "sc=%d\n", sc);
+				DIE(0, "入力コードがたりない");
+			}
 			suff[0] = RESID_SC_XCEL_CHARS[sc];
 			suff[1] = fourth->x[usd];
 		}
-		suff[2] = 0;
-		add_code(&m->arr, key_prefix, suff, avail.el[ki]->c);
+		add_code(&m->arr, pref, suff, avail.el[ki]->c);
 	}
 
 	DESTROY_ARRAY(avail);
@@ -263,7 +274,7 @@ int mapping_lazy_populate(struct mapping *m, char const *key_prefix)
 		return 0;
 	if (key_index == -1 || key_index >= KANJI_KEY_COUNT)
 		return 0;
-	if (key_prefix[1] != ' ')
+	if (key_prefix[1] != ' ' && key_prefix[1] != '\\')
 		return 0;
 	if (incomplete_code_is_prefix_for_code_len(&m->arr, key_prefix, 4))
 		return 0;
@@ -281,7 +292,9 @@ int mapping_lazy_populate(struct mapping *m, char const *key_prefix)
 		rsc_ndx_hi = kanji_db_rsc_index((line_a + 1)->cutoff);
 
 	if (m->resid_sc_3rd_key)
-		lazy_pop_sc(m, key_prefix, rsc_ndx_lo, rsc_ndx_hi);
+		lazy_pop_sc(m, key_prefix[0], rsc_ndx_lo, rsc_ndx_hi);
+	else if (key_prefix[1] == '\\')
+		return 0;
 	else
 		lazy_pop_rad_sc(m, key_prefix, rsc_ndx_lo, rsc_ndx_hi);
 

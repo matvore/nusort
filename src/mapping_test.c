@@ -813,6 +813,38 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
+	while (run_test("overflow_residual_stroke_count_and_max_cells", 0)) {
+		int mi;
+		struct mapping m = {
+			.include_kanji = 1,
+			.resid_sc_3rd_key = 1,
+			.dist = {
+				.allow_left_bracket_key1 = 1,
+				.busy_right_pinky = 1,
+			},
+		};
+		struct romazi_config rc = {
+			.optimize_keystrokes = 1,
+			.kakko = 'p',
+			.hiragana_wo_key = '\'',
+		};
+		struct key_mapping *me;
+
+		get_romazi_codes(&rc, &m.arr);
+		expect_ok(mapping_populate(&m));
+		expect_ok(mapping_lazy_populate(&m, "x "));
+
+		for (mi = 0; mi < m.arr.cnt; mi++) {
+			me = m.arr.el + mi;
+			if (	!strncmp("x i",		me->orig, 3)
+			||	!strncmp("x 8",		me->orig, 3)
+			||	!strncmp("x h",		me->orig, 3)
+			) fprintf(out, "%s -> %s\n",	me->orig, me->conv);
+		}
+
+		destroy_mapping(&m);
+	}
+
 	while (run_test("lazy_mapping_honors_six_is_lh_setting", ""))
 		test_6_is_rh_setting(0);
 

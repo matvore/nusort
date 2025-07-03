@@ -220,14 +220,17 @@ int main(void)
 		}
 	}
 
-	while (run_test("full_set", "")) {
+	while (run_test("full_set", 0)) {
 		struct mapping m;
 		int keyi, inc_romazi;
 		char pref[3];
 		struct romazi_config rom;
 		unsigned start_cnt;
+		struct key_mapping *me;
 
 		for (inc_romazi = 0; inc_romazi < 2; inc_romazi++) {
+			fprintf(out, "inc_romazi:%d\n", inc_romazi);
+
 			m = (struct mapping) {
 				.include_kanji = 1,
 				.resid_sc_3rd_key = 1,
@@ -248,6 +251,13 @@ int main(void)
 			if (m.arr.cnt - start_cnt != kanji_db_nr())
 				fprintf(out, "%zu - %u != %u\n",
 					m.arr.cnt, start_cnt, kanji_db_nr());
+
+			me = m.arr.el + m.arr.cnt;
+			for (;;) {
+				if (me-- == m.arr.el) break;
+				if (me->orig[1] != '\\') continue;
+				fprintf(out, "%s -> %s\n", me->orig, me->conv);
+			}
 
 			destroy_mapping(&m);
 		}
