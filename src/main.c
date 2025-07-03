@@ -21,19 +21,19 @@ static int input_cmd(char const *const *argv, int argc)
 static const struct {
 	int (*impl)(char const *const *argv, int argc);
 
-	char const *name, *usage;
+	char const *name, *shor, *usage;
 } commands[] = {
 	{&free_kanji_keys, "free_kanji_keys", ""},
-	{&h2k, "h2k", ""},
-	{&input_cmd, "input", ""},
-	{&kana_stats, "kana_stats", ""},
-	{&kanji_db_chart, "kanji_db_chart", " [漢字数]"},
-	{&check_kanji_db_order, "check_kanji_db_order", " [--db-out] [-q] [--residual-stroke-counts]"},
-	{&print_last_rank_contained, "last_rank_contained", " [-c] [-s] [-k] [-n] CUTOFF_KANJI_1..CUTOFF_KANJI_n"},
-	{&longest_rsc_block, "longest_rsc_block", ""},
-	{&make_map, "make_map", ""},
-	{&practice_set, "practice_set", ""},
-	{&rsc_sort_key, "rsc_sort_key", ""},
+	{&h2k, "hira_to_kata", "h2k", ""},
+	{&input_cmd, "input", "in", ""},
+	{&kana_stats, "kana_stats", "ks", ""},
+	{&kanji_db_chart, "kanji_db_chart", "ch", " [漢字数]"},
+	{&check_kanji_db_order, "check_kanji_db_order", "or", " [--db-out] [-q] [--residual-stroke-counts]"},
+	{&print_last_rank_contained, "last_rank_contained", "last", " [-c] [-s] [-k] [-n] CUTOFF_KANJI_1..CUTOFF_KANJI_n"},
+	{&longest_rsc_block, "longest_rsc_block", "lb", ""},
+	{&make_map, "make_map", "mm", ""},
+	{&practice_set, "practice_set", "ps", ""},
+	{&rsc_sort_key, "rsc_sort_key", "rk", ""},
 	{0},
 };
 
@@ -84,8 +84,9 @@ int main(int argc, const char **argv)
 	}
 
 	for (ci = 0; commands[ci].impl; ci++) {
-		if (!strcmp(commands[ci].name, *argv))
-			exit(commands[ci].impl(argv+1, argc-1));
+		if (	!strcmp(commands[ci].name, *argv)
+		||	!strcmp(commands[ci].shor, *argv)
+		) exit(commands[ci].impl(argv+1, argc-1));
 	}
 
 	usage(stderr);
