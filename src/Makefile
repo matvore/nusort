@@ -7,6 +7,7 @@ CFLAGS = \
 	-Wmissing-prototypes \
 	-Wformat-security \
 	-Wno-format-zero-length \
+	-Wno-parentheses \
 	-Wold-style-definition \
 	-Woverflow \
 	-Wpointer-arith \
