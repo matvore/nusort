@@ -1,0 +1,17 @@
+#!/bin/sh
+
+d=`dirname $0`
+$d/generate_missing_char_dict | grep -wo [CVZ][0-f]'\{4\}' | awk '
+{
+	r = substr($1, 2, 2)
+	s = substr($1, 4, 2)
+	cur = h[r]
+	if (cur < s) { h[r] = s }
+}
+
+END {
+	for (k in h) {
+		printf("%s%s\n", k, h[k])
+	}
+}
+' | sort
