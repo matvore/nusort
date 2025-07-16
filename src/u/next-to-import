@@ -1,0 +1,8 @@
+#!/bin/sh
+
+d=`dirname $0`
+$d/missing_char_dict			\
+| sed '	/1},/!d
+	/.*\<Z\([0-9a-f]\{4\}\)\>.*/!d
+	s//\1/'				\
+| sort | uniq -c | sort -rn

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-< `dirname $0`/src/residual_stroke_count.c	\
+< `dirname $0`/../residual_stroke_count.c	\
 sed '
 	5,1469!d
 	s/[^0-9]//g

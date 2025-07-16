@@ -1,7 +1,0 @@
-#!/bin/sh
-
-d=`dirname $0`
-
-export LC_ALL=C
-( $d/missing ; grep '^.{".*",' $d/src/kanji_db.c
-) | sort

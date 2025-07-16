@@ -1,0 +1,17 @@
+#!/bin/sh
+
+d=`dirname $0`
+high=`
+grep -o ', [0-9]\{5\},' $d/../kanji_db.c	\
+| sort -r					\
+| grep -m1 -o '[0-9]\{5\}'			`
+
+test -n "$high" || exit 1
+
+cnt=$1
+test -n "$cnt" || cnt=20
+
+seq $cnt | while read x; do
+	high=$(( high + 1 ))
+	echo $high
+done

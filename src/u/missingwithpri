@@ -1,0 +1,6 @@
+#!/bin/sh
+
+re="$1"
+
+d=`dirname $0`
+$d/missing_char_dict | grep -w "$re" | $d/fillinpri
