@@ -1,17 +1,17 @@
 #!/bin/sh
 
-d=`dirname $0`
+d=`dirname $0`/..
 wd=/tmp/`basename $0`.$$
 
 mkdir -p $wd
 
 export LC_ALL=C
-tr '\t' '@' <$d/../kanji_db.c		\
+tr '\t' '@' <$d/kanji_db.c		\
 | sed '/^@{"\([^"]*\)".*/!d; s//\1/'	\
 | sort -u				>$wd/kjdb
 
-sort -u $d/../../priorities/jpn.*		>$wd/allj
-sort -u $d/../../priorities/cht.*		>$wd/allz
+sort -u $d/priorities/jpn.*		>$wd/allj
+sort -u $d/priorities/cht.*		>$wd/allz
 sort -u $wd/kjdb $wd/allj $wd/allz	>$wd/allk
 
 comm -13 $wd/kjdb $wd/allk >$wd/missing
@@ -21,7 +21,7 @@ appenno () {
 }
 
 withpri () {
-	pre=$d/../../priorities/$1
+	pre=$d/priorities/$1
 	alf=$wd/all$2
 	for i in 1 2 3 4; do
 		test -e		$pre.$i	\

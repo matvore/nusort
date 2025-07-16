@@ -2,7 +2,7 @@
 
 export LC_ALL=C
 
-< `dirname $0`/../../third_party/Unihan_RadicalStrokeCounts.txt \
+< `dirname $0`/../third_party/Unihan_RadicalStrokeCounts.txt \
 tr '\t' @ \
 | sed '
 	/^#/d

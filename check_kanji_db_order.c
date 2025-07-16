@@ -704,8 +704,7 @@ int check_kanji_db_order(char const *const *argv, int argc)
 		}
 	}
 
-	db_stream = xfopen(
-		"../third_party/Unihan_RadicalStrokeCounts.txt", "r");
+	db_stream = xfopen("third_party/Unihan_RadicalStrokeCounts.txt", "r");
 
 	QSORT(,	supplemental_keys, SUPKEYCNT,
 		0 > strcmp(	supplemental_keys[a].c,
