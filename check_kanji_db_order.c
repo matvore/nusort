@@ -5,6 +5,7 @@
 
 #include "commands.h"
 #include "kanji_db.h"
+#include "radicals.h"
 #include "residual_stroke_count.h"
 #include "streams.h"
 #include "util.h"
@@ -12,9 +13,8 @@
 static const char *ADOBE_JAPAN = "\tkRSAdobe_Japan1_6";
 
 static struct {
-	unsigned db_out : 1;
 	unsigned quiet : 1;
-	unsigned residual_stroke_counts : 1;
+	unsigned allkeyout : 1;
 } flags;
 
 struct sort_key {
@@ -504,15 +504,13 @@ static int process_rsc_line(char const *line)
 	return 0;
 }
 
-static void output_char_line(
+static void output_all_keys(
 	const struct kanji_entry *k, const struct sort_info *si)
 {
 	size_t ki;
-	fprintf(out, "%s\t", k->c);
 	for (ki = 0; ki < MAX_K && si->k[ki].rad; ki++)
-		fprintf(out, "%02x%02x ",
+		fprintf(out, " %02x%02x",
 			(int) si->k[ki].rad, (int) si->k[ki].strokes);
-	fprintf(out, "\n");
 }
 
 static int figure_cutoff_type(
@@ -541,7 +539,8 @@ static void output_db_line(
 	int cutoff_type = k->cutoff_type;
 	if (!cutoff_type)
 		cutoff_type = figure_cutoff_type(prev_si, si);
-	printf("\t{\"%s\", %5d, %d},\n", k->c, k->ranking, cutoff_type);
+	fprintf(out, "\t{\"%s\", %5d, %d, %d, %d},",
+		k->c, k->ranking, cutoff_type, k->jis_suijun, k->taiwan_kib);
 }
 
 struct min_key_info {
@@ -570,6 +569,7 @@ static int check_order(void)
 	struct sort_info *prev_si = NULL;
 	struct kanji_entry const *k = kanji_db();
 	uint16_t const *rsc = kanji_db_rsc_sorted();
+	int radin = -1;
 
 	struct min_key_info *min_keys = xcalloc(largest_rsc_sort_key(),
 						sizeof(*min_keys));
@@ -583,6 +583,8 @@ static int check_order(void)
 		struct kanji_entry const *ke = k + rsc[i];
 		struct min_key_info *min_key = min_keys + ke->rsc_sort_key - 1;
 		int residual_stroke_count_in_unihan_data = 0;
+
+		if (ke->cutoff_type > 1) radin++;
 
 		BSEARCH(si, sort_infos.el, sort_infos.cnt,
 			strcmp(si->c, ke->c));
@@ -617,10 +619,14 @@ static int check_order(void)
 		}
 		key = smallest_matching;
 		if (!flags.quiet) {
-			if (!flags.db_out)
-				output_char_line(ke, si);
+			output_db_line(ke, prev_si, si);
+			if (flags.allkeyout)
+				output_all_keys(ke, si);
 			else
-				output_db_line(ke, prev_si, si);
+				fprintf(out,	" %02x%02x",
+						radical_num(radin),
+						residual_stroke_count(ke));
+			fputc('\n', out);
 		}
 
 		prev_si = si;
@@ -639,10 +645,6 @@ static int check_order(void)
 		if (i > 0)
 			adjust_consecutive_key_info(
 				&min_keys[i-1].key, &min_keys[i].key, k->c);
-
-		if (flags.residual_stroke_counts)
-			fprintf(out, "%d, /* %s */\n",
-				min_keys[i].key.strokes, k->c);
 	}
 
 cleanup:
@@ -694,10 +696,8 @@ int check_kanji_db_order(char const *const *argv, int argc)
 		argv++;
 		if (!strcmp(arg, "-q")) {
 			flags.quiet = 1;
-		} else if (!strcmp(arg, "--db-out")) {
-			flags.db_out = 1;
-		} else if (!strcmp(arg, "--residual-stroke-counts")) {
-			flags.residual_stroke_counts = 1;
+		} else if (!strcmp(arg, "--allkeyout")) {
+			flags.allkeyout = 1;
 		} else if (!strcmp(arg, "--")) {
 			break;
 		} else {

@@ -28,7 +28,7 @@ static const struct {
 	{&input_cmd, "input", "in", ""},
 	{&kana_stats, "kana_stats", "ks", ""},
 	{&kanji_db_chart, "kanji_db_chart", "ch", " [漢字数]"},
-	{&check_kanji_db_order, "check_kanji_db_order", "or", " [--db-out] [-q] [--residual-stroke-counts]"},
+	{&check_kanji_db_order, "check_kanji_db_order", "or", " [--allkeyout] [-q]"},
 	{&print_last_rank_contained, "last_rank_contained", "last", " [-c] [-s] [-k] [-n] CUTOFF_KANJI_1..CUTOFF_KANJI_n"},
 	{&longest_rsc_block, "longest_rsc_block", "lb", ""},
 	{&make_map, "make_map", "mm", ""},
