@@ -23,7 +23,7 @@ static const struct {
 
 	char const *name, *shor, *usage;
 } commands[] = {
-	{&free_kanji_keys, "free_kanji_keys", ""},
+	{&free_kanji_keys, "free_kanji_keys", "frkk", ""},
 	{&h2k, "hira_to_kata", "h2k", ""},
 	{&input_cmd, "input", "in", ""},
 	{&kana_stats, "kana_stats", "ks", ""},
@@ -34,6 +34,7 @@ static const struct {
 	{&make_map, "make_map", "mm", ""},
 	{&practice_set, "practice_set", "ps", ""},
 	{&rsc_sort_key, "rsc_sort_key", "rk", ""},
+	{&expand_rsc_keys, "expand_rsc_keys", "exk", " [-0|-1]"},
 	{0},
 };
 
@@ -46,7 +47,10 @@ static void usage(FILE *stream)
 	fputs("COMMANDS:\n", stream);
 
 	for (ci = 0; commands[ci].impl; ci++)
-		fprintf(stream, "\t%s%s\n", commands[ci].name, commands[ci].usage);
+		fprintf(stream,	"\t%s%s (or: %s)\n",
+				commands[ci].name,
+				commands[ci].usage,
+				commands[ci].shor);
 
 	fputc('\n', stream);
 }

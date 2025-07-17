@@ -44,4 +44,10 @@ static inline int radical_coverage_done(struct radical_coverage *cov) {
 	return cov->rad_i == 0xffff;
 }
 
+/* check_kanji_db_order 出力で使う部首番号
+ * index: [0, RADICAL_COUNT)
+ * 戻り値: [0x00, 0xd7]
+ */
+int radical_num(int index);
+
 void radical_coverage_next(struct radical_coverage *);

@@ -1,4 +1,7 @@
+#include "commands.h"
+#include "radicals.h"
 #include "residual_stroke_count.h"
+#include "streams.h"
 #include "util.h"
 
 static const uint8_t counts[] = {
@@ -1521,4 +1524,40 @@ int largest_residual_stroke_count(void)
 			result = counts[i];
 
 	return result;
+}
+
+int expand_rsc_keys(char const *const *argv, int argc)
+{
+	int i, radind = -1, kc = 0xfff, kr, ki;
+	struct kanji_entry const *ke;
+
+	while (argc--) {
+		if (!strcmp(*argv, "-1")) kc = 1; else
+		if (!strcmp(*argv, "-0")) kc = 0; else
+		DIE(0, "無効な引数: %s", *argv);
+
+		argv++;
+	}
+
+	ki = 0;
+	for (i = 0; i < sizeof counts; i++) {
+		if (!counts[i]) radind++;
+
+		fprintf(out, "%02x%02x", radical_num(radind), counts[i]);
+		if (kc) fputc(' ', out);
+
+		kr = kc;
+		for (;;) {
+			ke = kanji_from_rsc_index(ki);
+
+			if (kr != kc && ke->cutoff_type) break;
+			if (kr-- > 0) fputs(ke->c, out);
+
+			if (++ki >= kanji_db_nr()) break;
+		}
+
+		fputc('\n', out);
+	}
+
+	return 0;
 }
