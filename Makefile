@@ -109,6 +109,6 @@ test: \
 	rpc_mode_test
 
 clean:
-	rm -f *_test_bin actual_test_out/*.out *.o
+	rm -f *_test_bin actual_test_out/*.out obj/*.o
 	rm -rf test_errors
 	rm -f nusort
