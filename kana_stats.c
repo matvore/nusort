@@ -63,7 +63,7 @@ static uint64_t kata_count_of(struct stats_map const *stats, char const *hira)
 	return kata_entry->count;
 }
 
-int kana_stats(char const *const *argv, int argc)
+int kana_stats(char **argv, int argc)
 {
 	struct stats_map stats = {0};
 	uint64_t hira_total = 0;

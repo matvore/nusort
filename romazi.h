@@ -53,7 +53,7 @@ void init_romazi_config_for_cli_flags(struct romazi_config *config);
  * て認識されない場合は０を返す。
  */
 int parse_romazi_flags(
-	int *argc, char const *const **argv, struct romazi_config *config);
+	int *argc, char ***argv, struct romazi_config *config);
 
 void get_romazi_codes(
 	struct romazi_config const *, struct key_mapping_array *);

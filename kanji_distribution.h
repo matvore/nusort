@@ -55,7 +55,7 @@ struct kanji_distribution {
 };
 
 int parse_kanji_distribution_flags(
-	int *argc, char const *const **argv, struct kanji_distribution *);
+	int *argc, char ***argv, struct kanji_distribution *);
 
 /*
  * モジュールの用法:
@@ -102,7 +102,7 @@ void kanji_distribution_auto_pick_cutoff_exhaustive(
 
 int kanji_distribution_parse_user_cutoff(
 	struct kanji_distribution *kd,
-	char const *const *argv,
+	char **argv,
 	int argc);
 
 void kanji_distribution_populate(struct kanji_distribution *kd);

@@ -23,7 +23,7 @@ static long parse_count_arg(char const *arg)
 	return c;
 }
 
-int kanji_db_chart(char const *const *argv, int argc)
+int kanji_db_chart(char **argv, int argc)
 {
 	unsigned ki, kscrel;
 	struct {
@@ -50,10 +50,7 @@ int kanji_db_chart(char const *const *argv, int argc)
 			}
 		}
 
-		if (!ok) {
-			fprintf(err, "フラグの形式が無効です: %s\n", argv[0]);
-			return 1;
-		}
+		if (!ok) badflag(argv[0]);
 
 		argc--;
 		argv++;

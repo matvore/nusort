@@ -60,6 +60,12 @@ void xfclose_impl(FILE *stream)
 	perror("警告: fclose が失敗しました");
 }
 
+void _Noreturn badflag(const char *f)
+{
+	fprintf(err, "フラグを識別できませんでした: %s", f);
+	exit(3);
+}
+
 int xasprintf(char **strp, const char *format, ...)
 {
 	int res;

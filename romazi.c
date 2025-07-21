@@ -98,7 +98,7 @@ void init_romazi_config_for_cli_flags(struct romazi_config *config)
 }
 
 int parse_romazi_flags(
-	int *argc, char const *const **argv, struct romazi_config *config)
+	int *argc, char ***argv, struct romazi_config *config)
 {
 	if (!strcmp((*argv)[0], "--no-classic-wo")) {
 		config->classic_wo = 0;

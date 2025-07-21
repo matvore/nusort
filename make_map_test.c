@@ -8,29 +8,29 @@ int main(void)
 	set_test_source_file(__FILE__);
 
 	while (run_test("default_mapping", NULL)) {
-		char const *argv[] = {"--short-shifted-codes"};
+		char *argv[] = {"--short-shifted-codes"};
 		expect_ok(make_map(argv, 1));
 	}
 
 	while (run_test("bad_flag", "フラグを認識できませんでした：-1\nexit code: 3\n")) {
-		char const *argv[] = {"-1"};
+		char *argv[] = {"-1"};
 		fprintf(err, "exit code: %d\n", make_map(argv, 1));
 	}
 
 	while (run_test("bad_positional_argument", "フラグを認識できませんでした：asdf\nexit code: 3\n")) {
-		char const *argv[] = {"asdf"};
+		char *argv[] = {"asdf"};
 		fprintf(err, "exit code: %d\n", make_map(argv, 1));
 	}
 
 	while (run_test("six_is_rh", NULL)) {
-		char const *argv[] = {
+		char *argv[] = {
 			"-s", "--short-shifted-codes", "--no-kakko",
 		};
 		expect_ok(make_map(argv, 3));
 	}
 
 	while (run_test("no_kanji", NULL)) {
-		char const *argv[] = {
+		char *argv[] = {
 			"--no-kakko",
 			"--no-kanji",
 			"--short-shifted-codes",
@@ -39,7 +39,7 @@ int main(void)
 	}
 
 	while (run_test("no_classic_wo", NULL)) {
-		char const *argv[] = {
+		char *argv[] = {
 			"--no-kakko",
 			"--no-classic-wo",
 			"--no-kanji",
@@ -49,7 +49,7 @@ int main(void)
 	}
 
 	while (run_test("hiragana_wo_key", NULL)) {
-		char const *argv[] = {
+		char *argv[] = {
 			"--no-kakko",
 			"--hiragana-wo-key", "=",
 			"--no-kanji",
@@ -59,7 +59,7 @@ int main(void)
 	}
 
 	while (run_test("conflict_in_romazi_map", "コード衝突: w->を と wa->わ\n")) {
-		char const *argv[] = {
+		char *argv[] = {
 			"--no-kakko",
 			"--hiragana-wo-key", "w",
 			"--no-classic-wo",

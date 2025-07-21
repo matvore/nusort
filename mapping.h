@@ -50,7 +50,7 @@ void init_mapping_config_for_cli_flags(struct mapping *);
  * て、argcとargvを先に進めて、０ではない値を返す。フラグがローマ字フラグとし
  * て認識されない場合は０を返す。
  */
-int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *);
+int parse_mapping_flags(int *argc, char ***argv, struct mapping *);
 
 /* エラーの時は非0を返す */
 int mapping_populate(struct mapping *);

@@ -35,7 +35,7 @@ static void customize_term_attributes(struct termios t)
 }
 #endif
 
-int input(char const *const *argv, int argc, int set_raw_mode)
+int input(char **argv, int argc, int set_raw_mode)
 {
 	struct mapping mapping = {0};
 #if HAVE_TERMIOS
@@ -79,8 +79,7 @@ int input(char const *const *argv, int argc, int set_raw_mode)
 			continue;
 		}
 
-		fprintf(err, "フラグを認識できませんでした：%s\n", argv[0]);
-		return 3;
+		badflag(argv[0]);
 	}
 
 	get_romazi_codes(&romazi_config, &mapping.arr);

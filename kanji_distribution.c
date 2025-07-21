@@ -7,7 +7,7 @@
 #include "util.h"
 
 int parse_kanji_distribution_flags(
-	int *argc, char const *const **argv, struct kanji_distribution *kd)
+	int *argc, char ***argv, struct kanji_distribution *kd)
 {
 	if (!strcmp((*argv)[0], "--short-shifted-codes")) {
 		kd->short_shifted_codes = 1;
@@ -374,7 +374,7 @@ void kanji_distribution_auto_pick_cutoff_exhaustive(
 
 int kanji_distribution_parse_user_cutoff(
 	struct kanji_distribution *kd,
-	char const *const *argv,
+	char **argv,
 	int argc)
 {
 	size_t i;

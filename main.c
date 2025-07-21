@@ -13,13 +13,13 @@
 
 static const char *binname;
 
-static int input_cmd(char const *const *argv, int argc)
+static int input_cmd(char **argv, int argc)
 {
 	return input(argv, argc, /*set_raw_mode=*/1);
 }
 
 static const struct {
-	int (*impl)(char const *const *argv, int argc);
+	int (*impl)(char **argv, int argc);
 
 	char const *name, *shor, *usage;
 } commands[] = {
@@ -33,6 +33,7 @@ static const struct {
 	{&longest_rsc_block, "longest_rsc_block", "lb", ""},
 	{&make_map, "make_map", "mm", ""},
 	{&practice_set, "practice_set", "ps", ""},
+	{&rsc_gaps, "rsc_gaps", "rg", ""},
 	{&rsc_sort_key, "rsc_sort_key", "rk", ""},
 	{&expand_rsc_keys, "expand_rsc_keys", "exk", " [-0|-1]"},
 	{0},
@@ -55,7 +56,7 @@ static void usage(FILE *stream)
 	fputc('\n', stream);
 }
 
-int main(int argc, const char **argv)
+int main(int argc, char **argv)
 {
 	int ci;
 

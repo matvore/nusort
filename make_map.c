@@ -4,7 +4,7 @@
 #include "streams.h"
 #include "util.h"
 
-int make_map(char const *const *argv, int argc) {
+int make_map(char **argv, int argc) {
 	struct mapping m = {0};
 	size_t i;
 	int res = 0;

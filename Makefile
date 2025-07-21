@@ -45,6 +45,7 @@ SHARED_OBJS = \
 	obj/residual_stroke_count.o \
 	obj/romazi.o \
 	obj/packetized_out.o \
+	obj/rsc_gaps.o \
 	obj/rsc_sort_key.o \
 	obj/streams.o \
 	obj/util.o \
@@ -106,7 +107,8 @@ test: \
 	rank_coverage_test \
 	resid_sc_3rd_key_test \
 	romazi_test \
-	rpc_mode_test
+	rpc_mode_test \
+	rsc_gaps_test
 
 clean:
 	rm -f *_test_bin actual_test_out/*.out obj/*.o

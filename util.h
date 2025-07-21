@@ -17,6 +17,8 @@ void report_fopen_failure(char const *pathname);
 FILE *xfopen(const char *pathname, const char *mode);
 FILE *xfdopen(int fd, char const *mode);
 
+void _Noreturn badflag(const char *f);
+
 #ifndef _MSC_VER
 __attribute__((format (printf, 2, 3)))
 #endif

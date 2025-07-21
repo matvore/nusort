@@ -105,7 +105,7 @@ void init_mapping_config_for_cli_flags(struct mapping *m)
 	m->resid_sc_3rd_key = 1;
 }
 
-int parse_mapping_flags(int *argc, char const *const **argv, struct mapping *m)
+int parse_mapping_flags(int *argc, char ***argv, struct mapping *m)
 {
 	if (!strcmp((*argv)[0], "-s")) {
 		m->six_is_rh = 1;

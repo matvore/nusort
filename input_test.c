@@ -10,18 +10,8 @@ int main(void)
 	set_test_source_file(__FILE__);
 	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
 
-	while (run_test("unrecognized_argument",
-			"フラグを認識できませんでした：--nonsense-arg\n"
-			"exit code: 3\n")) {
-		char const *argv[] = {"--nonsense-arg"};
-		int argc = 1;
-
-		fprintf(out, "exit code: %d\n",
-			 input(argv, argc, /*set_raw_mode=*/0));
-	}
-
 	while (run_test("first_key_k", NULL)) {
-		char const *argv[] = {
+		char *argv[] = {
 			"-s", "--short-shifted-codes",
 			"--no-show-cutoff-guide",
 			"--no-show-rsc-list",
@@ -33,7 +23,7 @@ int main(void)
 	}
 
 	while (run_test("long_conv_strs", NULL)) {
-		char const *argv[] = {
+		char *argv[] = {
 			"-s", "--short-shifted-codes",
 			"--no-show-cutoff-guide",
 			"--no-show-rsc-list",
@@ -45,7 +35,7 @@ int main(void)
 	}
 
 	while (run_test("busy_right_pinky", NULL)) {
-		char const *argv[] = {
+		char *argv[] = {
 			"--busy-right-pinky", "--no-show-cutoff-guide",
 		};
 		int argc = 2;
@@ -67,7 +57,7 @@ int main(void)
 	}
 
 	while (run_test("parse_romazi_flags_no_kanji_nums", NULL)) {
-		char const *argv[] = {
+		char *argv[] = {
 			"--no-kanji-nums", "-s", "--short-shifted-codes",
 			"--no-show-cutoff-guide",
 			"--no-show-rsc-list",
@@ -80,7 +70,7 @@ int main(void)
 	}
 
 	while (run_test("exclude_kanji", NULL)) {
-		char const *argv[] = {
+		char *argv[] = {
 			"--no-kanji", "--no-show-cutoff-guide",
 			"--no-show-rsc-list",
 		};

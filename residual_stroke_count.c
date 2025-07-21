@@ -239,7 +239,7 @@ int largest_residual_stroke_count(void)
 	return result;
 }
 
-int expand_rsc_keys(char const *const *argv, int argc)
+int expand_rsc_keys(char **argv, int argc)
 {
 	int i, radind = -1, kc = 0xfff, kr, ki;
 	struct kanji_entry const *ke;

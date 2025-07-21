@@ -35,7 +35,7 @@ static void show_longest_blk(unsigned start, unsigned end)
 	DESTROY_ARRAY(kanjis);
 }
 
-int longest_rsc_block(char const *const *argv, int argc)
+int longest_rsc_block(char **argv, int argc)
 {
 	unsigned rsc_i;
 	unsigned longest_blk_size = 1;

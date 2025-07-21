@@ -884,7 +884,7 @@ static int consume_supkey(int *supki)
 	return 0;
 }
 
-int check_kanji_db_order(char const *const *argv, int argc)
+int check_kanji_db_order(char **argv, int argc)
 {
 	FILE *db_stream = NULL;
 	int res, supki = 0;
@@ -902,12 +902,9 @@ int check_kanji_db_order(char const *const *argv, int argc)
 			flags.allkeyout = 1;
 		} else if (!strcmp(arg, "--")) {
 			break;
-		} else {
-			fprintf(err, "フラグを認識できませんでした：%s\n",
-				arg);
-			return 3;
-		}
+		} else badflag(arg);
 	}
+	if (argc) DIE(0, "無功な引数: %s", *argv);
 
 	db_stream = xfopen("third_party/Unihan_RadicalStrokeCounts.txt", "r");
 

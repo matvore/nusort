@@ -39,7 +39,7 @@ int main(void)
 	}
 
 	while (run_test("free_kanji_keys_output_short_shifted_codes", NULL)) {
-		char const *argv[] = {"--short-shifted-codes"};
+		char *argv[] = {"--short-shifted-codes"};
 		free_kanji_keys(argv, 1);
 	}
 
@@ -71,17 +71,14 @@ int main(void)
 	}
 
 	while (run_test("free_kanji_keys_no_kanji_numerals", NULL)) {
-		char const *args[] = {
-			"--no-kanji-nums",
-			"--short-shifted-codes",
-		};
+		char *args[] = {"--no-kanji-nums", "--short-shifted-codes"};
 		free_kanji_keys(args, 2);
 	}
 
 	while (run_test("free_kanji_keys_missing_wo_key_arg",
 			"フラグを認識できませんでした：--hiragana-wo-key\n"
 			 "exit code: 200\n")) {
-		char const *args[] = {"--hiragana-wo-key", "?"};
+		char *args[] = {"--hiragana-wo-key", "?"};
 		/* 引数の数 (argc) が足りないため、「?」を解析しないべき。*/
 		fprintf(err, "exit code: %d\n", free_kanji_keys(args, 1));
 	}
@@ -89,14 +86,14 @@ int main(void)
 	while (run_test("free_kanji_keys_wo_key_arg_too_short",
 			"フラグを認識できませんでした：--hiragana-wo-key\n"
 			 "exit code: 200\n")) {
-		char const *args[] = {"--hiragana-wo-key", ""};
+		char *args[] = {"--hiragana-wo-key", ""};
 		fprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));
 	}
 
 	while (run_test("free_kanji_keys_wo_key_arg_too_long",
 			"フラグを認識できませんでした：--hiragana-wo-key\n"
 			 "exit code: 200\n")) {
-		char const *args[] = {"--hiragana-wo-key", "xy"};
+		char *args[] = {"--hiragana-wo-key", "xy"};
 		fprintf(err, "exit code: %d\n", free_kanji_keys(args, 2));
 	}
 
@@ -195,8 +192,8 @@ int main(void)
 
 	while (run_test("parse_optimize_keystroke_flag", "END 0 1\n")) {
 		int argc = 1;
-		char const *argv[] = {"--romazi-optimize-keystrokes", "END"};
-		char const *const *argv_ptr = argv;
+		char *argv[] = {"--romazi-optimize-keystrokes", "END"};
+		char **argv_ptr = argv;
 
 		struct romazi_config config = {0};
 		if (!parse_romazi_flags(&argc, &argv_ptr, &config))

@@ -4,7 +4,7 @@
 #include "streams.h"
 #include "util.h"
 
-int free_kanji_keys(char const *const *argv, int argc)
+int free_kanji_keys(char **argv, int argc)
 {
 	size_t i;
 	struct romazi_config romazi_config = {0};

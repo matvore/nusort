@@ -10,7 +10,7 @@ int main(void)
 	}
 
 	while (run_test("custom_layout", NULL)) {
-		practice_set((const char *[]){
+		practice_set((char *[]){
 			"--pack-kakko",
 			"--allow-left-bracket-key1",
 			"--busy-right-pinky",

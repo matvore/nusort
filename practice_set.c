@@ -8,7 +8,7 @@
 #include "util.h"
 
 /* 任意のマッピングに対する漢字練習セットを生成 */
-int practice_set(char const *const *argv, int argc)
+int practice_set(char **argv, int argc)
 {
 	struct romazi_config romazi_config = {0};
 	struct kanji_distribution kdist = {.sort_each_line_by_rsc = 1};
@@ -25,10 +25,7 @@ int practice_set(char const *const *argv, int argc)
 		if (parse_romazi_flags(&argc, &argv, &romazi_config)) continue;
 		if (parse_kanji_distribution_flags(&argc, &argv, &kdist))
 			continue;
-
-		fprintf(err, "フラグを認識できませんでした: %s\n", *argv);
-		res = 1;
-		goto cleanup;
+		badflag(*argv);
 	}
 
 	get_romazi_codes(&romazi_config, &mapping);
@@ -73,7 +70,6 @@ int practice_set(char const *const *argv, int argc)
 		bestk = ke->c;
 	}
 
-cleanup:
 	kanji_distribution_destroy(&kdist);
 	DESTROY_ARRAY(mapping);
 

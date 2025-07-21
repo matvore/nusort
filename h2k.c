@@ -4,7 +4,7 @@
 #include "streams.h"
 #include "util.h"
 
-int h2k(char const *const *argv, int argc)
+int h2k(char **argv, int argc)
 {
 	char buf[4] = {0};
 	int size = 0;

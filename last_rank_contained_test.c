@@ -7,7 +7,7 @@
 
 static struct {
 	const char *name;
-	const char *args[40];
+	char *args[40];
 	const char *expected;
 } test_cases[] = {
 
