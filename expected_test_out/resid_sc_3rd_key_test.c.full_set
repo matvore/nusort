@@ -1,5 +1,25 @@
 inc_romazi:0
+/\ys -> 𪀚
+/\yr -> 𪘂
+/\yg -> 鼗
+/\yf -> 䳑
+/\ye -> 齩
+/\yd -> 鴲
+/\ya -> 𪀯
 inc_romazi:1
+c\yx -> 蛑
+c\yw -> 䒾
+c\yv -> 荣
+c\yt -> 荗
+c\ys -> 苽
+c\yr -> 虜
+c\yq -> 茰
+c\yg -> 荢
+c\yf -> 袹
+c\ye -> 䒳
+c\yd -> 袲
+c\yc -> 蛕
+c\ya -> 荕
 c\iz -> 菕
 c\iy -> 裻
 c\ix -> 菺
@@ -71,3 +91,13 @@ c\a. -> 螼
 c\a- -> 䗪
 c\a, -> 螹
 c\a' -> 蟊
+/\yw -> 鼗
+/\yt -> 齩
+/\ys -> 䳄
+/\yr -> 𪀚
+/\yq -> 𪘂
+/\yg -> 鴲
+/\yf -> 鮬
+/\ye -> 𪀯
+/\yd -> 鮲
+/\ya -> 䳑
