@@ -77,7 +77,7 @@ obj/%.o: %.c $(HDRS)
 nusort: $(SHARED_OBJS) main.c
 	$(CC) $(ALL_CFLAGS) -o nusort $^
 
-%_test_bin: %_test.o $(SHARED_OBJS) test_util.o
+%_test_bin: %_test.o $(SHARED_OBJS) obj/test_util.o
 	$(CC) $(ALL_CFLAGS) -o $@ $^
 
 %_test: %_test_bin
