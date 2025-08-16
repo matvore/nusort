@@ -110,7 +110,11 @@ test: \
 	rpc_mode_test \
 	rsc_gaps_test
 
+tags: $(HDRS) $(SHARED_OBJS) main.c
+	ctags -R *.c *.h
+
 clean:
 	rm -f *_test_bin actual_test_out/*.out obj/*.o
 	rm -rf test_errors
 	rm -f nusort
+	rm -f tags
