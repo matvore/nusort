@@ -1,0 +1,4 @@
+[TOP]
+{rpc 0 full packets + 6 bytes}@[TOP]
+<x>:eol
+{rpc 0 full packets + 14 bytes}@

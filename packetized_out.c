@@ -4,20 +4,38 @@
 
 #include <string.h>
 
-
 static char pack_out[255];
 static unsigned pack_out_sz;
 
 int use_packetized_out;
 
-void add_packetized_out(const char *s, unsigned len)
+static unsigned full_packets;
+
+static void flush(void)
+{
+	if (!pack_out_sz) return;
+
+	if (use_packetized_out && !debugout) {
+		fputc('\x04', out);
+		fputc(pack_out_sz, out);
+	}
+
+	output_readable(pack_out, pack_out_sz);
+
+	pack_out_sz = 0;
+}
+
+void packout(const char *s, unsigned len)
 {
 	if (len == -1) len = strlen(s);
 
 	while (len) {
 		unsigned cplen;
 
-		if (pack_out_sz == sizeof(pack_out)) dump_packetized_out();
+		if (pack_out_sz == sizeof(pack_out)) {
+			flush();
+			full_packets+=1;
+		}
 
 		if (len + pack_out_sz > sizeof(pack_out))
 			cplen = sizeof(pack_out) - pack_out_sz;
@@ -29,24 +47,17 @@ void add_packetized_out(const char *s, unsigned len)
 		len -= cplen;
 		s += cplen;
 	}
-
-	if (!use_packetized_out) dump_packetized_out();
 }
 
-void add_packetized_out_null_terminated(const char *s)
+void flush_packet(void)
 {
-	add_packetized_out(s, strlen(s));
-}
+	unsigned sz = pack_out_sz;
 
-void dump_packetized_out(void)
-{
-	if (!pack_out_sz) return;
+	flush();
 
-	if (use_packetized_out) {
-		fputc('\x04', out);
-		fputc(pack_out_sz, out);
-	}
+	if (!use_packetized_out || !debugout)	return;
+	if (!full_packets && !sz)		return;
 
-	fwrite(pack_out, pack_out_sz, 1, out);
-	pack_out_sz = 0;
+	fprintf(out, "{rpc %u full packets + %u bytes}", full_packets, sz);
+	full_packets = 0;
 }

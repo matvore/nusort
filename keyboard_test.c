@@ -2,12 +2,21 @@
 #include "commands.h"
 #include "keyboard.h"
 #include "mapping.h"
+#include "packetized_out.h"
 #include "streams.h"
 #include "test_util.h"
 #include "util.h"
 
 #include <errno.h>
 #include <string.h>
+
+static struct mapping m;
+
+static void cleanup(void)
+{
+	flush_packet();
+	destroy_mapping(&m);
+}
 
 int main(void)
 {
@@ -17,138 +26,118 @@ int main(void)
 	};
 
 	set_test_source_file(__FILE__);
+	debugout = 1;
 	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
 
 	while (run_test("default_view", NULL)) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.six_is_rh = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+		m.include_kanji = 1,
+		m.six_is_rh = 1,
+		m.dist.short_shifted_codes = 1;
+
 		get_romazi_codes(&romazi_config, &m.arr);
 		if (mapping_populate(&m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m.arr, "");
 		keyboard_write();
-		destroy_mapping(&m);
+		cleanup();
 	}
 
 	while (run_test("first_key_typed", NULL)) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.six_is_rh = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+		m.include_kanji = 1;
+		m.six_is_rh = 1;
+		m.dist.short_shifted_codes = 1;
 		get_romazi_codes(&romazi_config, &m.arr);
 		if (mapping_populate(&m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m.arr, "/");
 		keyboard_write();
-		destroy_mapping(&m);
+		cleanup();
 	}
 
 	while (run_test("pad_half_width_quotes", NULL)) {
-		struct key_mapping_array m = {0};
-
-		append_mapping(&m, "d", "“");
-		append_mapping(&m, "k", "”");
-		expect_ok(sort_and_validate_no_conflicts(&m));
-		keyboard_update(&m, "");
+		append_mapping(&m.arr, "d", "“");
+		append_mapping(&m.arr, "k", "”");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		keyboard_update(&m.arr, "");
 		keyboard_write();
 
-		DESTROY_ARRAY(m);
+		cleanup();
 	}
 
 	while (run_test("pad_half_width_single_quotes", NULL)) {
-		struct key_mapping_array m = {0};
-
-		append_mapping(&m, "b", "‘");
-		append_mapping(&m, "n", "’");
-		expect_ok(sort_and_validate_no_conflicts(&m));
-		keyboard_update(&m, "");
+		append_mapping(&m.arr, "b", "‘");
+		append_mapping(&m.arr, "n", "’");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		keyboard_update(&m.arr, "");
 		keyboard_write();
 
-		DESTROY_ARRAY(m);
+		cleanup();
 	}
 
 	while (run_test("formats_combining_dakuten", NULL)) {
-		struct key_mapping_array m = {0};
-
-		append_mapping(&m, "j", "ゑ" COMBINING_DAKUTEN);
-		append_mapping(&m, "k", "う" COMBINING_DAKUTEN);
-		append_mapping(&m, "l", "わ" COMBINING_DAKUTEN);
-		append_mapping(&m, ";", "を" COMBINING_DAKUTEN);
-		expect_ok(sort_and_validate_no_conflicts(&m));
-		keyboard_update(&m, "");
+		append_mapping(&m.arr, "j", "ゑ" COMBINING_DAKUTEN);
+		append_mapping(&m.arr, "k", "う" COMBINING_DAKUTEN);
+		append_mapping(&m.arr, "l", "わ" COMBINING_DAKUTEN);
+		append_mapping(&m.arr, ";", "を" COMBINING_DAKUTEN);
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		keyboard_update(&m.arr, "");
 		keyboard_write();
 
-		DESTROY_ARRAY(m);
+		cleanup();
 	}
 
 	while (run_test("rsc_list_basic", NULL)) {
-		struct key_mapping_array m = {0};
-
-		append_mapping(&m, "xj", "作");
-		append_mapping(&m, "xk", "準");
-		append_mapping(&m, "xl", "巾");
-		append_mapping(&m, "x;", "方");
-		expect_ok(sort_and_validate_no_conflicts(&m));
-		keyboard_update(&m, "x");
+		append_mapping(&m.arr, "xj", "作");
+		append_mapping(&m.arr, "xk", "準");
+		append_mapping(&m.arr, "xl", "巾");
+		append_mapping(&m.arr, "x;", "方");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		keyboard_update(&m.arr, "x");
 		keyboard_show_rsc_list();
 
-		DESTROY_ARRAY(m);
+		cleanup();
 	}
 
 	while (run_test("rsc_list_grouping", NULL)) {
-		struct key_mapping_array m = {0};
-
-		append_mapping(&m, "yj", "作");
-		append_mapping(&m, "yk", "準");
-		append_mapping(&m, "yh", "漢");
-		append_mapping(&m, "yl", "滝");
-		append_mapping(&m, "y;", "方");
-		expect_ok(sort_and_validate_no_conflicts(&m));
-		keyboard_update(&m, "y");
+		append_mapping(&m.arr, "yj", "作");
+		append_mapping(&m.arr, "yk", "準");
+		append_mapping(&m.arr, "yh", "漢");
+		append_mapping(&m.arr, "yl", "滝");
+		append_mapping(&m.arr, "y;", "方");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		keyboard_update(&m.arr, "y");
 		keyboard_show_rsc_list();
 
-		DESTROY_ARRAY(m);
+		cleanup();
 	}
 
 	while (run_test("extra_keys_on_right", NULL)) {
-		struct key_mapping_array m = {0};
-
-		append_mapping(&m, "k]", "作");
-		append_mapping(&m, "k'", "準");
-		append_mapping(&m, "k=", "漢");
-		append_mapping(&m, "k+", "滝");
-		append_mapping(&m, "k\"", "方");
-		append_mapping(&m, "k}", "わ" COMBINING_DAKUTEN);
-		expect_ok(sort_and_validate_no_conflicts(&m));
-		keyboard_update(&m, "k");
+		append_mapping(&m.arr, "k]", "作");
+		append_mapping(&m.arr, "k'", "準");
+		append_mapping(&m.arr, "k=", "漢");
+		append_mapping(&m.arr, "k+", "滝");
+		append_mapping(&m.arr, "k\"", "方");
+		append_mapping(&m.arr, "k}", "わ" COMBINING_DAKUTEN);
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
+		keyboard_update(&m.arr, "k");
 		keyboard_write();
 
-		DESTROY_ARRAY(m);
+		cleanup();
 	}
 
 	while (run_test("some_radicals_skipped_in_rsc_guide", NULL)) {
-		struct key_mapping_array m = {0};
+		append_mapping(&m.arr, "/a", "龍");
+		append_mapping(&m.arr, "/b", "黒");
+		append_mapping(&m.arr, "/c", "麻");
+		append_mapping(&m.arr, "/d", "麗");
+		append_mapping(&m.arr, "/e", "魅");
+		append_mapping(&m.arr, "/f", "髪");
+		append_mapping(&m.arr, "/g", "飯");
+		expect_ok(sort_and_validate_no_conflicts(&m.arr));
 
-		expect_ok(sort_and_validate_no_conflicts(&m));
-
-		append_mapping(&m, "/a", "龍");
-		append_mapping(&m, "/b", "黒");
-		append_mapping(&m, "/c", "麻");
-		append_mapping(&m, "/d", "麗");
-		append_mapping(&m, "/e", "魅");
-		append_mapping(&m, "/f", "髪");
-		append_mapping(&m, "/g", "飯");
-		keyboard_update(&m, "/");
+		keyboard_update(&m.arr, "/");
 		keyboard_show_rsc_list();
 
-		DESTROY_ARRAY(m);
+		cleanup();
 	}
 }

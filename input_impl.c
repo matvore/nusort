@@ -25,9 +25,10 @@ struct {
 
 static void send_propagated_input(char const *s, int len)
 {
-	fputc('\x02', out);
-	fputc(len, out);
-	fwrite(s, len, 1, out);
+	if (debugout)	fprintf(out, "{converted %d bytes: ", len);
+	else		{ fputc('\x02', out); fputc(len, out); }
+	output_readable(s, len);
+	if (debugout) fputc('}', out);
 	fflush(out);
 }
 
@@ -62,7 +63,7 @@ static void save_with_osc52(void)
 {
 	size_t conv_i = 0;
 
-	fputs("\x1b]52;c;", out);
+	fputs(debugout ? "{OSC52:" : "\x1b]52;c;", out);
 
 	while (conv_i < converted.cnt) {
 		int bits = 0, i;
@@ -87,20 +88,19 @@ static void save_with_osc52(void)
 
 	switch (converted.cnt % 3)
 	{
-	case 0:
-		fputc('\a', out);
-		break;
 	case 1:
-		fputs("==\a", out);
+		fputs("==", out);
 		break;
 	case 2:
-		fputs("=\a", out);
+		fputc('=', out);
 		break;
 	}
+	fputc(debugout ? '}' : '\a', out);
 }
 
 static void add_rsc_range_to_cutoff_guide(
-	unsigned start_rsc, unsigned end_rsc, unsigned *rad_stroke_cnt)
+	unsigned start_rsc, unsigned end_rsc, unsigned *rad_stroke_cnt,
+	int highlight)
 {
 	struct radical_coverage rads = {
 		.rsc_key_start = start_rsc,
@@ -120,27 +120,24 @@ static void add_rsc_range_to_cutoff_guide(
 		rad_cnt++;
 
 		if (rads.stroke_cnt != *rad_stroke_cnt) {
-			guide_el = dict_guide_add_el();
-			guide_el->type = DICT_GUIDE_BUSHU_STROKE_COUNT;
+			guide_el = dict_guide_add(
+				DICT_GUIDE_BUSHU_STROKE_CNT, highlight);
 			guide_el->u.stroke_count = rads.stroke_cnt;
 			*rad_stroke_cnt = rads.stroke_cnt;
 		}
-		guide_el = dict_guide_add_el();
-		guide_el->type = DICT_GUIDE_KANJI;
+		guide_el = dict_guide_add(DICT_GUIDE_KANJI, highlight);
 		guide_el->u.kanji.ki = rads.current;
 
 		if (rad_cnt > 1) {
-			guide_el = dict_guide_add_el();
-			guide_el->type = DICT_GUIDE_LINE_WRAPPABLE_POINT;
+			guide_el = dict_guide_add(
+				DICT_GUIDE_LINE_WRAPPABLE_POINT, highlight);
 			continue;
 		}
 		if (!start_strokes)
 			continue;
-		guide_el = dict_guide_add_el();
-		guide_el->type = DICT_GUIDE_STROKE_COUNT;
+		guide_el = dict_guide_add(DICT_GUIDE_STROKE_COUNT, highlight);
 		guide_el->u.stroke_count = start_strokes;
-		guide_el = dict_guide_add_el();
-		guide_el->type = DICT_GUIDE_ELLIPSIS;
+		guide_el = dict_guide_add(DICT_GUIDE_ELLIPSIS, highlight);
 	}
 
 	if (!end_strokes || (rad_cnt == 1 && start_rsc + 1 >= end_rsc)) {
@@ -150,20 +147,20 @@ static void add_rsc_range_to_cutoff_guide(
 
 	if (guide_el->type != DICT_GUIDE_ELLIPSIS) {
 		/* 省略符号直前で改行をしない */
-		if (guide_el->type != DICT_GUIDE_LINE_WRAPPABLE_POINT)
-			guide_el = dict_guide_add_el();
-		guide_el->type = DICT_GUIDE_ELLIPSIS;
+		if (guide_el->type == DICT_GUIDE_LINE_WRAPPABLE_POINT)
+			guide_el->type = DICT_GUIDE_ELLIPSIS;
+		else
+			dict_guide_add(DICT_GUIDE_ELLIPSIS, highlight);
 	}
-	guide_el = dict_guide_add_el();
-	guide_el->type = DICT_GUIDE_STROKE_COUNT;
+	guide_el = dict_guide_add(DICT_GUIDE_STROKE_COUNT, highlight);
 	guide_el->u.stroke_count = residual_stroke_count_from_rsc_sort_key(
 		start_rsc == end_rsc ? start_rsc : end_rsc - 1);
 }
 
-static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
+static void show_cutoff_guide(
+	struct mapping *mapping, Orig so_far_input, char highlight)
 {
-	int ki;
-	int so_far_len = strlen(so_far_input);
+	int ki, highlighting = 0, so_far_len = strlen(so_far_input);
 	Orig key = {0};
 	unsigned prev_rsc_sort_key = 0, rad_stroke_cnt = 0;
 
@@ -190,15 +187,15 @@ static void show_cutoff_guide(struct mapping *mapping, Orig so_far_input)
 		if (prev_rsc_sort_key)
 			add_rsc_range_to_cutoff_guide(
 				prev_rsc_sort_key, rsc_key_end,
-				&rad_stroke_cnt);
+				&rad_stroke_cnt, highlighting);
 
-		dict_guide_add_el()->type = DICT_GUIDE_LINE_WRAPPABLE_POINT;
+		dict_guide_add(DICT_GUIDE_LINE_WRAPPABLE_POINT, 0);
 
 		if (ki == KANJI_KEY_COUNT)
 			continue;
-		guide_el = dict_guide_add_el();
-		guide_el->type = DICT_GUIDE_KUGIRI_INPUT_KEY;
+		guide_el = dict_guide_add(DICT_GUIDE_KUGIRI_INPUT_KEY, 1);
 		guide_el->u.kugiri_input_key = ch;
+		highlighting = highlight==ch;
 
 		prev_rsc_sort_key = rsc_key_end;
 	}
@@ -231,27 +228,40 @@ static int eat_escape_sequence(int rpc_mode)
 int input_impl(struct mapping *mapping, struct input_flags const *flags)
 {
 	Orig so_far_input = {0};
+	char orig1st;
 	int did_delete_orig = 0;
 	int did_delete_conv = 0;
+	int origlen, ch, pressed_bs;
 
 	use_packetized_out = flags->rpc_mode;
 
 	while (1) {
-		int ch;
-		int pressed_bs = 0;
+		pressed_bs = 0;
 
 		keyboard_update(&mapping->arr, so_far_input);
 		to_top_of_screen();
-		if (flags->show_cutoff_guide)
-			show_cutoff_guide(mapping, so_far_input);
+		if (flags->show_cutoff_guide) {
+			origlen = strlen(so_far_input);
+			orig1st = 0;
+			if (mapping->resid_sc_3rd_key || origlen == 1) {
+				orig1st = so_far_input[0];
+				so_far_input[0] = 0;
+			}
+			else if (origlen == 3) {
+				orig1st = so_far_input[2];
+				so_far_input[2] = 0;
+			}
+			show_cutoff_guide(mapping, so_far_input, orig1st);
+			so_far_input[strlen(so_far_input)] = orig1st;
+		}
 		start_window(WINDOW_INPUT_LINE);
 		if (flags->show_pending_and_converted) {
-			add_packetized_out(converted.el, converted.cnt);
+			packout(converted.el, converted.cnt);
 			if (so_far_input[0] || did_delete_orig) {
-				add_packetized_out("<", 1);
-				add_packetized_out(
+				packout("<", 1);
+				packout(
 					so_far_input, strlen(so_far_input));
-				add_packetized_out(">", 1);
+				packout(">", 1);
 			}
 			if (so_far_input[0] || did_delete_orig ||
 			    converted.cnt || did_delete_conv)
@@ -260,17 +270,14 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 		finish_window();
 		if (flags->show_rsc_list)
 			keyboard_show_rsc_list();
-		if (flags->show_keyboard) {
-			keyboard_write();
-			add_packetized_out_null_terminated("\n");
-		}
+		if (flags->show_keyboard) keyboard_write();
 
 		did_delete_orig = 0;
 		did_delete_conv = 0;
 
-		dump_packetized_out();
+		flush_packet();
 
-		if (flags->rpc_mode) fputc('\x01', out);
+		if (flags->rpc_mode) fputc(debugout ? '@':'\x01', out);
 
 		fflush(out);
 
@@ -345,7 +352,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 cleanup:
 	DESTROY_ARRAY(converted);
 
-	dump_packetized_out();
+	flush_packet();
 	use_packetized_out = 0;
 
 	return 0;

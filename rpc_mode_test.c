@@ -7,7 +7,8 @@
 int main(int argc, char **argv)
 {
 	set_test_source_file(__FILE__);
-	while (run_test("await_input", "\x01")) {
+	debugout = 1;
+	while (run_test("await_input", 0)) {
 		struct input_flags f = {
 			.rpc_mode = 1,
 		};
@@ -20,9 +21,7 @@ int main(int argc, char **argv)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("wrap_output", "\x01"
-				       "\x04\x04" "<x>\n"
-				       "\x01")) {
+	while (run_test("wrap_output", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.rpc_mode = 1,
@@ -36,15 +35,7 @@ int main(int argc, char **argv)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("wrap_output_longer_orig", "\x01"
-						   "\x04\x04" "<x>\n"
-						   "\x01"
-						   "\x04\x05" "<xy>\n"
-						   "\x01"
-						   "\x04\x06" "<xyz>\n"
-						   "\x01"
-						   "\x02\x03" "あ"
-						   "\x01")) {
+	while (run_test("wrap_output_longer_orig", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.rpc_mode = 1,
@@ -58,9 +49,7 @@ int main(int argc, char **argv)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("unrecognized_orig_pref", "\x01"
-						  "\x02\x01" "u"
-						  "\x01")) {
+	while (run_test("unrecognized_orig_pref", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.rpc_mode = 1,
@@ -108,11 +97,7 @@ int main(int argc, char **argv)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("propagate_newline", "\x01"
-					     "\x02" "\x03" "あ"
-					     "\x01"
-					     "\x02" "\x01" "\n"
-					     "\x01")) {
+	while (run_test("propagate_newline", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.rpc_mode = 1,
@@ -125,13 +110,7 @@ int main(int argc, char **argv)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("process_or_propagate_backspace", "\x01"
-							  "\x04" "\x04" "<x>\n"
-							  "\x01"
-							  "\x04" "\x03" "<>\n"
-							  "\x01"
-							  "\x02" "\x01" "\b"
-							  "\x01")) {
+	while (run_test("process_or_propagate_backspace", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.rpc_mode = 1,
@@ -145,14 +124,7 @@ int main(int argc, char **argv)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("propagate_arrow_keys_1",
-			"\x01"
-			"\x02" "\x03" "\x1b[A"
-			"\x01"
-			"\x02" "\x03" "\x1b[B"
-			"\x01"
-			"\x02" "\x02" "\x1b" "a"
-			"\x01")) {
+	while (run_test("propagate_arrow_keys_1", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.rpc_mode = 1,
@@ -166,7 +138,7 @@ int main(int argc, char **argv)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("no_extra_output_after_esc_eof", "\x01")) {
+	while (run_test("no_extra_output_after_esc_eof", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.rpc_mode = 1,

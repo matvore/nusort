@@ -14,69 +14,70 @@
 #include <stdint.h>
 #include <string.h>
 
-#define I "\000\000\000│"
-#define II "\000\000\000║"
-#define r "┌"
-#define T "┬"
-#define TT "╥"
-#define L_ "└─"
-#define LT "└┬"
-#define vv "╨"
+static unsigned lineoffs[9];
+static char *keyboard;
+static unsigned keyboardsz;
 
-static char const KEYBOARD[] = ""
-	  r"──"T"──"T"──"T"──"T"──"T"──"TT"──"T"──"T"──"T"──"TT"──" T"──" "┐\n"
-	  I"　"I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"II"　" I"　"  I"\n"
-	  LT"─┴"T"─┴"T"─┴"T"─┴"T"─┴"TT"─╨"T"─┴"T"─┴"T"─┴"T"─"vv TT"─┴" T"─┴┐\n"
-	" "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　"  II"　" I"　"I"\n"
-	" "LT"─┴"T"─┴"T"─┴"T"─┴"T"─╨"TT"─┴"T"─┴"T"─┴"T"─┴"T  "─"vv TT"─┴"T"─┘\n"
-	"  "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　"    II"　"I"\n"
-	"  "LT"─┴"T"─┴"T"─┴"T"─┴"T"─╨"TT"─┴"T"─┴"T"─┴"T"─┴"T    "─"vv T"─┘\n"
-	"   "I"　"I"　"I"　"I"　"I"　"II"　"I"　"I"　"I"　"I"　"      I"\n"
-	"   "L_ "─┴──""┴──""┴──""┴──" vv "──┴──""┴──""┴──""┴──"      "┘";
+static void kbpad(int amount)
+{
+	if (keyboard) memset(keyboard+keyboardsz, 0, amount);
+	keyboardsz += amount;
+}
 
-#undef I
-#undef II
-#undef r
-#undef T
-#undef TT
-#undef L_
-#undef LT
-#undef vv
+static void kbraw(const char *s)
+{
+	unsigned len = strlen(s);
+	if (keyboard) memcpy(keyboard + keyboardsz, s, len);
+	keyboardsz += len;
+}
 
-static char keyboard[sizeof(KEYBOARD)] = {0};
+static void kblin(int lineno, const char *s)
+{
+	for (;*s;s++) {
+		switch (*s) {
+		case 'I': kbpad(3); kbraw("│"); break;
+		case 'H': kbpad(3); kbraw("║"); break;
+		case '.':
+			if (lineno >= 0) lineoffs[lineno] = keyboardsz;
+			break;
+		default:
+			if (keyboard) keyboard[keyboardsz] = *s;
+			keyboardsz += 1;
+		}
+	}
+	kbraw(termeol());
+	if (lineno >= 0) kbraw("\n");
+}
+
+static void init_keyboard0(void)
+{
+	keyboardsz = 0;
+
+	kblin(0, "┌.──┬──┬──┬──┬──┬──╥──┬──┬──┬──╥──┬──┐");
+	kblin(1, "I.　I　I　I　I　I　H　I　I　I　H　I　I");
+	kblin(2, "└┬.─┴┬─┴┬─┴┬─┴┬─┴╥─╨┬─┴┬─┴┬─┴┬─╨╥─┴┬─┴┐");
+	kblin(3, " I.　I　I　I　I　H　I　I　I　I　H　I　I");
+	kblin(4, " └┬.─┴┬─┴┬─┴┬─┴┬─╨╥─┴┬─┴┬─┴┬─┴┬─╨╥─┴┬─┘");
+	kblin(5, "  I.　I　I　I　I　H　I　I　I　I　H　I");
+	kblin(6, "  └┬.─┴┬─┴┬─┴┬─┴┬─╨╥─┴┬─┴┬─┴┬─┴┬─╨┬─┘");
+	kblin(7, "   I.　I　I　I　I　H　I　I　I　I　I");
+	kblin(-1, "   └──┴──┴──┴──┴──╨──┴──┴──┴──┴──┘");
+}
 
 static int key_index_to_cell_offset(int ki)
 {
-	int col, line_off;
-	if (ki < KANJI_KEYS_ROW_0) {
-		line_off = 0x076;
-		col = ki;
-	} else if (ki < KANJI_KEYS_ROWS_01) {
-		line_off = 0x15d;
-		col = ki - 12;
-	} else if (ki < KANJI_KEYS_ROWS_012) {
-		line_off = 0x243;
-		col = ki - 24;
-	} else if (ki < KANJI_KEY_COUNT) {
-		line_off = 0x2b3 + 18 + 18 + 18 + 18 + 15 + 9 + 6;
-		col = ki - 35;
-	} else if (ki < KANJI_KEY_COUNT + KANJI_KEYS_ROW_0) {
-		line_off = 0x003;
-		col = ki - 45;
-	} else if (ki < KANJI_KEY_COUNT + KANJI_KEYS_ROWS_01) {
-		line_off = 0x0c5 + 18 + 18;
-		col = ki - 57;
-	} else if (ki < KANJI_KEY_COUNT + KANJI_KEYS_ROWS_012) {
-		line_off = 0x189 + 18 + 18 + 18 + 18;
-		col = ki - 69;
-	} else if (ki < KANJI_KEY_COUNT * 2) {
-		line_off = 0x24f + 18 + 18 + 18 + 18 + 15 + 9;
-		col = ki - 80;
-	} else {
-		DIE(0, "%d\n", ki);
-	}
+	int col, lineno, ks = ki - KANJI_KEY_COUNT;
+	if (ki < KANJI_KEYS_ROW_0)	{ lineno = 1; col = 0	; } else
+	if (ki < KANJI_KEYS_ROWS_01)	{ lineno = 3; col = 12	; } else
+	if (ki < KANJI_KEYS_ROWS_012)	{ lineno = 5; col = 24	; } else
+	if (ki < KANJI_KEY_COUNT)	{ lineno = 7; col = 35	; } else
+	if (ks < KANJI_KEYS_ROW_0)	{ lineno = 0; col = 45	; } else
+	if (ks < KANJI_KEYS_ROWS_01)	{ lineno = 2; col = 57	; } else
+	if (ks < KANJI_KEYS_ROWS_012)	{ lineno = 4; col = 69	; } else
+	if (ks < KANJI_KEY_COUNT)	{ lineno = 6; col = 80	; } else
+	DIE(0, "%d\n", ki);
 
-	return line_off + col * 9;
+	return lineoffs[lineno] + (ki - col) * 9;
 }
 
 static struct {
@@ -89,7 +90,7 @@ static struct {
 
 static int rsc_list_nr;
 
-void keyboard_write(void) { add_packetized_out(keyboard, sizeof(KEYBOARD)); }
+void keyboard_write(void) { packout(keyboard, keyboardsz); }
 
 static int needs_padding_space(char const *str, int len)
 {
@@ -125,16 +126,15 @@ void keyboard_update(
 
 	strncpy(full_code, prefix, sizeof(full_code));
 
-	if (!keyboard[0])
-		memcpy(keyboard, KEYBOARD, sizeof(KEYBOARD));
+	if (!keyboard) {
+		init_keyboard0();
+		keyboard = xcalloc(keyboardsz, 1);
+	}
 
 	rsc_list_nr = 0;
 
 	/* 入力文字列を全てキーから消し、キーを空にします。*/
-	for (ki = 0; ki < MAPPABLE_CHAR_COUNT; ki++) {
-		int offset = key_index_to_cell_offset(ki);
-		memcpy(keyboard + offset, KEYBOARD + offset, 6);
-	}
+	init_keyboard0();
 
 	for (ki = 0; ki < MAPPABLE_CHAR_COUNT; ki++) {
 		struct key_mapping const *m;
@@ -178,7 +178,6 @@ static void maybe_add_radical_transition(int rsc_i)
 	struct radical_coverage c = {0};
 	int iters_needed = rsc_i ? 2 : 1;
 	unsigned last_rad;
-	struct dict_guide_el *guide_el;
 
 	if (!rsc_i)
 		start = end - 1;
@@ -198,9 +197,8 @@ static void maybe_add_radical_transition(int rsc_i)
 	if (iters_needed > 0)
 		return;
 
-	guide_el = dict_guide_add_el();
-	guide_el->type = DICT_GUIDE_RSC_LIST_BUSHU;
-	guide_el->u.rsc_list_bushu_ki = last_rad;
+	dict_guide_add(DICT_GUIDE_RSC_LIST_BUSHU, 0)
+		->u.rsc_list_bushu_ki = last_rad;
 }
 
 static unsigned rsc_sort_key_change(int rsc_i)
@@ -232,18 +230,16 @@ void keyboard_show_rsc_list(void)
 			unsigned r = residual_stroke_count_from_rsc_sort_key(
 				key_change);
 			if (r) {
-				dict_guide_add_el()->type = DICT_GUIDE_SPACE;
-				guide_el = dict_guide_add_el();
-				guide_el->type = DICT_GUIDE_STROKE_COUNT;
-				guide_el->u.stroke_count = r;
+				dict_guide_add(DICT_GUIDE_SPACE, 0);
+				dict_guide_add(DICT_GUIDE_STROKE_COUNT, 0)
+					->u.stroke_count = r;
 			}
 		}
 
-		guide_el = dict_guide_add_el();
-		guide_el->type = DICT_GUIDE_KANJI;
+		guide_el = dict_guide_add(DICT_GUIDE_KANJI, 0);
 		guide_el->u.kanji.ki = rsc_list[i].k;
 		guide_el->u.kanji.input_c = rsc_list[i].c;
-		dict_guide_add_el()->type = DICT_GUIDE_LINE_WRAPPABLE_POINT;
+		dict_guide_add(DICT_GUIDE_LINE_WRAPPABLE_POINT, 0);
 	}
 
 	start_window(WINDOW_RSC_LIST);

@@ -3,7 +3,7 @@
 int check_kanji_db_order(char **argv, int argc);
 int free_kanji_keys(char **argv, int argc);
 int h2k(char **argv, int argc);
-int input(char **argv, int argc, int set_raw_mode);
+int input(char **argv, int argc, int real_term);
 int kana_stats(char **argv, int argc);
 int kanji_db_chart(char **argv, int argc);
 int longest_rsc_block(char **argv, int argc);

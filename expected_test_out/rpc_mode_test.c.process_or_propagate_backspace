@@ -1,0 +1,9 @@
+[TOP]
+:eol
+{rpc 0 full packets + 11 bytes}@[TOP]
+<x>:eol
+{rpc 0 full packets + 14 bytes}@[TOP]
+<>:eol
+{rpc 0 full packets + 13 bytes}@{converted 1 bytes: <bs>}[TOP]
+:eol
+{rpc 0 full packets + 11 bytes}@

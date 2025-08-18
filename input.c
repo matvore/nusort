@@ -35,7 +35,7 @@ static void customize_term_attributes(struct termios t)
 }
 #endif
 
-int input(char **argv, int argc, int set_raw_mode)
+int input(char **argv, int argc, int real_term)
 {
 	struct mapping mapping = {0};
 #if HAVE_TERMIOS
@@ -94,18 +94,21 @@ int input(char **argv, int argc, int set_raw_mode)
 	if (res)
 		return res;
 
-	if (set_raw_mode) {
+	if (real_term) {
 #if HAVE_TERMIOS
 		check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));
 		customize_term_attributes(orig_termios);
 #endif
 		enable_windows();
+		fputs("\x1b[?1049h" "\x1b[?25l", err);
 	}
 	res = input_impl(&mapping, &flags);
+	if (real_term) {
 #if HAVE_TERMIOS
-	if (set_raw_mode)
 		check_term_op(tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios));
 #endif
+		fputs("\x1b[?25h" "\x1b[?1049l", err);
+	}
 
 	destroy_mapping(&mapping);
 

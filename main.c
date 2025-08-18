@@ -15,7 +15,7 @@ static const char *binname;
 
 static int input_cmd(char **argv, int argc)
 {
-	return input(argv, argc, /*set_raw_mode=*/1);
+	return input(argv, argc, /*real_term=*/1);
 }
 
 static const struct {

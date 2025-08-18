@@ -9,6 +9,7 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
+	debugout = 1;
 
 	while (run_test("first_key_k", NULL)) {
 		char *argv[] = {
@@ -18,7 +19,7 @@ int main(void)
 		};
 		int argc = 4;
 		in = open_tmp_file_containing("kj");
-		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
+		expect_ok(input(argv, argc, /*real_term=*/0));
 		XFCLOSE(in);
 	}
 
@@ -30,7 +31,7 @@ int main(void)
 		};
 		int argc = 4;
 		in = open_tmp_file_containing("tya" "HWI" "DWO" "WHO" "YE");
-		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
+		expect_ok(input(argv, argc, /*real_term=*/0));
 		XFCLOSE(in);
 	}
 
@@ -40,7 +41,7 @@ int main(void)
 		};
 		int argc = 2;
 		in = open_tmp_file_containing("k[" "r'" "9]");
-		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
+		expect_ok(input(argv, argc, /*real_term=*/0));
 		XFCLOSE(in);
 	}
 
@@ -65,7 +66,7 @@ int main(void)
 		int argc = 5;
 
 		in = open_tmp_file_containing("");
-		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
+		expect_ok(input(argv, argc, /*real_term=*/0));
 		XFCLOSE(in);
 	}
 
@@ -77,11 +78,11 @@ int main(void)
 		int argc = 3;
 
 		in = open_tmp_file_containing("m");
-		expect_ok(input(argv, argc, /*set_raw_mode=*/0));
+		expect_ok(input(argv, argc, /*real_term=*/0));
 		XFCLOSE(in);
 	}
 
-	while (run_test("show_pending_conversion", "<m>\n")) {
+	while (run_test("show_pending_conversion", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -94,9 +95,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("show_already_converted",
-			"<k>\n"
-			"き\n")) {
+	while (run_test("show_already_converted", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -109,7 +108,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("accumulates_multiple_converted", "<r>\nろ\nろ<p>\nろぱ\n")) {
+	while (run_test("accumulates_multiple_converted", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -124,7 +123,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("backspace_on_empty_line_does_nothing", "")) {
+	while (run_test("backspace_on_empty_line_does_nothing", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -135,7 +134,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("ascii_del_on_empty_line_does_nothing", "")) {
+	while (run_test("ascii_del_on_empty_line_does_nothing", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -146,7 +145,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("ascii_del_to_remove_pending_conversion", "<r>\n<>\n<b>\n")) {
+	while (run_test("ascii_del_to_remove_pending_conversion", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -159,7 +158,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("backspace_to_remove_pending_conversion", "<r>\n<>\n<b>\n")) {
+	while (run_test("backspace_to_remove_pending_conversion", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -172,7 +171,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("backspace_to_remove_pending_conv_one_char_at_a_time", "<r>\n<ry>\n<r>\n<>\n<s>\n<sy>\nしゃ\n")) {
+	while (run_test("backspace_to_remove_pending_conv_one_char_at_a_time", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -186,7 +185,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("backspace_to_remove_converted_char", "<w>\nわ\n\n")) {
+	while (run_test("backspace_to_remove_converted_char", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -198,18 +197,7 @@ int main(void)
 	}
 
 	while (run_test("backspace_to_remove_converted_char_one_at_a_time",
-			"<w>\n"
-			"わ\n"
-			"わ<h>\n"
-			"わは\n"
-			"わは<h>\n"
-			"わはは\n"
-			"わは\n"
-			"わ\n"
-			"わ<w>\n"
-			"わわ\n"
-			"わわ<w>\n"
-			"わわわ\n")) {
+			0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -222,7 +210,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("invalid_prefix_leaks_out_of_pending_conv", "x\n")) {
+	while (run_test("invalid_prefix_leaks_out_of_pending_conv", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -233,9 +221,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("invalid_prefix_leaks_one_char_at_a_time",
-			"<m>\n"
-			"m<x>\n")) {
+	while (run_test("invalid_prefix_leaks_one_char_at_a_time", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -247,9 +233,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("invalid_prefix_leaks_two_chars_at_a_time",
-			"<x>\n"
-			"x?\n")) {
+	while (run_test("invalid_prefix_leaks_two_chars_at_a_time", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -262,7 +246,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("leak_invalid_prefix_then_immediately_convert", "<k>\nkッ\n")) {
+	while (run_test("leak_invalid_prefix_then_immediately_convert", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -275,7 +259,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("delete_converted_ascii_char", "<k>\nkr\nk\n")) {
+	while (run_test("delete_converted_ascii_char", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -286,7 +270,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("delete_converted_ascii_char_with_prior_kana_char", "<k>\nか\nか<k>\nかkr\nかk\n")) {
+	while (run_test("delete_converted_ascii_char_with_prior_kana_char", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -297,7 +281,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("delete_converted_ascii_char_with_prior_kana_char_2", "<k>\nか\nか<k>\nかkb\nかk\n")) {
+	while (run_test("delete_converted_ascii_char_with_prior_kana_char_2", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -308,7 +292,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("delete_converted_2_byte_char", "<d>\n<dm>\né\n\n")) {
+	while (run_test("delete_converted_2_byte_char", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -319,11 +303,7 @@ int main(void)
 		destroy_mapping(&m);
 	}
 
-	while (run_test("can_input_four_key_code",
-			"<1>\n"
-			"<1 >\n"
-			"<1 j>\n"
-			"乏\n")) {
+	while (run_test("can_input_four_key_code", 0)) {
 		struct mapping m = {
 			.include_kanji = 1,
 		};
@@ -392,9 +372,7 @@ int main(void)
 		XFCLOSE(in);
 	}
 
-	while (run_test("enter_clears_input_line",
-			"<r>\n"
-			"ろ\n")) {
+	while (run_test("enter_clears_input_line", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -408,10 +386,7 @@ int main(void)
 		XFCLOSE(in);
 	}
 
-	while (run_test("does_not_remember_trailing_characters_after_enter",
-			"<b>\n"
-			"ば\n"
-			"j\n")) {
+	while (run_test("does_not_remember_trailing_characters_after_enter", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -425,7 +400,7 @@ int main(void)
 		XFCLOSE(in);
 	}
 
-	while (run_test("enter before_typing_anything_does_not_crash", "")) {
+	while (run_test("enter_before_typing_anything_does_not_crash", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.show_pending_and_converted = 1,
@@ -439,7 +414,7 @@ int main(void)
 		XFCLOSE(in);
 	}
 
-	while (run_test("use_osc52_to_save_include_kanji", "\x1b]52;c;44Gm44GZ44Go5oiQ5Yqf\a")) {
+	while (run_test("use_osc52_to_save_include_kanji", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.save_with_osc52 = 1,
@@ -457,11 +432,7 @@ int main(void)
 		XFCLOSE(in);
 	}
 
-	while (run_test("use_osc52_to_save_with_padding",
-			"\x1b]52;c;44GC44GE\a"
-			"\x1b]52;c;44GC44GEdQ==\a"
-			"\x1b]52;c;QeOBhOOCjU4=\a"
-			"\x1b]52;c;44GC44KN44Gv\a")) {
+	while (run_test("use_osc52_to_save_with_padding", 0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.save_with_osc52 = 1,
@@ -487,10 +458,7 @@ int main(void)
 	}
 
 	while (run_test("use_osc52_to_save_use_plus_and_slash_in_output",
-			"\x1b]52;c;eHk+\a"
-			"\x1b]52;c;ams/\a"
-			"\x1b]52;c;zp/Onw==\a"
-			"\x1b]52;c;M+OCjQ==\a")) {
+			0)) {
 		struct mapping m = {0};
 		struct input_flags f = {
 			.save_with_osc52 = 1,
@@ -538,6 +506,35 @@ int main(void)
 			.show_cutoff_guide = 1,
 		};
 		in = open_tmp_file_containing("s \b\bc ");
+		expect_ok(mapping_populate(&m));
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+	}
+
+	while (run_test("cutoff_guide_remains_resid_sc_3rd_key", NULL)) {
+		struct mapping m = {
+			.include_kanji = 1,
+			.resid_sc_3rd_key = 1,
+		};
+		struct input_flags f = {
+			.show_cutoff_guide = 1,
+			.show_pending_and_converted = 1,
+		};
+		in = open_tmp_file_containing("k dk");
+		expect_ok(mapping_populate(&m));
+		expect_ok(input_impl(&m, &f));
+		destroy_mapping(&m);
+	}
+
+	while (run_test("cutoff_guide_remains_recurs_ksort", NULL)) {
+		struct mapping m = {
+			.include_kanji = 1,
+		};
+		struct input_flags f = {
+			.show_cutoff_guide = 1,
+			.show_pending_and_converted = 1,
+		};
+		in = open_tmp_file_containing("k dk");
 		expect_ok(mapping_populate(&m));
 		expect_ok(input_impl(&m, &f));
 		destroy_mapping(&m);
