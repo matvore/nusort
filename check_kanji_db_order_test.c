@@ -7,13 +7,18 @@
 
 int main(void)
 {
+	struct flagset fs;
+	int exit;
+
 	set_test_source_file(__FILE__);
 
 	while (run_test("check_kanji_db_order_test_quiet",
 			"14134字の並べ替えキーを読み込み済み\n"
 			"exit: 0\n")) {
 		char *argv[] = {"-q"};
-		int exit = check_kanji_db_order(argv, 1);
+		memset(&fs, 0, sizeof fs);
+		exit = check_kanji_db_order(&fs, argv, 1);
 		fprintf(out, "exit: %d\n", exit);
+		DESTROY_ARRAY(fs);
 	}
 }

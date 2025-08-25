@@ -3,6 +3,7 @@
 #include <stdnoreturn.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #define ANSI_BOLD "1"
 #define ANSI_REVERSE_VIDEO "7"

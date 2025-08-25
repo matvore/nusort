@@ -116,15 +116,13 @@ static long rsc_sort_key_for_any_4_key_code(
 	return kanji_db_lookup(km->conv)->rsc_sort_key;
 }
 
+static struct mapping m;
+static struct flagset fs;
+
+static void cleanup(void) { destroy_mapping(&m); destroy_flagset(&fs); }
+
 static void test_6_is_rh_setting(int six_is_rh)
 {
-	struct mapping m = {
-		.include_kanji = 1,
-		.six_is_rh = six_is_rh,
-		.dist = {
-			.short_shifted_codes = 1,
-		},
-	};
 	struct key_mapping_array subarr = {0};
 	Orig find = {'z', ' ', 1, 1};
 	long find_i;
@@ -134,10 +132,14 @@ static void test_6_is_rh_setting(int six_is_rh)
 		size_t bucket_cnt;
 	} last_rank_by_penult_orig_c = {0};
 
+	setflag(&fs, "--recurs-ksort", 1);
+	setflag(&fs, "--6rh", !!six_is_rh);
+	setflag(&fs, "--short-shifted-codes", 1);
+
 	INIT_HASHMAP(last_rank_by_penult_orig_c, 256);
 
-	expect_ok(mapping_populate(&m));
-	expect_ok(mapping_lazy_populate(&m, "z "));
+	expect_ok(mapping_populate(&fs, &m));
+	expect_ok(mapping_lazy_populate(&fs, &m, "z "));
 
 	BSEARCH_INDEX(find_i, m.arr.cnt, ,
 		      code_cmp(m.arr.el[find_i].orig, find));
@@ -178,23 +180,21 @@ static void test_6_is_rh_setting(int six_is_rh)
 
 	DESTROY_HASHMAP(last_rank_by_penult_orig_c);
 	DESTROY_ARRAY(subarr);
-	destroy_mapping(&m);
+	cleanup();
 }
 
 static void check_limit_basic_kanji_per_line(int key_index)
 {
-	struct mapping m = {
-		.include_kanji = 1,
-		.dist = {
-			.short_shifted_codes = 1,
-		},
-	};
 	unsigned basic_kanji_per_first_char[128] = {0};
 	unsigned i;
 	char prefix[3] = {KEY_INDEX_TO_CHAR_MAP[key_index], ' '};
 
-	expect_ok(mapping_populate(&m));
-	expect_ok(mapping_lazy_populate(&m, prefix));
+	mapping_flags(&fs);
+	setflag(&fs, "--recurs-ksort", 1);
+	setflag(&fs, "--short-shifted-codes", 1);
+
+	expect_ok(mapping_populate(&fs, &m));
+	expect_ok(mapping_lazy_populate(&fs, &m, prefix));
 
 	for (i = 0; i < m.arr.cnt; i++) {
 		struct kanji_entry const *k;
@@ -214,176 +214,153 @@ static void check_limit_basic_kanji_per_line(int key_index)
 		}
 	}
 
-	destroy_mapping(&m);
-
 	for (i = 0; i < 128; i++) {
 		unsigned basic_count = basic_kanji_per_first_char[i];
 		if (basic_count > 10)
 			fprintf(out, "(%d) %c: %u > 10\n",
 				key_index, i, basic_count);
 	}
+
+	cleanup();
+}
+
+static int mtest(const char *testname, const char *expout)
+{
+	mapping_flags(&fs);
+	romazi_flags(&fs);
+	fs.not_collecting = 1;
+	return run_test(testname, expout);
 }
 
 int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	while (run_test("6_is_rh_6s_is_higher_ranked_kanji_than_6k", "")) {
-		struct mapping m = {
-			.six_is_rh = 1,
-			.include_kanji = 1,
-		};
+	while (mtest("6_is_rh_6s_is_higher_ranked_kanji_than_6k", "")) {
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--6rh", 1);
 
-		expect_ok(mapping_populate(&m));
+		expect_ok(mapping_populate(&fs, &m));
 		check_rank_order(&m.arr, "6s", "6k");
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("6_is_lh_6k_is_higher_ranked_kanji_than_6s", "")) {
-		struct mapping m = {
-			.six_is_rh = 0,
-			.include_kanji = 1,
-		};
+	while (mtest("6_is_lh_6k_is_higher_ranked_kanji_than_6s", "")) {
+		setflag(&fs, "--recurs-ksort", 1);
 
-		expect_ok(mapping_populate(&m));
+		expect_ok(mapping_populate(&fs, &m));
 		check_rank_order(&m.arr, "6k", "6s");
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("6_is_lh_6o_is_higher_ranked_kanji_than_6q", "")) {
-		struct mapping m = {
-			.six_is_rh = 0,
-			.include_kanji = 1,
-		};
+	while (mtest("6_is_lh_6o_is_higher_ranked_kanji_than_6q", "")) {
+		setflag(&fs, "--recurs-ksort", 1);
 
-		expect_ok(mapping_populate(&m));
+		expect_ok(mapping_populate(&fs, &m));
 		check_rank_order(&m.arr, "6o", "6q");
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("6_is_lh_k6_is_higher_ranked_kanji_than_ki", "")) {
-		struct mapping m = {
-			.six_is_rh = 0,
-			.include_kanji = 1,
-		};
+	while (mtest("6_is_lh_k6_is_higher_ranked_kanji_than_ki", "")) {
+		setflag(&fs, "--recurs-ksort", 1);
 
-		expect_ok(mapping_populate(&m));
+		expect_ok(mapping_populate(&fs, &m));
 		check_rank_order(&m.arr, "k6", "ki");
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_adds_more_mappings_if_do_not_exist_yet",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_adds_more_mappings_if_do_not_exist_yet", "")) {
 		unsigned orig_count;
 
-		expect_ok(mapping_populate(&m));
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
+		expect_ok(mapping_populate(&fs, &m));
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "b "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "b "));
 		if (orig_count >= m.arr.cnt)
 			fprintf(out, "マッピングが増えていない: %u >= %zu\n",
 				orig_count, m.arr.cnt);
 
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "b "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "b "));
 		if (orig_count < m.arr.cnt)
 			fprintf(out, "マッピングが増えている: %u < %zu\n",
 				orig_count, m.arr.cnt);
 
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "c "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "c "));
 		if (orig_count >= m.arr.cnt)
 			fprintf(out, "マッピングが増えていない: %u >= %zu\n",
 				orig_count, m.arr.cnt);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_does_nothing_if_not_4_char_code_prefix",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_does_nothing_if_not_4_char_code_prefix", "")) {
 		unsigned orig_count;
 
-		expect_ok(mapping_populate(&m));
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
+		expect_ok(mapping_populate(&fs, &m));
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, " c"));
+		expect_ok(mapping_lazy_populate(&fs, &m, " c"));
 		if (orig_count != m.arr.cnt)
 			fprintf(out, "マッピングが増えている: %u >= %zu\n",
 				orig_count, m.arr.cnt);
 
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "[ "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "[ "));
 		if (orig_count != m.arr.cnt)
 			fprintf(out, "マッピングが増えている: %u >= %zu\n",
 				orig_count, m.arr.cnt);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_considers_shifted_first_key_invalid",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_considers_shifted_first_key_invalid", "")) {
 		unsigned orig_count;
+
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
 
 		append_mapping(&m.arr, "KYA", "キャ");
 
-		expect_ok(mapping_populate(&m));
+		expect_ok(mapping_populate(&fs, &m));
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "K "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "K "));
 		if (orig_count != m.arr.cnt)
 			fprintf(out, "マッピングが増えている: %u >= %zu\n",
 				orig_count, m.arr.cnt);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_considers_shifted_first_key_invalid_2",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_considers_shifted_first_key_invalid_2", "")) {
 		unsigned orig_count;
+
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
 
 		append_mapping(&m.arr, "!!", "キャ");
 
-		expect_ok(mapping_populate(&m));
+		expect_ok(mapping_populate(&fs, &m));
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "! "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "! "));
 		if (orig_count != m.arr.cnt)
 			fprintf(out, "マッピングが増えている: %u >= %zu\n",
 				orig_count, m.arr.cnt);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("at_least_19_rsc_sort_keys_in_1st_line_and_11_in_2nd",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("at_least_19_rsc_sort_keys_in_1st_line_and_11_in_2nd", "")) {
 		unsigned rsc_keys_1, rsc_keys_2;
-		expect_ok(mapping_populate(&m));
+
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+		expect_ok(mapping_populate(&fs, &m));
 
 		rsc_keys_1 = lowest_rsc_sort_key_with_prefix(&m.arr, '2');
 		if (rsc_keys_1 < 19)
@@ -394,26 +371,23 @@ int main(void)
 		if (rsc_keys_2 < 11)
 			fprintf(out, "漢字が欠如している? %u\n", rsc_keys_2);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_adds_some_possible_missing_kanji", "")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_adds_some_possible_missing_kanji", "")) {
 		unsigned orig_count;
 		unsigned end_rsc_sort_key;
 		unsigned unique_added;
 		unsigned expect_to_add = 21;
 
-		expect_ok(mapping_populate(&m));
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
+		expect_ok(mapping_populate(&fs, &m));
 		end_rsc_sort_key =
 			lowest_rsc_sort_key_with_prefix(&m.arr, '2');
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "1 "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "1 "));
 		if (orig_count >= m.arr.cnt ||
 		    m.arr.cnt - orig_count < expect_to_add)
 			fprintf(out,
@@ -427,23 +401,19 @@ int main(void)
 		if (unique_added < expect_to_add)
 			fprintf(out, "%u < %u\n", unique_added, expect_to_add);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_add_available_kanji_when_prefix_is_2",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_add_available_kanji_when_prefix_is_2", "")) {
 		unsigned orig_count;
 		unsigned start_rsc_sort_key, end_rsc_sort_key;
 		unsigned unique_added;
 		unsigned expect_to_add = 25;
 
-		expect_ok(mapping_populate(&m));
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
+		expect_ok(mapping_populate(&fs, &m));
 
 		start_rsc_sort_key =
 			lowest_rsc_sort_key_with_prefix(&m.arr, '2');
@@ -451,7 +421,7 @@ int main(void)
 			lowest_rsc_sort_key_with_prefix(&m.arr, '3');
 
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "2 "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "2 "));
 		if (orig_count >= m.arr.cnt ||
 		    m.arr.cnt - orig_count < expect_to_add)
 			fprintf(out,
@@ -465,24 +435,21 @@ int main(void)
 		if (unique_added < expect_to_add)
 			fprintf(out, "%u < %u\n", unique_added, expect_to_add);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_when_prefix_is_2_and_includes_romazi",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
-		struct romazi_config rc = {0};
+	while (mtest("lazy_populate_when_prefix_is_2_and_includes_romazi", "")) {
 		unsigned orig_count;
 		unsigned start_rsc_sort_key, end_rsc_sort_key;
 		unsigned unique_added;
 
-		get_romazi_codes(&rc, &m.arr);
-		expect_ok(mapping_populate(&m));
+		setflag(&fs, "--no-kanji-nums", 1);
+		setflag(&fs, "--no-classic-wo", 1);
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
+		get_romazi_codes(&fs, &m.arr);
+		expect_ok(mapping_populate(&fs, &m));
 
 		start_rsc_sort_key =
 			lowest_rsc_sort_key_with_prefix(&m.arr, '2');
@@ -490,7 +457,7 @@ int main(void)
 			lowest_rsc_sort_key_with_prefix(&m.arr, '3');
 
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "2 "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "2 "));
 		if (orig_count >= m.arr.cnt || m.arr.cnt - orig_count < 60)
 			fprintf(out,
 				"マッピングが充分に増えていない: %u -> %zu\n",
@@ -503,26 +470,22 @@ int main(void)
 		if (unique_added < 60)
 			fprintf(out, "%u < 60\n", unique_added);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_hardmapped_kanji_do_not_influence_dist",
-			"ok\n")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_hardmapped_kanji_do_not_influence_dist", "ok\n")) {
 		Orig find_1 = {'1', ' ', 1, 1};
 		long i_1;
 		unsigned numeral_nine_rsc_i =
 			kanji_db_rsc_index(kanji_db_lookup("九"));
 
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
 		append_mapping(&m.arr, "1b", "索");
 		append_mapping(&m.arr, "2b", "九");
-		expect_ok(mapping_populate(&m));
-		expect_ok(mapping_lazy_populate(&m, "1 "));
+		expect_ok(mapping_populate(&fs, &m));
+		expect_ok(mapping_lazy_populate(&fs, &m, "1 "));
 
 		BSEARCH_INDEX(i_1, m.arr.cnt, ,
 			      code_cmp(m.arr.el[i_1].orig, find_1));
@@ -539,25 +502,21 @@ int main(void)
 			i_1++;
 		}
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_hardmapped_kanji_do_not_influence_dist2",
-			"ok\n")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_hardmapped_kanji_do_not_influence_dist2", "ok\n")) {
 		Orig find_1 = {'1', ' ', 1, 1};
 		long i_1;
 		unsigned numeral_one_rsc_i =
 			kanji_db_rsc_index(kanji_db_lookup("一"));
+
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
 
 		append_mapping(&m.arr, "2b", "一");
-		expect_ok(mapping_populate(&m));
-		expect_ok(mapping_lazy_populate(&m, "1 "));
+		expect_ok(mapping_populate(&fs, &m));
+		expect_ok(mapping_lazy_populate(&fs, &m, "1 "));
 
 		BSEARCH_INDEX(i_1, m.arr.cnt, ,
 			      code_cmp(m.arr.el[i_1].orig, find_1));
@@ -574,25 +533,22 @@ int main(void)
 			i_1++;
 		}
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_hardmapped_kanji_do_not_influence_dist3",
+	while (mtest("lazy_populate_hardmapped_kanji_do_not_influence_dist3",
 			"ok\n")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
 		Orig find_1 = {'1', ' ', 1, 1};
 		long i_1;
 		unsigned numeral_one_rsc_i =
 			kanji_db_rsc_index(kanji_db_lookup("一"));
 
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
 		append_mapping(&m.arr, "@", "一");
-		expect_ok(mapping_populate(&m));
-		expect_ok(mapping_lazy_populate(&m, "1 "));
+		expect_ok(mapping_populate(&fs, &m));
+		expect_ok(mapping_lazy_populate(&fs, &m, "1 "));
 
 		BSEARCH_INDEX(i_1, m.arr.cnt, ,
 			      code_cmp(m.arr.el[i_1].orig, find_1));
@@ -609,28 +565,24 @@ int main(void)
 			i_1++;
 		}
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_hardmapped_kanji_do_not_influence_dist4",
+	while (mtest("lazy_populate_hardmapped_kanji_do_not_influence_dist4",
 			"ok\n")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
-		struct romazi_config rc = {
-			.include_kanji_numerals = 1,
-		};
 		Orig find_7 = {'7', ' ', 1, 1};
 		long i_7;
 		unsigned numeral_hachi_rsc_i =
 			kanji_db_rsc_index(kanji_db_lookup("八"));
 
-		get_romazi_codes(&rc, &m.arr);
-		expect_ok(mapping_populate(&m));
-		expect_ok(mapping_lazy_populate(&m, "7 "));
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+		setflag(&fs, "--no-classic-wo", 1);
+
+		get_romazi_codes(&fs, &m.arr);
+
+		expect_ok(mapping_populate(&fs, &m));
+		expect_ok(mapping_lazy_populate(&fs, &m, "7 "));
 
 		BSEARCH_INDEX(i_7, m.arr.cnt, ,
 			      code_cmp(m.arr.el[i_7].orig, find_7));
@@ -647,45 +599,40 @@ int main(void)
 			i_7++;
 		}
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_may_not_include_kanji_if_not_configured",
+	while (mtest("lazy_populate_may_not_include_kanji_if_not_configured",
 			"1")) {
-		struct mapping m = {
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
-		struct romazi_config rc = {
-			.include_kanji_numerals = 1,
-		};
 		unsigned orig_cnt;
 
-		get_romazi_codes(&rc, &m.arr);
-		expect_ok(mapping_populate(&m));
+		setflag(&fs, "--no-kanji", 1);
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+		setflag(&fs, "--no-classic-wo", 1);
+
+		get_romazi_codes(&fs, &m.arr);
+		expect_ok(mapping_populate(&fs, &m));
 		orig_cnt = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "7 "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "7 "));
 		fprintf(out, "%d", orig_cnt == m.arr.cnt);
-		destroy_mapping(&m);
+
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_next_key_index_is_single_key_code",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
-		struct romazi_config rc = {0};
+	while (mtest("lazy_populate_next_key_index_is_single_key_code", "")) {
 		unsigned start_rsc_sort_key, end_rsc_sort_key;
 		unsigned orig_count;
 		unsigned unique_added;
 		unsigned expect_to_add = 45;
 
-		get_romazi_codes(&rc, &m.arr);
-		expect_ok(mapping_populate(&m));
+		setflag(&fs, "--no-kanji-nums", 1);
+		setflag(&fs, "--no-classic-wo", 1);
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
+		get_romazi_codes(&fs, &m.arr);
+		expect_ok(mapping_populate(&fs, &m));
 
 		start_rsc_sort_key =
 			lowest_rsc_sort_key_with_prefix(&m.arr, 'y');
@@ -693,7 +640,7 @@ int main(void)
 			lowest_rsc_sort_key_with_prefix(&m.arr, 'p');
 
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "y "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "y "));
 
 		if (orig_count >= m.arr.cnt ||
 		    m.arr.cnt - orig_count < expect_to_add)
@@ -707,21 +654,18 @@ int main(void)
 		if (unique_added < expect_to_add)
 			fprintf(out, "%u < %u\n", unique_added, expect_to_add);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_last_key_prefix", "")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_last_key_prefix", "")) {
 		unsigned start_rsc_sort_key, end_rsc_sort_key;
 		unsigned orig_count;
 		unsigned unique_added;
 
-		expect_ok(mapping_populate(&m));
+		expect_ok(mapping_populate(&fs, &m));
+
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
 
 		start_rsc_sort_key =
 			lowest_rsc_sort_key_with_prefix(&m.arr, '/');
@@ -730,7 +674,7 @@ int main(void)
 			1;
 
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "/ "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "/ "));
 
 		if (orig_count >= m.arr.cnt || m.arr.cnt - orig_count < 60)
 			fprintf(out,
@@ -743,24 +687,19 @@ int main(void)
 		if (unique_added < 60)
 			fprintf(out, "%u < 60\n", unique_added);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_populate_last_key_prefix_includes_one_key_romazi",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_populate_last_key_prefix_includes_one_key_romazi", "")) {
 		unsigned start_rsc_sort_key, end_rsc_sort_key;
 		unsigned orig_count;
 		unsigned unique_added;
 
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
 		append_mapping(&m.arr, ".", "。");
 		append_mapping(&m.arr, ">", "＞");
-		expect_ok(mapping_populate(&m));
+		expect_ok(mapping_populate(&fs, &m));
 
 		start_rsc_sort_key =
 			lowest_rsc_sort_key_with_prefix(&m.arr, '/');
@@ -769,7 +708,7 @@ int main(void)
 			1;
 
 		orig_count = m.arr.cnt;
-		expect_ok(mapping_lazy_populate(&m, "/ "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "/ "));
 
 		if (orig_count >= m.arr.cnt || m.arr.cnt - orig_count < 60)
 			fprintf(out,
@@ -782,22 +721,18 @@ int main(void)
 		if (unique_added < 60)
 			fprintf(out, "%u < 60\n", unique_added);
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_mapping_increasing_rsc_with_increasing_key_index",
-			"")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.short_shifted_codes = 1,
-			},
-		};
+	while (mtest("lazy_mapping_increasing_rsc_with_increasing_key_index", "")) {
 		int third_key;
 		long last_key = -1;
 
-		expect_ok(mapping_populate(&m));
-		expect_ok(mapping_lazy_populate(&m, "j "));
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
+		expect_ok(mapping_populate(&fs, &m));
+		expect_ok(mapping_lazy_populate(&fs, &m, "j "));
 
 		for (third_key = 0; third_key < KANJI_KEY_COUNT; third_key++) {
 			long key = rsc_sort_key_for_any_4_key_code(
@@ -810,29 +745,24 @@ int main(void)
 			last_key = key;
 		}
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("overflow_residual_stroke_count_and_max_cells", 0)) {
+	while (mtest("overflow_residual_stroke_count_and_max_cells", 0)) {
 		int mi;
-		struct mapping m = {
-			.include_kanji = 1,
-			.resid_sc_3rd_key = 1,
-			.dist = {
-				.allow_left_bracket_key1 = 1,
-				.busy_right_pinky = 1,
-			},
-		};
-		struct romazi_config rc = {
-			.optimize_keystrokes = 1,
-			.kakko = 'p',
-			.hiragana_wo_key = '\'',
-		};
 		struct key_mapping *me;
 
-		get_romazi_codes(&rc, &m.arr);
-		expect_ok(mapping_populate(&m));
-		expect_ok(mapping_lazy_populate(&m, "x "));
+		setflag(&fs, "--allow-left-bracket-key1", 1);
+		setflag(&fs, "--busy-right-pinky", 1);
+		setflag(&fs, "--no-kanji-nums", 1);
+		setflag(&fs, "--no-classic-wo", 1);
+		setflag(&fs, "--romazi-optimize-keystrokes", 1);
+		setflag(&fs, "--kakko", 'p');
+		setflag(&fs, "--hiragana-wo-key", '\'');
+
+		get_romazi_codes(&fs, &m.arr);
+		expect_ok(mapping_populate(&fs, &m));
+		expect_ok(mapping_lazy_populate(&fs, &m, "x "));
 
 		for (mi = 0; mi < m.arr.cnt; mi++) {
 			me = m.arr.el + mi;
@@ -842,36 +772,33 @@ int main(void)
 			) fprintf(out, "%s -> %s\n",	me->orig, me->conv);
 		}
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 
-	while (run_test("lazy_mapping_honors_six_is_lh_setting", ""))
+	while (mtest("lazy_mapping_honors_six_is_lh_setting", ""))
 		test_6_is_rh_setting(0);
 
-	while (run_test("lazy_mapping_honors_six_is_rh_setting", ""))
+	while (mtest("lazy_mapping_honors_six_is_rh_setting", ""))
 		test_6_is_rh_setting(1);
 
-	while (run_test("lazy_mapping_limit_basic_kanji_per_line", "")) {
+	while (mtest("lazy_mapping_limit_basic_kanji_per_line", "")) {
 		int i;
 		for (i = 0; i < 40; i++)
 			check_limit_basic_kanji_per_line(i);
 	}
 
-	while (run_test("busy_right_pinky", NULL)) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.dist = {
-				.busy_right_pinky = 1,
-			},
-		};
+	while (mtest("busy_right_pinky", 0)) {
 		int i;
 
-		expect_ok(mapping_populate(&m));
+		setflag(&fs, "--recurs-ksort", 1);
+		setflag(&fs, "--busy-right-pinky", 1);
+
+		expect_ok(mapping_populate(&fs, &m));
 		for (i = 0; i < m.arr.cnt; i++) {
 			if (strchr("-=[]'", m.arr.el[i].orig[1]))
 				fprintf(out, "%s\n", m.arr.el[i].orig);
 		}
 
-		destroy_mapping(&m);
+		cleanup();
 	}
 }

@@ -5,9 +5,12 @@
 #include "streams.h"
 #include "util.h"
 
-int rsc_gaps(char **argv, int argc)
+int rsc_gaps(struct flagset *fs, char **argv, int argc)
 {
 	int radin = -1, rsck = 0, psc = 0xfff, csc;
+
+	if (argc < 0) return 0;
+	parsflag(fs, &argc, argv);
 
 	if (argc) badflag(*argv);
 

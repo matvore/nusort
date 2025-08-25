@@ -1,6 +1,8 @@
 #include "commands.h"
 #include "test_util.h"
 
+static struct flagset fs;
+
 int main(void)
 {
 	set_test_source_file(__FILE__);
@@ -8,31 +10,37 @@ int main(void)
 	while (run_test("error_for_non_number_kanji_count",
 			"正の整数かゼロが必要です: 10a\n")) {
 		char *argv[] = {"10a"};
-		expect_fail(kanji_db_chart(argv, 1));
+		expect_fail(kanji_db_chart(&fs, argv, 1));
+		destroy_flagset(&fs);
 	}
 
 	while (run_test("no_output_for_zero_kanji_count", "")) {
 		char *argv[] = {"0"};
-		expect_ok(kanji_db_chart(argv, 1));
+		expect_ok(kanji_db_chart(&fs, argv, 1));
+		destroy_flagset(&fs);
 	}
 
 	while (run_test("only_1_kanji", "日A\n")) {
 		char *argv[] = {"1"};
-		expect_ok(kanji_db_chart(argv, 1));
+		expect_ok(kanji_db_chart(&fs, argv, 1));
+		destroy_flagset(&fs);
 	}
 
 	while (run_test("10_kanji", NULL)) {
 		char *argv[] = {"10"};
-		expect_ok(kanji_db_chart(argv, 1));
+		expect_ok(kanji_db_chart(&fs, argv, 1));
+		destroy_flagset(&fs);
 	}
 
 	while (run_test("200_kanji", NULL)) {
 		char *argv[] = {"200"};
-		expect_ok(kanji_db_chart(argv, 1));
+		expect_ok(kanji_db_chart(&fs, argv, 1));
+		destroy_flagset(&fs);
 	}
 
 	while (run_test("table_view", NULL)) {
-		char *argv[] = {"-T", "200"};
-		expect_ok(kanji_db_chart(argv, 2));
+		char *argv[] = {"--chart-type", "T", "200"};
+		expect_ok(kanji_db_chart(&fs, argv, 3));
+		destroy_flagset(&fs);
 	}
 }

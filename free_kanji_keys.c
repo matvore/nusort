@@ -4,30 +4,26 @@
 #include "streams.h"
 #include "util.h"
 
-int free_kanji_keys(char **argv, int argc)
+int free_kanji_keys(struct flagset *fs, char **argv, int argc)
 {
 	size_t i;
-	struct romazi_config romazi_config = {0};
 	struct key_mapping_array romazi_m = {0};
 	struct kanji_distribution kd = {0};
 
-	init_romazi_config_for_cli_flags(&romazi_config);
+	romazi_flags(fs);
+	kanji_distribution_flags(fs);
 
-	while (argc > 0 && argv[0][0] == '-') {
-		if (!strcmp(argv[0], "--")) {
-			argv++;
-			argc--;
-			break;
-		} else if (!parse_romazi_flags(&argc, &argv, &romazi_config) &&
-			   !parse_kanji_distribution_flags(&argc, &argv, &kd)) {
-			fprintf(err,
-				 "フラグを認識できませんでした：%s\n", argv[0]);
-			return 200;
-		}
+	if (argc < 0) return 0;
+
+	parsflag(fs, &argc, argv);
+
+	if (argc) {
+		fprintf(err, "フラグを認識できませんでした：%s\n", argv[0]);
+		return 200;
 	}
 
-	get_romazi_codes(&romazi_config, &romazi_m);
-	kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
+	get_romazi_codes(fs, &romazi_m);
+	kanji_distribution_set_preexisting_convs(fs, &kd, &romazi_m, 1);
 	
 	for (i = 0; i < kd.unused_kanji_origs.cnt; i++)
 		fprintf(out, "%.2s\n", kd.unused_kanji_origs.el[i]);

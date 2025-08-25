@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "flags.h"
 #include "kanji_db.h"
 #include "residual_stroke_count.h"
 #include "streams.h"
@@ -23,7 +24,7 @@ static long parse_count_arg(char const *arg)
 	return c;
 }
 
-int kanji_db_chart(char **argv, int argc)
+int kanji_db_chart(struct flagset *fs, char **argv, int argc)
 {
 	unsigned ki, kscrel;
 	struct {
@@ -34,27 +35,18 @@ int kanji_db_chart(char **argv, int argc)
 	int format;
 	uint32_t r;
 
-	format = 'd';
-	while (argc && argv[0][0] == '-') {
-		const char *cur = argv[0];
-		int ok = 0;
+	flagcat(fs, "kanji_db_chart");
+	addflag(fs, "--chart-type", 'c', 'd',
+"\n\t"	"d, t, T のどれか"
+	);
 
-		while (*++cur) {
-			if (*cur == 't' || *cur == 'T') {
-				format = *cur;
-				ok = 1;
-			}
-			else {
-				ok = 0;
-				break;
-			}
-		}
+	if (argc < 0) return 0;
+	parsflag(fs, &argc, argv);
 
-		if (!ok) badflag(argv[0]);
-
-		argc--;
-		argv++;
-	}
+	if (argc && argv[0][0] == '-') badflag(argv[0]);
+	format = flagval(fs, "--chart-type");
+	if (!strchr("dtT", format))
+		DIE(0, "--chart-type を dtT のどれか一つに設定してください。");
 
 	switch (argc) {
 	case 0:

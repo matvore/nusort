@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "commands.h"
+#include "flags.h"
 #include "kanji_db.h"
 #include "radicals.h"
 #include "residual_stroke_count.h"
@@ -11,11 +12,6 @@
 #include "util.h"
 
 static const char *ADOBE_JAPAN = "\tkRSAdobe_Japan1_6";
-
-static struct {
-	unsigned quiet : 1;
-	unsigned allkeyout : 1;
-} flags;
 
 struct sort_key {
 	unsigned rad: 8;
@@ -960,7 +956,7 @@ static void adjust_consecutive_key_info(
 		DIE(0, "「%s」の画数が低すぎます", k);
 }
 
-static int check_order(void)
+static int check_order(struct flagset *fs)
 {
 	size_t i;
 	struct sort_key key = {0, 0};
@@ -1017,9 +1013,9 @@ static int check_order(void)
 				ke->c, residual_stroke_count(ke));
 		}
 		key = smallest_matching;
-		if (!flags.quiet) {
+		if (!flagval(fs, "-q")) {
 			output_db_line(ke, prev_si, si);
-			if (flags.allkeyout)
+			if (flagval(fs, "--allkeyout"))
 				output_all_keys(ke, si);
 			else
 				fprintf(out,	" %02x%02x",
@@ -1081,26 +1077,22 @@ static int consume_supkey(int *supki)
 	return 0;
 }
 
-int check_kanji_db_order(char **argv, int argc)
+int check_kanji_db_order(struct flagset *fs, char **argv, int argc)
 {
 	FILE *db_stream = NULL;
 	int res, supki = 0;
 	char line[512];
 
-	memset(&flags, 0, sizeof(flags));
+	flagcat(fs, "check_kanji_db_order");
+	addflag(fs, "-q", 'b', 0,
+"\n\t"	"漢字 DB を出力しない。漢字順番を確認するだけ。"
+	);
+	addflag(fs, "--allkeyout", 'b', 0,
+"\n\t"	"各漢字のすべての有効なキーを出力する。"
+	);
 
-	while (argc > 0 && argv[0][0] == '-') {
-		const char *arg = argv[0];
-		argc--;
-		argv++;
-		if (!strcmp(arg, "-q")) {
-			flags.quiet = 1;
-		} else if (!strcmp(arg, "--allkeyout")) {
-			flags.allkeyout = 1;
-		} else if (!strcmp(arg, "--")) {
-			break;
-		} else badflag(arg);
-	}
+	if (argc < 0) return 0;
+	parsflag(fs, &argc, argv);
 	if (argc) DIE(0, "無功な引数: %s", *argv);
 
 	db_stream = xfopen("third_party/Unihan_RadicalStrokeCounts.txt", "r");
@@ -1118,7 +1110,7 @@ int check_kanji_db_order(char **argv, int argc)
 
 	fprintf(err, "%zu字の並べ替えキーを読み込み済み\n", sort_infos.cnt);
 
-	res = check_order();
+	res = check_order(fs);
 
 cleanup:
 	XFCLOSE(db_stream);

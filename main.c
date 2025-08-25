@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "flags.h"
 #include "streams.h"
 #include "util.h"
 
@@ -13,31 +14,95 @@
 
 static const char *binname;
 
-static int input_cmd(char **argv, int argc)
+static void usage(FILE *);
+static void cmdhelp(const char *);
+
+static int help(struct flagset *fs, char **argv, int argc)
 {
-	return input(argv, argc, /*real_term=*/1);
+	int res = 0;
+
+	if (argc < 0) return 0;
+
+	parsflag(fs, &argc, argv);
+
+	if (argc > 1) { fprintf(err, "引数が多すぎます。\n"); res = 1; }
+
+	if (argc)	cmdhelp(*argv);
+	else		usage(stdout);
+
+	return res;
 }
 
 static const struct {
-	int (*impl)(char **argv, int argc);
+	int (*impl)(struct flagset *fs, char **argv, int argc);
 
 	char const *name, *shor, *usage;
 } commands[] = {
 	{&free_kanji_keys, "free_kanji_keys", "frkk", ""},
 	{&h2k, "hira_to_kata", "h2k", ""},
-	{&input_cmd, "input", "in", ""},
+	{&input, "input", "in", ""},
 	{&kana_stats, "kana_stats", "ks", ""},
 	{&kanji_db_chart, "kanji_db_chart", "ch", " [漢字数]"},
-	{&check_kanji_db_order, "check_kanji_db_order", "or", " [--allkeyout] [-q]"},
-	{&print_last_rank_contained, "last_rank_contained", "last", " [-c] [-s] [-k] [-n] CUTOFF_KANJI_1..CUTOFF_KANJI_n"},
+	{&check_kanji_db_order, "check_kanji_db_order", "or", ""},
+	{&last_rank_contained, "last_rank_contained", "last", " CUTOFF_KANJI_1..CUTOFF_KANJI_n"},
 	{&longest_rsc_block, "longest_rsc_block", "lb", ""},
 	{&make_map, "make_map", "mm", ""},
 	{&practice_set, "practice_set", "ps", ""},
 	{&rsc_gaps, "rsc_gaps", "rg", ""},
 	{&rsc_sort_key, "rsc_sort_key", "rk", ""},
-	{&expand_rsc_keys, "expand_rsc_keys", "exk", " [-0|-1]"},
+	{&expand_rsc_keys, "expand_rsc_keys", "exk", ""},
+	{&help, "help", "-h", " [コマンド名]"},
 	{0},
 };
+
+static void printcategnames(FILE *stream, int ci)
+{
+	struct flagset fs = {
+		.categ_out = stream,
+		.not_collecting = 1,
+	};
+
+	commands[ci].impl(&fs, 0, -1);
+
+	if (fs.past_first_cat) fputs("}", stream);
+
+	destroy_flagset(&fs);
+}
+
+static void printflagdetails(FILE *s, int ci)
+{
+	struct flagset fs = {
+		.doc_out = s,
+		.not_collecting = 1,
+	};
+
+	commands[ci].impl(&fs, 0, -1);
+
+	destroy_flagset(&fs);
+}
+
+static void cmdhelp(const char *cn)
+{
+	int ci;
+
+	for (ci = 0; commands[ci].impl; ci++) {
+		if (	strcmp(cn, commands[ci].name)
+		&&	strcmp(cn, commands[ci].shor)
+		) continue;
+
+		fprintf(stdout, "用法: %s %s", binname, cn);
+
+		printcategnames(stdout, ci);
+		fprintf(stdout, "%s\n", commands[ci].usage);
+		printflagdetails(stdout, ci);
+		return;
+	}
+
+	usage(stderr);
+	fprintf(stderr, "コマンド名が無効です: %s\n", cn);
+
+	exit(1);
+}
 
 static void usage(FILE *stream)
 {
@@ -47,11 +112,15 @@ static void usage(FILE *stream)
 
 	fputs("COMMANDS:\n", stream);
 
-	for (ci = 0; commands[ci].impl; ci++)
-		fprintf(stream,	"\t%s%s (or: %s)\n",
-				commands[ci].name,
+	for (ci = 0; commands[ci].impl; ci++) {
+		fprintf(stream,	"\t%s", commands[ci].name);
+
+		printcategnames(stream, ci);
+
+		fprintf(stream, "%s (or: %s)\n",
 				commands[ci].usage,
 				commands[ci].shor);
+	}
 
 	fputc('\n', stream);
 }
@@ -59,6 +128,7 @@ static void usage(FILE *stream)
 int main(int argc, char **argv)
 {
 	int ci;
+	struct flagset fs = {0};
 
 	err = stderr;
 	out = stdout;
@@ -78,20 +148,12 @@ int main(int argc, char **argv)
 	binname = *argv++;
 	argc--;
 
-	if (!argc
-		|| !strcmp(*argv, "--help")
-		|| !strcmp(*argv, "-h")
-		|| !strcmp(*argv, "help")
-		|| !strcmp(*argv, "-help")
-	) {
-		usage(stdout);
-		exit(0);
-	}
+	if (!argc) { usage(stdout); exit(0); }
 
 	for (ci = 0; commands[ci].impl; ci++) {
 		if (	!strcmp(commands[ci].name, *argv)
 		||	!strcmp(commands[ci].shor, *argv)
-		) exit(commands[ci].impl(argv+1, argc-1));
+		) exit(commands[ci].impl(&fs, argv+1, argc-1));
 	}
 
 	usage(stderr);

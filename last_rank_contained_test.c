@@ -129,6 +129,7 @@ static struct {
 int main(void)
 {
 	size_t test_i;
+	struct flagset fs = {0};
 
 	set_test_source_file(__FILE__);
 
@@ -138,10 +139,13 @@ int main(void)
 		       test_cases[test_i].expected)) {
 			int arg_count, exit_code;
 
+			DESTROY_ARRAY(fs);
+			memset(&fs, 0, sizeof fs);
+
 			for (arg_count = 0; test_cases[test_i].args[arg_count];
 			     arg_count++) {}
-			exit_code = print_last_rank_contained(
-				test_cases[test_i].args, arg_count);
+			exit_code = last_rank_contained(
+				&fs, test_cases[test_i].args, arg_count);
 			fprintf(out, "exit: %d\n", exit_code);
 		}
 	}

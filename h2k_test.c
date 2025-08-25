@@ -20,19 +20,23 @@ static struct {
 int main(void)
 {
 	int test_i;
+	struct flagset fs;
 
 	set_test_source_file(__FILE__);
 
 	for (test_i = 0; test_i < sizeof(test_cases) / sizeof(*test_cases);
 	     test_i++) {
 		in = open_tmp_file_containing(test_cases[test_i].in);
+		memset(&fs, 0, sizeof fs);
 
 		while (run_test(test_cases[test_i].name,
 				test_cases[test_i].out))
-			expect_ok(h2k(0, 0));
+			expect_ok(h2k(&fs, 0, 0));
 
 		XFCLOSE(in);
 		in = stdin;
+
+		DESTROY_ARRAY(fs);
 	}
 
 	return 0;

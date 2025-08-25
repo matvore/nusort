@@ -62,7 +62,7 @@ void xfclose_impl(FILE *stream)
 
 void _Noreturn badflag(const char *f)
 {
-	fprintf(err, "フラグを識別できませんでした: %s", f);
+	fprintf(stderr, "フラグを識別できませんでした: %s\n", f);
 	exit(3);
 }
 

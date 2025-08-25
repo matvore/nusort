@@ -2,6 +2,7 @@
 
 #include "chars.h"
 #include "commands.h"
+#include "flags.h"
 #include "kana_stats_util.h"
 #include "romazi.h"
 #include "streams.h"
@@ -22,11 +23,15 @@ struct stats_map {
 
 static void collect_potential_mappings(struct stats_map *out)
 {
+	struct flagset fs = {0};
 	struct key_mapping_array input_mapping = {0};
-	struct romazi_config romazi_config = {0};
 	int i;
 
-	get_romazi_codes(&romazi_config, &input_mapping);
+	romazi_flags(&fs);
+	setflag(&fs, "--kakko", 'n');
+	setflag(&fs, "--no-kanji-nums", 1);
+	setflag(&fs, "--no-classic-wo", 1);
+	get_romazi_codes(&fs, &input_mapping);
 
 	for (i = 0; i < input_mapping.cnt; i++) {
 		char const *conv = input_mapping.el[i].conv;
@@ -63,7 +68,7 @@ static uint64_t kata_count_of(struct stats_map const *stats, char const *hira)
 	return kata_entry->count;
 }
 
-int kana_stats(char **argv, int argc)
+int kana_stats(struct flagset *fs, char **argv, int argc)
 {
 	struct stats_map stats = {0};
 	uint64_t hira_total = 0;
@@ -72,6 +77,9 @@ int kana_stats(char **argv, int argc)
 	int last_c = 0;
 	int last_last_c = 0;
 	int i;
+
+	if (argc < 0) return 0;
+	parsflag(fs, &argc, argv);
 
 	if (argc) {
 		fputs("引数を渡さないでください。\n", err);

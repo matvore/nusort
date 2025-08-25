@@ -3,20 +3,11 @@
 
 #include <stdio.h>
 
+#include "flags.h"
 #include "kanji_distribution.h"
 #include "romazi.h"
 
 struct mapping {
-	unsigned six_is_rh : 1;
-	unsigned include_kanji : 1;
-
-	/*
-	 * 三打鍵以上のコードの生成を影響します。
-	 * オンの場合: 三打鍵目が部首外画数に該当する
-	 * オフの場合: 三打鍵目が部首続いて部首外画数 (rsc) の順番によって決まる
-	 */
-	unsigned resid_sc_3rd_key : 1;
-
 	struct key_mapping_array arr;
 	struct kanji_distribution dist;
 
@@ -43,20 +34,13 @@ struct mapping {
 	} cutoff_map;
 };
 
-void init_mapping_config_for_cli_flags(struct mapping *);
-
-/*
- * argcとargvの差す最初のフラグがマッピングに関するものの場合、CLI 引数を解析し
- * て、argcとargvを先に進めて、０ではない値を返す。フラグがローマ字フラグとし
- * て認識されない場合は０を返す。
- */
-int parse_mapping_flags(int *argc, char ***argv, struct mapping *);
+void mapping_flags(struct flagset *);
 
 /* エラーの時は非0を返す */
-int mapping_populate(struct mapping *);
+int mapping_populate(struct flagset *, struct mapping *);
 
 /* エラーの時は非0を返す */
-int mapping_lazy_populate(struct mapping *, char const *key_prefix);
+int mapping_lazy_populate(struct flagset *, struct mapping *, char const *key_prefix);
 
 void destroy_mapping(struct mapping *);
 

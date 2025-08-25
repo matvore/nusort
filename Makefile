@@ -1,4 +1,5 @@
 .PHONY: test clean
+.SUFFIXES:
 
 CFLAGS = \
 	-Werror \
@@ -24,6 +25,7 @@ SHARED_OBJS = \
 	obj/chars.o \
 	obj/check_kanji_db_order.o \
 	obj/dict_guide.o \
+	obj/flags.o \
 	obj/free_kanji_keys.o \
 	obj/h2k.o \
 	obj/input.o \
@@ -55,6 +57,7 @@ HDRS = \
 	chars.h \
 	commands.h \
 	dict_guide.h \
+	flags.h \
 	input_impl.h \
 	kana_stats_util.h \
 	kanji_db.h \
@@ -71,13 +74,20 @@ HDRS = \
 	util.h \
 	windows.h
 
+EXFLAG = expected_test_out/flag_typo_test
+ACFLAG = actual_test_out/flag_typo_test.out
+
+flag_typo_test: nusort $(EXFLAG)
+	grep -ho '"--[0-9a-z-][0-9a-z-]*"' *.c $(HDRS) | sort -u >	$(ACFLAG)
+	diff -u $(EXFLAG)						$(ACFLAG)
+
 obj/%.o: %.c $(HDRS)
 	$(CC) -o $@ -c $(CPPFLAGS) $(ALL_CFLAGS) $<
 
 nusort: $(SHARED_OBJS) main.c
 	$(CC) $(ALL_CFLAGS) -o nusort $^
 
-%_test_bin: %_test.o $(SHARED_OBJS) obj/test_util.o
+%_test_bin: obj/%_test.o $(SHARED_OBJS) obj/test_util.o
 	$(CC) $(ALL_CFLAGS) -o $@ $^
 
 %_test: %_test_bin
@@ -88,6 +98,7 @@ nusort: $(SHARED_OBJS) main.c
 test: \
 	bsearch_test \
 	check_kanji_db_order_test \
+	flag_typo_test \
 	hashmap_test \
 	h2k_test \
 	input_test \

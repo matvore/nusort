@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "flags.h"
 #include "kanji_db.h"
 #include "kanji_distribution.h"
 #include "mapping.h"
@@ -8,9 +9,8 @@
 #include "util.h"
 
 /* 任意のマッピングに対する漢字練習セットを生成 */
-int practice_set(char **argv, int argc)
+int practice_set(struct flagset *fs, char **argv, int argc)
 {
-	struct romazi_config romazi_config = {0};
 	struct kanji_distribution kdist = {.sort_each_line_by_rsc = 1};
 	struct key_mapping_array mapping = {0};
 	int res = 0;
@@ -19,19 +19,19 @@ int practice_set(char **argv, int argc)
 	struct kanji_entry const *ke;
 	struct line_stats const *ls;
 
-	init_romazi_config_for_cli_flags(&romazi_config);
+	romazi_flags(fs);
+	mapping_flags(fs);
 
-	while (argc > 0) {
-		if (parse_romazi_flags(&argc, &argv, &romazi_config)) continue;
-		if (parse_kanji_distribution_flags(&argc, &argv, &kdist))
-			continue;
-		badflag(*argv);
-	}
+	if (argc < 0) return 0;
 
-	get_romazi_codes(&romazi_config, &mapping);
+	parsflag(fs, &argc, argv);
+
+	if (argc) badflag(*argv);
+
+	get_romazi_codes(fs, &mapping);
 
 	kanji_distribution_set_preexisting_convs(
-		&kdist, &mapping, /*block_already_used=*/1);
+		fs, &kdist, &mapping, /*block_already_used=*/1);
 	kanji_distribution_auto_pick_cutoff(&kdist);
 	kanji_distribution_populate(&kdist);
 

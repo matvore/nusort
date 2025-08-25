@@ -10,32 +10,31 @@
 #include <errno.h>
 #include <string.h>
 
+static struct flagset fs;
 static struct mapping m;
 
 static void cleanup(void)
 {
 	flush_packet();
 	destroy_mapping(&m);
+	destroy_flagset(&fs);
 }
 
 int main(void)
 {
-	struct romazi_config romazi_config = {
-		.include_kanji_numerals = 1,
-		.classic_wo = 1,
-	};
-
 	set_test_source_file(__FILE__);
 	debugout = 1;
 	config_tests(CONFIG_TESTS_IGNORE_NULL_BYTES);
 
 	while (run_test("default_view", NULL)) {
-		m.include_kanji = 1,
-		m.six_is_rh = 1,
-		m.dist.short_shifted_codes = 1;
+		mapping_flags(&fs);
+		romazi_flags(&fs);
 
-		get_romazi_codes(&romazi_config, &m.arr);
-		if (mapping_populate(&m))
+		setflag(&fs, "--6rh", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+
+		get_romazi_codes(&fs, &m.arr);
+		if (mapping_populate(&fs, &m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m.arr, "");
 		keyboard_write();
@@ -43,11 +42,13 @@ int main(void)
 	}
 
 	while (run_test("first_key_typed", NULL)) {
-		m.include_kanji = 1;
-		m.six_is_rh = 1;
-		m.dist.short_shifted_codes = 1;
-		get_romazi_codes(&romazi_config, &m.arr);
-		if (mapping_populate(&m))
+		mapping_flags(&fs);
+		romazi_flags(&fs);
+
+		setflag(&fs, "--6rh", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
+		get_romazi_codes(&fs, &m.arr);
+		if (mapping_populate(&fs, &m))
 			DIE(0, "mapping_populate");
 		keyboard_update(&m.arr, "/");
 		keyboard_write();

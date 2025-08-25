@@ -4,29 +4,25 @@
 #include "streams.h"
 #include "util.h"
 
-int make_map(char **argv, int argc) {
+int make_map(struct flagset *fs, char **argv, int argc) {
 	struct mapping m = {0};
 	size_t i;
 	int res = 0;
-	struct romazi_config romazi_config = {0};
 
-	init_romazi_config_for_cli_flags(&romazi_config);
-	init_mapping_config_for_cli_flags(&m);
+	romazi_flags(fs);
+	mapping_flags(fs);
 
-	while (argc > 0) {
-		if (parse_mapping_flags(&argc, &argv, &m))
-			continue;
-		if (parse_romazi_flags(&argc, &argv, &romazi_config))
-			continue;
+	if (argc < 0) return 0;
 
-		fprintf(err,
-			 "フラグを認識できませんでした：%s\n", argv[0]);
+	parsflag(fs, &argc, argv);
+	if (argc) {
+		fprintf(err, "フラグを認識できませんでした：%s\n", argv[0]);
 		res = 3;
 		goto cleanup;
 	}
 
-	get_romazi_codes(&romazi_config, &m.arr);
-	res = mapping_populate(&m);
+	get_romazi_codes(fs, &m.arr);
+	res = mapping_populate(fs, &m);
 	if (res)
 		goto cleanup;
 

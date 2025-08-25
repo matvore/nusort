@@ -8,6 +8,24 @@
 #include "test_util.h"
 #include "util.h"
 
+static struct mapping m;
+static struct flagset fs;
+
+static void initflags(void)
+{
+	destroy_flagset(&fs);
+	romazi_flags(&fs);
+	mapping_flags(&fs);
+}
+
+static int rsc3test(const char *name, const char *expout)
+{
+	initflags();
+	return run_test(name, expout);
+}
+
+static void cleanup(void) { destroy_mapping(&m); destroy_flagset(&fs); }
+
 static struct kanji_entry const *lookup(
 	struct key_mapping_array const *arr, Orig orig)
 {
@@ -30,8 +48,7 @@ int main(void)
 {
 	set_test_source_file(__FILE__);
 
-	while (run_test("various_pref", "")) {
-		struct mapping m;
+	while (rsc3test("various_pref", "")) {
 		struct {
 			char const *pref;
 			char third_key;
@@ -57,12 +74,10 @@ int main(void)
 		int resid_sc;
 
 		for (tc = test_cases; tc->pref; tc++) {
-			m = (struct mapping){
-				.include_kanji = 1,
-				.resid_sc_3rd_key = 1,
-			};
-			expect_ok(mapping_populate(&m));
-			expect_ok(mapping_lazy_populate(&m, tc->pref));
+			initflags();
+
+			expect_ok(mapping_populate(&fs, &m));
+			expect_ok(mapping_lazy_populate(&fs, &m, tc->pref));
 
 			matches = 0;
 			for (arri = 0; arri < m.arr.cnt; arri++) {
@@ -102,24 +117,20 @@ int main(void)
 				fprintf(out, "matches = %u (%s%c)\n",
 					matches, tc->pref, tc->third_key);
 
-			destroy_mapping(&m);
+			cleanup();
 		}
 	}
 
-	while (run_test("no_dup_kanji", "")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.resid_sc_3rd_key = 1,
-		};
+	while (rsc3test("no_dup_kanji", "")) {
 		uint8_t *kcnt;
 		unsigned mapi, matchn, kcnti, cnt;
 		struct kanji_entry const *ke;
 
-		expect_ok(mapping_populate(&m));
-		expect_ok(mapping_lazy_populate(&m, "a "));
-		expect_ok(mapping_lazy_populate(&m, "b "));
-		expect_ok(mapping_lazy_populate(&m, "c "));
-		expect_ok(mapping_lazy_populate(&m, "d "));
+		expect_ok(mapping_populate(&fs, &m));
+		expect_ok(mapping_lazy_populate(&fs, &m, "a "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "b "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "c "));
+		expect_ok(mapping_lazy_populate(&fs, &m, "d "));
 
 		kcnt = xcalloc(kanji_db_nr(), sizeof(*kcnt));
 		matchn = 0;
@@ -139,21 +150,17 @@ int main(void)
 					kanji_db()[kcnti].c, cnt);
 		}
 
-		destroy_mapping(&m);
+		cleanup();
 		free(kcnt);
 	}
 
-	while (run_test("first_key_1_no_dup_codes", "")) {
-		struct mapping m = {
-			.include_kanji = 1,
-			.resid_sc_3rd_key = 1,
-		};
-		expect_ok(mapping_populate(&m));
-		expect_ok(mapping_lazy_populate(&m, "1 "));
-		destroy_mapping(&m);
+	while (rsc3test("first_key_1_no_dup_codes", "")) {
+		expect_ok(mapping_populate(&fs, &m));
+		expect_ok(mapping_lazy_populate(&fs, &m, "1 "));
+		cleanup();
 	}
 
-	while (run_test("correct_range", "")) {
+	while (rsc3test("correct_range", "")) {
 		struct {
 			char const *pref;
 			unsigned rsc_ndx_lo, rsc_ndx_hi;
@@ -171,20 +178,16 @@ int main(void)
 			{0},
 		};
 
-		struct mapping m;
 		unsigned start_cnt, mi, rsc_ndx, matches;
 		Orig *orig;
 		Conv *conv;
 		struct kanji_entry const *ke;
 
 		for (tc = test_cases; tc->pref; tc++) {
-			m = (struct mapping){
-				.include_kanji = 1,
-				.resid_sc_3rd_key = 1,
-			};
-			expect_ok(mapping_populate(&m));
+			initflags();
+			expect_ok(mapping_populate(&fs, &m));
 			start_cnt = m.arr.cnt;
-			expect_ok(mapping_lazy_populate(&m, tc->pref));
+			expect_ok(mapping_lazy_populate(&fs, &m, tc->pref));
 			if (start_cnt == m.arr.cnt)
 				fprintf(out,
 					"入力コードが追加されなかった: %u\n",
@@ -216,36 +219,32 @@ int main(void)
 			}
 			if (matches < 5)
 				fprintf(out, "matches = %u\n", matches);
-			destroy_mapping(&m);
+			cleanup();
 		}
 	}
 
-	while (run_test("full_set", 0)) {
-		struct mapping m;
+	while (rsc3test("full_set", 0)) {
 		int keyi, inc_romazi;
 		char pref[3];
-		struct romazi_config rom;
 		unsigned start_cnt;
 		struct key_mapping *me;
 
 		for (inc_romazi = 0; inc_romazi < 2; inc_romazi++) {
 			fprintf(out, "inc_romazi:%d\n", inc_romazi);
 
-			m = (struct mapping) {
-				.include_kanji = 1,
-				.resid_sc_3rd_key = 1,
-			};
-			rom = (struct romazi_config) {0};
+			initflags();
+			setflag(&fs, "--no-kanji-nums", 1);
+			setflag(&fs, "--no-classic-wo", 1);
 
-			if (inc_romazi) get_romazi_codes(&rom, &m.arr);
+			if (inc_romazi) get_romazi_codes(&fs, &m.arr);
 			start_cnt = m.arr.cnt;
 
-			expect_ok(mapping_populate(&m));
+			expect_ok(mapping_populate(&fs, &m));
 			for (keyi = 0; keyi < KANJI_KEY_COUNT; keyi++) {
 				pref[0] = KEY_INDEX_TO_CHAR_MAP[keyi];
 				pref[1] = ' ';
 				pref[2] = 0;
-				expect_ok(mapping_lazy_populate(&m, pref));
+				expect_ok(mapping_lazy_populate(&fs, &m, pref));
 			}
 
 			if (m.arr.cnt - start_cnt != kanji_db_nr())
@@ -259,16 +258,16 @@ int main(void)
 				fprintf(out, "%s -> %s\n", me->orig, me->conv);
 			}
 
-			destroy_mapping(&m);
+			cleanup();
 		}
 	}
 
-	while (run_test("ranking_ergonomics", "")) {
+	while (rsc3test("ranking_ergonomics", "")) {
 		struct {
 			unsigned inc_romazi : 1;
+			unsigned romazi_optimize_keystrokes : 1;
 			unsigned six_is_rh : 1;
 
-			struct romazi_config rom;
 			char const *pref;
 			char sc_cell;
 		} *tc, test_cases[] = {
@@ -279,19 +278,19 @@ int main(void)
 			},
 			{
 				.inc_romazi = 1,
-				.rom = { .optimize_keystrokes = 1 },
+				.romazi_optimize_keystrokes = 1,
 				.pref = "x ",
 				.sc_cell = 'i',
 			},
 			{
 				.inc_romazi = 1,
-				.rom = { .optimize_keystrokes = 1 },
+				.romazi_optimize_keystrokes = 1,
 				.pref = "x ",
 				.sc_cell = 't',
 			},
 			{
 				.inc_romazi = 1,
-				.rom = { .optimize_keystrokes = 1 },
+				.romazi_optimize_keystrokes = 1,
 				.pref = "r ",
 				.sc_cell = 'j',
 				.six_is_rh = 1,
@@ -299,22 +298,22 @@ int main(void)
 			{0},
 		};
 
-		struct mapping m;
 		Orig code1, code2;
 		struct kanji_entry const *ke1, *ke2;
 		int kij, ki, kj, ergo_lt;
 
 		for (tc = test_cases; tc->pref; tc++) {
-			m = (struct mapping){
-				.include_kanji = 1,
-				.resid_sc_3rd_key = 1,
-				.six_is_rh = tc->six_is_rh,
-			};
+			initflags();
 
-			if (tc->inc_romazi) get_romazi_codes(&tc->rom, &m.arr);
-			expect_ok(mapping_populate(&m));
+			setflag(&fs,	"--6rh",
+					!!tc->six_is_rh);
+			setflag(&fs,	"--romazi-optimize-keystrokes",
+					!!tc->romazi_optimize_keystrokes);
 
-			expect_ok(mapping_lazy_populate(&m, tc->pref));
+			if (tc->inc_romazi) get_romazi_codes(&fs, &m.arr);
+			expect_ok(mapping_populate(&fs, &m));
+
+			expect_ok(mapping_lazy_populate(&fs, &m, tc->pref));
 
 			memcpy(code1, tc->pref, 2);
 			code1[2] = tc->sc_cell;
@@ -345,7 +344,7 @@ int main(void)
 					code2, ke2->c, ke2->ranking);
 			}
 
-			destroy_mapping(&m);
+			cleanup();
 		}
 	}
 }

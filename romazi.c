@@ -22,6 +22,40 @@ const char KEY_INDEX_TO_CHAR_MAP[MAPPABLE_CHAR_COUNT] = {
 
 static KeyIndex char_to_key_index_map[128];
 
+void romazi_flags(struct flagset *fs)
+{
+	flagcat(fs, "ローマ字");
+
+	addflag(fs, "--hiragana-wo-key", 'c', 0,
+"\n\t"	"一打鍵のコードを「を」に割り当てるには、これを設定。「ヲ」のコードを"
+"\n\t"	"生成しない。"
+	);
+
+	addflag(fs, "--no-kanji-nums", 'b', 0,
+"\n\t"	"シフト＋数字一打鍵のコードを漢字に割り当てない。"
+	);
+
+	addflag(fs, "--no-classic-wo", 'b', 0,
+"\n\t"	"wo=を と WO=ヲ のコードを生成しない。"
+	);
+
+	addflag(fs, "--romazi-optimize-keystrokes", 'b', 0,
+"\n\t"	"頻繁に使う仮名を一打鍵で入力できるようにして、あ行の「い」以外と"
+"\n\t"	"「っ」と「ん」を二打鍵コードに変え、ローマ字に普段使わないキー"
+"\n\t"	"（例えば「Q」と「V」）を一打鍵のローマ字に使います。"
+	);
+
+	addflag(fs, "--kakko", 'c', 's',
+"\n\t"	"'n': 括弧がマッピングに含まれません。"
+"\n\t"
+"\n\t"	"'s'pread: 括弧やクォートを '[?' と ']?' で入力する。'?'の打鍵は左手に"
+"\n\t"	"なるので入力が楽です"
+"\n\t"
+"\n\t"	"'p'ack: 括弧やクォートを ']?' のみで入力する。めずらしい括弧はいくつか"
+"\n\t"	"打ちづらくなります。"
+	);
+}
+
 /*
  * 漢字とカナ入力で使わないキーはインデックスを持たない。そのキーの場合は、
  * -1を返す。
@@ -87,59 +121,6 @@ void hiragana_to_katakana(char *conv)
 	}
 }
 
-void init_romazi_config_for_cli_flags(struct romazi_config *config)
-{
-	if (!bytes_are_zero(config, sizeof(*config)))
-		DIE(0, "romazi_config not initialized to zero bytes");
-
-	config->include_kanji_numerals = 1;
-	config->classic_wo = 1;
-	config->kakko = 's';
-}
-
-int parse_romazi_flags(
-	int *argc, char ***argv, struct romazi_config *config)
-{
-	if (!strcmp((*argv)[0], "--no-classic-wo")) {
-		config->classic_wo = 0;
-		(*argv)++;
-		(*argc)--;
-		return 1;
-	}
-	if (!strcmp((*argv)[0], "--hiragana-wo-key") && *argc > 1 &&
-		   strlen((*argv)[1]) == 1) {
-		config->hiragana_wo_key = (*argv)[1][0];
-		*argv += 2;
-		*argc -= 2;
-		return 1;
-	}
-	if (!strcmp((*argv)[0], "--no-kanji-nums")) {
-		config->include_kanji_numerals = 0;
-		(*argv)++;
-		(*argc)--;
-		return 1;
-	}
-	if (!strcmp((*argv)[0], "--romazi-optimize-keystrokes")) {
-		config->optimize_keystrokes = 1;
-		(*argv)++;
-		(*argc)--;
-		return 1;
-	}
-	if (!strcmp((*argv)[0], "--pack-kakko")) {
-		config->kakko = 'p';
-		(*argv)++;
-		(*argc)--;
-		return 1;
-	}
-	if (!strcmp((*argv)[0], "--no-kakko")) {
-		config->kakko = 0;
-		(*argv)++;
-		(*argc)--;
-		return 1;
-	}
-	return 0;
-}
-
 static void append_secondary_i_retsu_mappings(
 	struct key_mapping_array *codes, char orig0, char const *kana)
 {
@@ -181,17 +162,78 @@ static void append_secondary_i_retsu_mappings(
 }
 
 static void append_optimized(
-	struct romazi_config const *config, struct key_mapping_array *c,
+	struct flagset *fs, struct key_mapping_array *c,
 	char const *norm_orig, char const *opt_orig, char const *conv)
 {
-	if (config->optimize_keystrokes)
+	if (flagval(fs, "--romazi-optimize-keystrokes"))
 		append_mapping_auto_kata(c, opt_orig, conv);
 	else
 		append_mapping_auto_kata(c, norm_orig, conv);
 }
 
+static void addkakko(struct key_mapping_array *c, char kakko)
+{
+	switch (kakko) {
+	case 'n': break;
+	case 'p':
+		append_mapping(c, "]1", "‘");
+		append_mapping(c, "]2", "’");
+		append_mapping(c, "]3", "“");
+		append_mapping(c, "]4", "”");
+		append_mapping(c, "]q", "〈");
+		append_mapping(c, "]w", "〉");
+		append_mapping(c, "]e", "《");
+		append_mapping(c, "]r", "》");
+		append_mapping(c, "]a", "「");
+		append_mapping(c, "]s", "」");
+		append_mapping(c, "]d", "『");
+		append_mapping(c, "]f", "』");
+		append_mapping(c, "]z", "【");
+		append_mapping(c, "]x", "】");
+		append_mapping(c, "]c", "〔");
+		append_mapping(c, "]v", "〕");
+		append_mapping(c, "]y", "〖");
+		append_mapping(c, "]u", "〗");
+		append_mapping(c, "]h", "〘");
+		append_mapping(c, "]j", "〙");
+		append_mapping(c, "]n", "〝");
+		append_mapping(c, "]m", "〟");
+		append_mapping(c, "]7", "｟");
+		append_mapping(c, "]8", "｠");
+		break;
+	case 's':
+		append_mapping(c, "[q", "‘");
+		append_mapping(c, "]q", "’");
+		append_mapping(c, "[a", "“");
+		append_mapping(c, "]a", "”");
+		append_mapping(c, "[e", "〈");
+		append_mapping(c, "]e", "〉");
+		append_mapping(c, "[r", "《");
+		append_mapping(c, "]r", "》");
+		append_mapping(c, "[s", "「");
+		append_mapping(c, "]s", "」");
+		append_mapping(c, "[d", "『");
+		append_mapping(c, "]d", "』");
+		append_mapping(c, "[f", "【");
+		append_mapping(c, "]f", "】");
+		append_mapping(c, "[w", "〔");
+		append_mapping(c, "]w", "〕");
+		append_mapping(c, "[v", "〖");
+		append_mapping(c, "]v", "〗");
+		append_mapping(c, "[c", "〘");
+		append_mapping(c, "]c", "〙");
+		append_mapping(c, "[g", "〝");
+		append_mapping(c, "]g", "〟");
+		append_mapping(c, "[x", "｟");
+		append_mapping(c, "]x", "｠");
+		break;
+	default:
+		DIE(0, "括弧の入力設定が無効です: %d (%c)", (int) kakko, kakko);
+	}
+}
+
 void get_romazi_codes(
-	struct romazi_config const *config, struct key_mapping_array *c)
+	struct flagset *fs, struct key_mapping_array *c)
 {
 	append_mapping(c, "BW7", "ヴャ");
 	append_mapping(c, "BW8", "ヴュ");
@@ -264,11 +306,11 @@ void get_romazi_codes(
 
 	append_mapping(c, "-", "ー");
 
-	append_optimized(config, c, "a",  ";a", "あ");
+	append_optimized(fs, c, "a",      ";a", "あ");
 	append_mapping_auto_kata(c, "i",        "い");
-	append_optimized(config, c, "u",  ";u", "う");
-	append_optimized(config, c, "e",  ";e", "え");
-	append_optimized(config, c, "o",  ";o", "お");
+	append_optimized(fs, c, "u",      ";u", "う");
+	append_optimized(fs, c, "e",      ";e", "え");
+	append_optimized(fs, c, "o",      ";o", "お");
 	append_mapping_auto_kata(c, "ka",       "か");
 	append_mapping_auto_kata(c, "ki",       "き");
 	append_mapping_auto_kata(c, "ku",       "く");
@@ -282,7 +324,7 @@ void get_romazi_codes(
 	append_mapping_auto_kata(c, "ge",       "げ");
 	append_mapping_auto_kata(c, "go",       "ご");
 	append_mapping_auto_kata(c, "sa",       "さ");
-	append_optimized(config, c, "si", "f",  "し");
+	append_optimized(fs, c, "si", "f",      "し");
 	append_mapping_auto_kata(c, "su",       "す");
 	append_mapping_auto_kata(c, "se",       "せ");
 	append_mapping_auto_kata(c, "so",       "そ");
@@ -291,23 +333,23 @@ void get_romazi_codes(
 	append_mapping_auto_kata(c, "zu",       "ず");
 	append_mapping_auto_kata(c, "ze",       "ぜ");
 	append_mapping_auto_kata(c, "zo",       "ぞ");
-	append_optimized(config, c, "ta", "a",  "た");
+	append_optimized(fs, c, "ta", "a",      "た");
 	append_mapping_auto_kata(c, "ti",       "ち");
 	append_mapping_auto_kata(c, "tu",       "つ");
-	append_optimized(config, c, "j",  "to", "っ");
-	append_optimized(config, c, "te", "u",  "て");
-	append_optimized(config, c, "to", "q",  "と");
+	append_optimized(fs, c, "j",  "to",     "っ");
+	append_optimized(fs, c, "te", "u",      "て");
+	append_optimized(fs, c, "to", "q",      "と");
 	append_mapping_auto_kata(c, "da",       "だ");
 	append_mapping_auto_kata(c, "di",       "ぢ");
 	append_mapping_auto_kata(c, "du",       "づ");
 	append_mapping_auto_kata(c, "de",       "で");
 	append_mapping_auto_kata(c, "do",       "ど");
-	append_optimized(config, c, "na", "o",  "な");
-	append_optimized(config, c, "ni", "e",  "に");
+	append_optimized(fs, c, "na", "o",      "な");
+	append_optimized(fs, c, "ni", "e",      "に");
 	append_mapping_auto_kata(c, "nu",       "ぬ");
 	append_mapping_auto_kata(c, "ne",       "ね");
-	append_optimized(config, c, "no", "j",  "の");
-	append_optimized(config, c, "ha", "l",  "は");
+	append_optimized(fs, c, "no", "j",      "の");
+	append_optimized(fs, c, "ha", "l",      "は");
 	append_mapping_auto_kata(c, "hi",       "ひ");
 	append_mapping_auto_kata(c, "hu",       "ふ");
 	append_mapping_auto_kata(c, "he",       "へ");
@@ -332,12 +374,12 @@ void get_romazi_codes(
 	append_mapping_auto_kata(c, "yo",       "よ");
 	append_mapping_auto_kata(c, "ra",       "ら");
 	append_mapping_auto_kata(c, "ri",       "り");
-	append_optimized(config, c, "ru", "v",  "る");
-	append_optimized(config, c, "re", "c",  "れ");
+	append_optimized(fs, c, "ru", "v",      "る");
+	append_optimized(fs, c, "re", "c",      "れ");
 	append_mapping_auto_kata(c, "ro",       "ろ");
 	append_mapping_auto_kata(c, "wa",       "わ");
 	append_mapping_auto_kata(c, "xxl",      "を");
-	append_optimized(config, c, "f",  ";n", "ん");
+	append_optimized(fs, c, "f",  ";n",     "ん");
 	append_mapping_auto_kata(c, "xxa",      "ぁ");
 	append_mapping_auto_kata(c, "xxi",      "ぃ");
 	append_mapping_auto_kata(c, "xxu",      "ぅ");
@@ -364,7 +406,7 @@ void get_romazi_codes(
 	append_secondary_i_retsu_mappings(c, 'm', "み");
 	append_secondary_i_retsu_mappings(c, 'r', "り");
 
-	if (config->include_kanji_numerals) {
+	if (!flagval(fs, "--no-kanji-nums")) {
 		append_mapping(c, "!", "一");
 		append_mapping(c, "@", "二");
 		append_mapping(c, "#", "三");
@@ -377,13 +419,13 @@ void get_romazi_codes(
 		append_mapping(c, ")", "十");
 	}
 
-	if (config->hiragana_wo_key) {
+	if (flagval(fs, "--hiragana-wo-key")) {
 		Orig o = {0};
-		o[0] = config->hiragana_wo_key;
+		o[0] = flagval(fs, "--hiragana-wo-key");
 		append_mapping(c, o, "を");
 	}
 
-	if (config->classic_wo) {
+	if (!flagval(fs, "--no-classic-wo")) {
 		append_mapping_auto_kata(c, "wo", "を");
 	}
 
@@ -396,62 +438,5 @@ void get_romazi_codes(
 	append_mapping(c, "XX,", "ヸ");
 	append_mapping(c, "XX.", "ヺ");
 
-	switch (config->kakko) {
-	case 0: break;
-	case 'p':
-		append_mapping(c, "]1", "‘");
-		append_mapping(c, "]2", "’");
-		append_mapping(c, "]3", "“");
-		append_mapping(c, "]4", "”");
-		append_mapping(c, "]q", "〈");
-		append_mapping(c, "]w", "〉");
-		append_mapping(c, "]e", "《");
-		append_mapping(c, "]r", "》");
-		append_mapping(c, "]a", "「");
-		append_mapping(c, "]s", "」");
-		append_mapping(c, "]d", "『");
-		append_mapping(c, "]f", "』");
-		append_mapping(c, "]z", "【");
-		append_mapping(c, "]x", "】");
-		append_mapping(c, "]c", "〔");
-		append_mapping(c, "]v", "〕");
-		append_mapping(c, "]y", "〖");
-		append_mapping(c, "]u", "〗");
-		append_mapping(c, "]h", "〘");
-		append_mapping(c, "]j", "〙");
-		append_mapping(c, "]n", "〝");
-		append_mapping(c, "]m", "〟");
-		append_mapping(c, "]7", "｟");
-		append_mapping(c, "]8", "｠");
-		break;
-	case 's':
-		append_mapping(c, "[q", "‘");
-		append_mapping(c, "]q", "’");
-		append_mapping(c, "[a", "“");
-		append_mapping(c, "]a", "”");
-		append_mapping(c, "[e", "〈");
-		append_mapping(c, "]e", "〉");
-		append_mapping(c, "[r", "《");
-		append_mapping(c, "]r", "》");
-		append_mapping(c, "[s", "「");
-		append_mapping(c, "]s", "」");
-		append_mapping(c, "[d", "『");
-		append_mapping(c, "]d", "』");
-		append_mapping(c, "[f", "【");
-		append_mapping(c, "]f", "】");
-		append_mapping(c, "[w", "〔");
-		append_mapping(c, "]w", "〕");
-		append_mapping(c, "[v", "〖");
-		append_mapping(c, "]v", "〗");
-		append_mapping(c, "[c", "〘");
-		append_mapping(c, "]c", "〙");
-		append_mapping(c, "[g", "〝");
-		append_mapping(c, "]g", "〟");
-		append_mapping(c, "[x", "｟");
-		append_mapping(c, "]x", "｠");
-		break;
-	default:
-		DIE(0, "括弧の入力設定が無効です: %d (%c)",
-		    (int) config->kakko, config->kakko);
-	}
+	addkakko(c, flagval(fs, "--kakko"));
 }

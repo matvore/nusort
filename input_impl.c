@@ -33,9 +33,9 @@ static void send_propagated_input(char const *s, int len)
 }
 
 static void append_to_converted(char const *s, int len,
-				const struct input_flags *f)
+				struct flagset *fs)
 {
-	if (f->rpc_mode)
+	if (flagval(fs, "--rpc-mode"))
 		send_propagated_input(s, len);
 	else {
 		GROW_ARRAY_BY(converted, len);
@@ -45,7 +45,7 @@ static void append_to_converted(char const *s, int len,
 
 static int is_done(
 	struct key_mapping_array const *mapping, Orig const so_far_input,
-	const struct input_flags *f)
+	struct flagset *fs)
 {
 	struct key_mapping const *m;
 
@@ -54,7 +54,7 @@ static int is_done(
 	if (!m)
 		return 0;
 
-	append_to_converted(m->conv, strlen(m->conv), f);
+	append_to_converted(m->conv, strlen(m->conv), fs);
 
 	return 1;
 }
@@ -225,7 +225,7 @@ static int eat_escape_sequence(int rpc_mode)
 	return 1;
 }
 
-int input_impl(struct mapping *mapping, struct input_flags const *flags)
+int input_impl(struct mapping *mapping, struct flagset *fs)
 {
 	Orig so_far_input = {0};
 	char orig1st;
@@ -233,17 +233,17 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 	int did_delete_conv = 0;
 	int origlen, ch, pressed_bs;
 
-	use_packetized_out = flags->rpc_mode;
+	use_packetized_out = flagval(fs, "--rpc-mode");
 
 	while (1) {
 		pressed_bs = 0;
 
 		keyboard_update(&mapping->arr, so_far_input);
 		to_top_of_screen();
-		if (flags->show_cutoff_guide) {
+		if (!flagval(fs, "--no-show-cutoff-guide")) {
 			origlen = strlen(so_far_input);
 			orig1st = 0;
-			if (mapping->resid_sc_3rd_key || origlen == 1) {
+			if (!flagval(fs, "--recurs-ksort") || origlen == 1) {
 				orig1st = so_far_input[0];
 				so_far_input[0] = 0;
 			}
@@ -255,7 +255,7 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 			so_far_input[strlen(so_far_input)] = orig1st;
 		}
 		start_window(WINDOW_INPUT_LINE);
-		if (flags->show_pending_and_converted) {
+		if (!flagval(fs, "--no-show-pending-and-converted")) {
 			packout(converted.el, converted.cnt);
 			if (so_far_input[0] || did_delete_orig) {
 				packout("<", 1);
@@ -268,16 +268,16 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 				add_window_newline();
 		}
 		finish_window();
-		if (flags->show_rsc_list)
+		if (!flagval(fs, "--no-show-rsc-list"))
 			keyboard_show_rsc_list();
-		if (flags->show_keyboard) keyboard_write();
+		if (!flagval(fs, "--no-show-keyboard")) keyboard_write();
 
 		did_delete_orig = 0;
 		did_delete_conv = 0;
 
 		flush_packet();
 
-		if (flags->rpc_mode) fputc(debugout ? '@':'\x01', out);
+		if (use_packetized_out) fputc(debugout ? '@':'\x01', out);
 
 		fflush(out);
 
@@ -285,7 +285,8 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 
 		switch (ch) {
 		case '\x1b':
-			if (!eat_escape_sequence(flags->rpc_mode)) goto cleanup;
+			if (!eat_escape_sequence(use_packetized_out))
+				goto cleanup;
 			continue;
 		case EOF:
 			if (ferror(in)) {
@@ -302,12 +303,12 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 			break;
 		case '\n':
 			if (converted.alloc) {
-				if (flags->save_with_osc52)
+				if (!flagval(fs, "--no-save-with-osc52"))
 					save_with_osc52();
 				converted.el[0] = 0;
 				converted.cnt = 0;
 			}
-			else if (flags->rpc_mode)
+			else if (flagval(fs, "--rpc-mode"))
 				send_propagated_input("\n", 1);
 			continue;
 		}
@@ -328,22 +329,22 @@ int input_impl(struct mapping *mapping, struct input_flags const *flags)
 			converted.cnt -= cdiff;
 			memset(converted.el + converted.cnt, 0, cdiff);
 			did_delete_conv = 1;
-		} else if (flags->rpc_mode)
+		} else if (flagval(fs, "--rpc-mode"))
 			send_propagated_input("\b", 1);
 
 		while (1) {
-			if (is_done(&mapping->arr, so_far_input, flags)) {
+			if (is_done(&mapping->arr, so_far_input, fs)) {
 				memset(&so_far_input, 0, sizeof(so_far_input));
 				break;
 			}
 			if (strlen(so_far_input) == 2 && so_far_input[1] == ' ')
-				mapping_lazy_populate(
+				mapping_lazy_populate(fs,
 					mapping, so_far_input);
 			if (incomplete_code_is_prefix(&mapping->arr,
 						      so_far_input))
 				break;
 
-			append_to_converted(so_far_input, 1, flags);
+			append_to_converted(so_far_input, 1, fs);
 			memmove(so_far_input, so_far_input + 1,
 				sizeof(so_far_input) - 1);
 		}

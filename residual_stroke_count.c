@@ -239,18 +239,30 @@ int largest_residual_stroke_count(void)
 	return result;
 }
 
-int expand_rsc_keys(char **argv, int argc)
+int expand_rsc_keys(struct flagset *fs, char **argv, int argc)
 {
 	int i, radind = -1, kc = 0xfff, kr, ki;
 	struct kanji_entry const *ke;
 
-	while (argc--) {
-		if (!strcmp(*argv, "-1")) kc = 1; else
-		if (!strcmp(*argv, "-0")) kc = 0; else
-		DIE(0, "無効な引数: %s", *argv);
+	flagcat(fs, "出力漢字数");
+	addflag(fs, "-1", 'b', 0,
+"\n\t"	"並べ換えキー一つに漢字を一つだけ出力する。"
+	);
+	addflag(fs, "-0", 'b', 0,
+"\n\t"	"漢字を出力しない。"
+	);
 
-		argv++;
+	if (argc < 0) return 0;
+	parsflag(fs, &argc, argv);
+
+	if (flagval(fs, "-1")) kc = 1;
+	if (flagval(fs, "-0")) {
+		if (kc == 1) DIE(0, "-1 と -0 を一緒に指定しないでください。");
+		kc = 0;
 	}
+
+	parsflag(fs, &argc, argv);
+	if (argc) DIE(0, "無効な引数: %s", *argv);
 
 	ki = 0;
 	for (i = 0; i < sizeof counts; i++) {

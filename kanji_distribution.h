@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "flags.h"
 #include "kanji_db.h"
 #include "mapping_util.h"
 #include "romazi.h"
@@ -28,9 +29,6 @@ struct line_stats {
 
 struct kanji_distribution {
 	unsigned sort_each_line_by_rsc : 1;
-	unsigned short_shifted_codes : 1;
-	unsigned busy_right_pinky : 1;
-	unsigned allow_left_bracket_key1 : 1;
 
 	uint16_t total_rank;
 	uint16_t total_chars;
@@ -54,8 +52,7 @@ struct kanji_distribution {
 	} unused_kanji_origs;
 };
 
-int parse_kanji_distribution_flags(
-	int *argc, char ***argv, struct kanji_distribution *);
+void kanji_distribution_flags(struct flagset *fs);
 
 /*
  * モジュールの用法:
@@ -75,8 +72,8 @@ int parse_kanji_distribution_flags(
  * 漢字を二つめの入力コードに割り当てません。
  */
 void kanji_distribution_set_preexisting_convs(
-	struct kanji_distribution *, struct key_mapping_array const *,
-	int block_already_used);
+	struct flagset *fs, struct kanji_distribution *,
+	struct key_mapping_array const *, int block_already_used);
 
 void kanji_distribution_auto_pick_cutoff(struct kanji_distribution *kd);
 

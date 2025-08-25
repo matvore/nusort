@@ -6,8 +6,10 @@
 #include "streams.h"
 #include "util.h"
 
-int rsc_sort_key(char **argv, int argc)
+int rsc_sort_key(struct flagset *fs, char **argv, int argc)
 {
+	if (argc < 0) return 0;
+	parsflag(fs, &argc, argv);
 	if (argc) badflag(*argv);
 
 	fprintf(out, "最大値: %u\n", largest_rsc_sort_key());

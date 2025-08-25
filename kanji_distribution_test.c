@@ -1,6 +1,7 @@
 #include <inttypes.h>
 
 #include "kanji_distribution.h"
+#include "mapping.h"
 #include "streams.h"
 #include "test_util.h"
 #include "util.h"
@@ -41,16 +42,19 @@ static void validate_line(struct line_stats const *ls)
 static void show_preferred_next_chars(
 	char prior, char const *start, char const *end, int six_is_rh)
 {
-	struct kanji_distribution kd = {
-		.short_shifted_codes = 1,
-	};
+	struct flagset fs = {0};
+	struct kanji_distribution kd = {0};
 	struct key_mapping_array preexisting_m = {0};
 	int line;
+
+	mapping_flags(&fs);
+	if (six_is_rh) setflag(&fs, "--6rh", 1);
+	setflag(&fs, "--short-shifted-codes", 1);
 
 	kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup(start));
 	kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup(end));
 	kanji_distribution_set_preexisting_convs(
-		&kd, &preexisting_m, 1);
+		&fs, &kd, &preexisting_m, 1);
 	kanji_distribution_auto_pick_cutoff_exhaustive(
 		&kd, prior, 10, six_is_rh);
 
@@ -61,24 +65,26 @@ static void show_preferred_next_chars(
 
 	kanji_distribution_destroy(&kd);
 	DESTROY_ARRAY(preexisting_m);
+	destroy_flagset(&fs);
 }
 
 static void check_using_distinct_cutoff(
 	char const *start, char const *end, int max_basic_kanji_per_line)
 {
-	struct kanji_distribution kd = {
-		.short_shifted_codes = 1,
-	};
+	struct flagset fs = {0};
+	struct kanji_distribution kd = {0};
 	struct key_mapping_array preexisting_m = {0};
 	int i;
 
+	kanji_distribution_flags(&fs);
+	setflag(&fs, "--short-shifted-codes", 1);
 	fprintf(out, "--- [%s, %s) --- (basic_per_line <= %d)\n",
 		start, end, max_basic_kanji_per_line);
 
 	kd.sort_each_line_by_rsc = 1;
 	kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup(start));
 	kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup(end));
-	kanji_distribution_set_preexisting_convs(&kd, &preexisting_m, 1);
+	kanji_distribution_set_preexisting_convs(&fs, &kd, &preexisting_m, 1);
 
 	kanji_distribution_auto_pick_cutoff_exhaustive(
 		&kd, 'j', max_basic_kanji_per_line, 0);
@@ -110,9 +116,27 @@ static void check_using_distinct_cutoff(
 
 	kanji_distribution_destroy(&kd);
 	DESTROY_ARRAY(preexisting_m);
+	destroy_flagset(&fs);
 }
 
 #define BASE_KANJI_KEY_COUNT 40
+
+static struct flagset fs;
+static struct kanji_distribution kd;
+static struct key_mapping_array map;
+
+static void initflags(void)
+{
+	kanji_distribution_flags(&fs);
+	romazi_flags(&fs);
+}
+
+static void cleanup(void)
+{
+	destroy_flagset(&fs);
+	DESTROY_ARRAY(map);
+	kanji_distribution_destroy(&kd);
+}
 
 int main(void)
 {
@@ -121,162 +145,136 @@ int main(void)
 	while (run_test("does_not_use_uncommon_character_if_rsc_key_is_same", "")) {
 		int key;
 
-		struct romazi_config romazi_config = {
-			.include_kanji_numerals = 1,
-			.classic_wo = 0,
-			.optimize_keystrokes = 1,
-		};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
-		struct key_mapping_array romazi_m = {0};
+		initflags();
 
-		get_romazi_codes(&romazi_config, &romazi_m);
+		setflag(&fs, "--romazi-optimize-keystrokes", 1);
+		setflag(&fs, "--no-classic-wo", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
 
-		kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
+		get_romazi_codes(&fs, &map);
+
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
 		for (key = 0; key < kd.line_stats_nr; key++)
 			validate_line(kd.line_stats + key);
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(romazi_m);
+		cleanup();
 	}
 
 	while (run_test("does_not_use_uncommon_character_if_rsc_key_is_same_2", "")) {
 		int key;
 
-		struct romazi_config romazi_config = {0};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
-		struct key_mapping_array romazi_m = {0};
+		initflags();
+		setflag(&fs, "--no-classic-wo", 1);
+		setflag(&fs, "--no-kanji-nums", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
 
-		get_romazi_codes(&romazi_config, &romazi_m);
+		get_romazi_codes(&fs, &map);
 
-		kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
+		kanji_distribution_set_preexisting_convs(
+			&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
 		for (key = 0; key < kd.line_stats_nr; key++)
 			validate_line(kd.line_stats + key);
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(romazi_m);
+		cleanup();
 	}
 
 	while (run_test("does_not_use_uncommon_character_if_rsc_key_is_same_3", "")) {
 		int key;
 
-		struct romazi_config romazi_config = {
-			.include_kanji_numerals = 1,
-			.optimize_keystrokes = 1,
-		};
-		struct kanji_distribution kd = {
-			.busy_right_pinky = 1,
-		};
-		struct key_mapping_array romazi_m = {0};
+		initflags();
+		setflag(&fs, "--no-classic-wo", 1);
+		setflag(&fs, "--romazi-optimize-keystrokes", 1);
+		setflag(&fs, "--busy-right-pinky", 1);
 
-		get_romazi_codes(&romazi_config, &romazi_m);
+		get_romazi_codes(&fs, &map);
 
-		kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
+		kanji_distribution_set_preexisting_convs(
+			&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
 		for (key = 0; key < kd.line_stats_nr; key++)
 			validate_line(kd.line_stats + key);
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(romazi_m);
+		cleanup();
 	}
 
 	while (run_test("does_not_use_uncommon_character_if_rsc_key_is_same_4", "")) {
 		int key;
 
-		struct romazi_config romazi_config = {
-			.include_kanji_numerals = 1,
-			.classic_wo = 1,
-		};
-		struct kanji_distribution kd = {0};
-		struct key_mapping_array romazi_m = {0};
+		initflags();
 
-		get_romazi_codes(&romazi_config, &romazi_m);
+		get_romazi_codes(&fs, &map);
 
-		kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
+		kanji_distribution_set_preexisting_convs(
+			&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
 		for (key = 0; key < kd.line_stats_nr; key++)
 			validate_line(kd.line_stats + key);
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(romazi_m);
+		cleanup();
 	}
 
 	while (run_test("does_not_use_uncommon_character_for_cutoff_no_kana", "")) {
 		int key;
 
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
-		struct key_mapping_array m = {0};
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
 
-		kanji_distribution_set_preexisting_convs(&kd, &m, 1);
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
 		for (key = 0; key < kd.line_stats_nr; key++)
 			validate_line(kd.line_stats + key);
 
-		kanji_distribution_destroy(&kd);
+		cleanup();
 	}
 
 	while (run_test("can_generate_distribution_with_only_kanji", "")) {
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
-		struct key_mapping_array preexisting_m = {0};
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
 
 		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+			&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
 		    BASE_KANJI_KEY_COUNT * (BASE_KANJI_KEY_COUNT + 1))
 		        fprintf(out, "%d\n", (int) kd.total_chars);
 
-		kanji_distribution_destroy(&kd);
+		cleanup();
 	}
 
 	while (run_test("can_generate_distribution_with_one_romazi", "")) {
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
-		struct key_mapping_array preexisting_m = {0};
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
 
-		append_mapping(&preexisting_m, "ka", "か");
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		append_mapping(&map, "ka", "か");
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
 		    BASE_KANJI_KEY_COUNT * (BASE_KANJI_KEY_COUNT + 1) - 1)
 		        fprintf(out, "%d\n", (int) kd.total_chars);
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 	}
 
 	while (run_test("can_generate_distribution_with_one_key_romazi", "")) {
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
-		struct key_mapping_array preexisting_m = {0};
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
 
-		append_mapping(&preexisting_m, "a", "あ");
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		append_mapping(&map, "a", "あ");
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 		if (kd.total_chars !=
@@ -284,23 +282,21 @@ int main(void)
 		    - BASE_KANJI_KEY_COUNT)
 			fprintf(out, "%d\n", (int) kd.total_chars);
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 	}
 
 	while (run_test("does_not_pass_up_distinct_but_uncommon_kugiri_ji", "")) {
-		struct key_mapping_array romazi_m = {0};
-		struct romazi_config romazi_config = {
-			.optimize_keystrokes = 1,
-		};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
 		int line;
 
-		get_romazi_codes(&romazi_config, &romazi_m);
+		initflags();
+		setflag(&fs, "--no-classic-wo", 1);
+		setflag(&fs, "--no-kanji-nums", 1);
+		setflag(&fs, "--romazi-optimize-keystrokes", 1);
+		setflag(&fs, "--short-shifted-codes", 1);
 
-		kanji_distribution_set_preexisting_convs(&kd, &romazi_m, 1);
+		get_romazi_codes(&fs, &map);
+
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
@@ -320,20 +316,17 @@ int main(void)
 			}
 		}
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(romazi_m);
+		cleanup();
 	}
 
 	while (run_test("can_limit_rsc_range_to_auto_pick_cutoff", "")) {
 		int line;
-		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
+
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
 
 		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("薄"));
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 
 		for (line = 0; line < kd.line_stats_nr; line++) {
@@ -343,21 +336,18 @@ int main(void)
 			if (i >= 5500) fprintf(out, "%s %d\n", cutoff->c, i);
 		}
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 	}
 
 	while (run_test("can_limit_rsc_range_to_limit_chars_in_mapping", "")) {
 		int line;
-		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
 		unsigned end = kanji_db_rsc_index(kanji_db_lookup("笑"));
 
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
+
 		kd.rsc_range_end = end;
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
@@ -371,21 +361,18 @@ int main(void)
 			}
 		}
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 	}
 
 	while (run_test("can_limit_rsc_range_start", "")) {
 		int line;
-		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
 		unsigned start = kanji_db_rsc_index(kanji_db_lookup("広"));
 
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
+
 		kd.rsc_range_start = start;
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff(&kd);
 		kanji_distribution_populate(&kd);
 
@@ -403,23 +390,20 @@ int main(void)
 			}
 		}
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 	}
 
 	while (run_test("set_rsc_range_not_enough_to_fill_all_codes_sets_cutoff", "")) {
 		int line;
-		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
 		unsigned start = kanji_db_rsc_index(kanji_db_lookup("忠"));
 		unsigned end = kanji_db_rsc_index(kanji_db_lookup("数"));
 
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
+
 		kd.rsc_range_start = start;
 		kd.rsc_range_end = end;
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 		kanji_distribution_populate(&kd);
 
@@ -442,26 +426,23 @@ int main(void)
 					 line);
 		}
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 	}
 
 	while (run_test("set_rsc_range_allocates_many_kanji", "")) {
 		int line;
-		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
 		struct {
 			struct kanji_entry const **el;
 			size_t cnt, alloc;
 		} allocated = {0};
 		unsigned alloc_i;
 
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
+
 		kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup("忠"));
 		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("数"));
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 		kanji_distribution_populate(&kd);
 
@@ -490,22 +471,19 @@ int main(void)
 		if (allocated.cnt < 301)
 			fprintf(out, "%zu", allocated.cnt);
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 		DESTROY_ARRAY(allocated);
 	}
 
 	while (run_test("set_rsc_range_allocates_kanji_honoring_cutoffs", "")) {
 		int line;
-		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
+
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
 
 		kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup("忠"));
 		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("数"));
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 		kanji_distribution_populate(&kd);
 
@@ -529,21 +507,17 @@ int main(void)
 			}
 		}
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 	}
 
 	while (run_test("set_rsc_range_not_enough_cutoffs_for_every_key", "")) {
-		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
 		int line;
 
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
 		kd.rsc_range_start = kanji_db_rsc_index(kanji_db_lookup("石"));
 		kd.rsc_range_end = kanji_db_rsc_index(kanji_db_lookup("禁"));
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 
 		for (line = 1; line < kd.line_stats_nr; line++) {
@@ -557,25 +531,22 @@ int main(void)
 		}
 
 		kanji_distribution_populate(&kd);
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 	}
 
 	while (run_test("last_kanji_in_db_in_limited_rsc_range", "1")) {
-		struct key_mapping_array preexisting_m = {0};
-		struct kanji_distribution kd = {
-			.short_shifted_codes = 1,
-		};
 		int line;
 		int e;
 		int found = 0;
 		unsigned start = kanji_db_rsc_index(kanji_db_lookup("項"));
 		unsigned end = kanji_db_nr();
 
+		initflags();
+		setflag(&fs, "--short-shifted-codes", 1);
+
 		kd.rsc_range_start = start;
 		kd.rsc_range_end = end;
-		kanji_distribution_set_preexisting_convs(
-			&kd, &preexisting_m, 1);
+		kanji_distribution_set_preexisting_convs(&fs, &kd, &map, 1);
 		kanji_distribution_auto_pick_cutoff_exhaustive(&kd, 'j', 10, 0);
 		kanji_distribution_populate(&kd);
 
@@ -588,8 +559,7 @@ int main(void)
 
 		fprintf(out, "%d", found);
 
-		kanji_distribution_destroy(&kd);
-		DESTROY_ARRAY(preexisting_m);
+		cleanup();
 	}
 
 	while (run_test("choose_easy_to_type_1st_chars_in_exhaustive_pick_cutoff", NULL)) {
@@ -631,43 +601,48 @@ int main(void)
 	while (run_test("busy_right_pinky_line_counts", NULL)) {
 		struct {
 			const char *name;
-			struct kanji_distribution kd;
+			char *kdfs[32];
+			int argc;
 		} *c, cases[] = {
 			{
 				.name = "brp",
-				.kd = {.busy_right_pinky = 1},
+				.kdfs = {"--busy-right-pinky"},
+				.argc = 1,
 			},
 			{
 				.name = "lbrack",
-				.kd = {.allow_left_bracket_key1 = 1},
+				.kdfs = {"--allow-left-bracket-key1"},
+				.argc = 1,
 			},
 			{
 				.name = "both",
-				.kd = {
-					.allow_left_bracket_key1 = 1,
-					.busy_right_pinky = 1,
+				.kdfs = {
+					"--allow-left-bracket-key1",
+					"--busy-right-pinky",
 				},
+				.argc = 2,
 			},
 			{0},
 		};
 
 		for (c = cases; c->name; c++) {
-			struct key_mapping_array preexisting_m = {0};
 			int line;
 
+			initflags();
+			parsflag(&fs, &c->argc, c->kdfs);
 			kanji_distribution_set_preexisting_convs(
-				&c->kd, &preexisting_m, 1);
-			kanji_distribution_auto_pick_cutoff(&c->kd);
-			kanji_distribution_populate(&c->kd);
+				&fs, &kd, &map, 1);
+			kanji_distribution_auto_pick_cutoff(&kd);
+			kanji_distribution_populate(&kd);
 
-			fprintf(out, "%s: %d\n", c->name, c->kd.total_chars);
+			fprintf(out, "%s: %d\n", c->name, kd.total_chars);
 
-			for (line = 0; line < c->kd.line_stats_nr; line++)
+			for (line = 0; line < kd.line_stats_nr; line++)
 				fprintf(out, "%c %"PRIu8"\n",
-					c->kd.line_stats[line].key_ch,
-					c->kd.line_stats[line].e_nr);
+					kd.line_stats[line].key_ch,
+					kd.line_stats[line].e_nr);
 
-			kanji_distribution_destroy(&c->kd);
+			cleanup();
 		}
 	}
 }

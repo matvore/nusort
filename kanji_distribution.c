@@ -6,31 +6,18 @@
 #include "streams.h"
 #include "util.h"
 
-int parse_kanji_distribution_flags(
-	int *argc, char ***argv, struct kanji_distribution *kd)
+void kanji_distribution_flags(struct flagset *fs)
 {
-	if (!strcmp((*argv)[0], "--short-shifted-codes")) {
-		kd->short_shifted_codes = 1;
-		(*argv)++;
-		(*argc)--;
-		return 1;
-	}
-
-	if (!strcmp((*argv)[0], "--allow-left-bracket-key1")) {
-		kd->allow_left_bracket_key1 = 1;
-		(*argv)++;
-		(*argc)--;
-		return 1;
-	}
-
-	if (!strcmp((*argv)[0], "--busy-right-pinky")) {
-		kd->busy_right_pinky = 1;
-		(*argv)++;
-		(*argc)--;
-		return 1;
-	}
-
-	return 0;
+	flagcat(fs, "漢字配分");
+	addflag(fs, "--short-shifted-codes", 'b', 0,
+"\n\t"	"大文字かシフトされた鍵一つで優先度の高い漢字を入力できるようにする"
+	);
+	addflag(fs, "--allow-left-bracket-key1", 'b', 0,
+"\n\t"	"二打鍵と四打鍵の一打鍵目を '[' にも割り当てる"
+	);
+	addflag(fs, "--busy-right-pinky", 'b', 0,
+"\n\t"	"漢字入力コードの二打鍵目を -=[]/ にも割り当てる"
+	);
 }
 
 struct used_bit_map {
@@ -64,12 +51,12 @@ static void fill_used_bit_map(
 }
 
 static int maybe_add_short_shifted_code(
-	struct kanji_distribution *kd, struct used_bit_map const *used, int key)
+	struct flagset *fs, struct kanji_distribution *kd,
+	struct used_bit_map const *used, int key)
 {
 	int shifted_key;
 
-	if (!kd->short_shifted_codes)
-		return 0;
+	if (!flagval(fs, "--short-shifted-codes")) return 0;
 
 	shifted_key = key + MAPPABLE_CHAR_COUNT / 2;
 	if (!bytes_are_zero(used->m + shifted_key * MAPPABLE_CHAR_COUNT,
@@ -97,7 +84,8 @@ static int is_central_kanji_char(char c)
 }
 
 static void fill_unused_kanji_origs(
-	struct kanji_distribution *kd, struct used_bit_map const *used)
+	struct flagset *fs, struct kanji_distribution *kd,
+	struct used_bit_map const *used)
 {
 	size_t key1;
 
@@ -112,7 +100,7 @@ static void fill_unused_kanji_origs(
 		char key1_char = KEY_INDEX_TO_CHAR_MAP[key1];
 
 		if (key1_char == '[') {
-			if (!kd->allow_left_bracket_key1) continue;
+			if (!flagval(fs, "--allow-left-bracket-key1")) continue;
 		}
 		else if (!is_central_kanji_char(key1_char))
 			continue;
@@ -121,7 +109,7 @@ static void fill_unused_kanji_origs(
 			int last_index = kd->unused_kanji_origs.cnt;
 			char key2_char = KEY_INDEX_TO_CHAR_MAP[key2];
 
-			if (!kd->busy_right_pinky) {
+			if (!flagval(fs, "--busy-right-pinky")) {
 				if (key2_char == '[') continue;
 				if (!is_central_kanji_char(key2_char)) continue;
 			}
@@ -135,7 +123,7 @@ static void fill_unused_kanji_origs(
 			unused++;
 		}
 
-		unused += maybe_add_short_shifted_code(kd, used, key1);
+		unused += maybe_add_short_shifted_code(fs, kd, used, key1);
 
 		if (!unused)
 			continue;
@@ -243,8 +231,8 @@ static void end_line(struct kanji_distribution *kd, struct line_stats *ls)
 }
 
 void kanji_distribution_set_preexisting_convs(
-	struct kanji_distribution *kd, struct key_mapping_array const *m,
-	int block_already_used)
+	struct flagset *fs, struct kanji_distribution *kd,
+	struct key_mapping_array const *m, int block_already_used)
 {
 	struct used_bit_map used = {0};
 
@@ -265,7 +253,7 @@ void kanji_distribution_set_preexisting_convs(
 
 	if (block_already_used)
 		fill_used_bit_map(m, &used);
-	fill_unused_kanji_origs(kd, &used);
+	fill_unused_kanji_origs(fs, kd, &used);
 
 	add_available_kanji(
 		&kd->available, m, kd->rsc_range_start, kd->rsc_range_end);

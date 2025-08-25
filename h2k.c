@@ -4,10 +4,14 @@
 #include "streams.h"
 #include "util.h"
 
-int h2k(char **argv, int argc)
+int h2k(struct flagset *fs, char **argv, int argc)
 {
 	char buf[4] = {0};
 	int size = 0;
+
+	if (argc < 0) return 0;
+
+	parsflag(fs, &argc, argv);
 
 	if (argc) {
 		fputs("引数を渡さないでください。\n", err);

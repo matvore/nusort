@@ -35,12 +35,15 @@ static void show_longest_blk(unsigned start, unsigned end)
 	DESTROY_ARRAY(kanjis);
 }
 
-int longest_rsc_block(char **argv, int argc)
+int longest_rsc_block(struct flagset *fs, char **argv, int argc)
 {
 	unsigned rsc_i;
 	unsigned longest_blk_size = 1;
 	unsigned longest_blk_start;
 	unsigned curr_block_start = 0;
+
+	if (argc < 0) return 0;
+	parsflag(fs, &argc, argv);
 
 	if (argc) {
 		fputs("引数を渡さないでください。\n", err);
