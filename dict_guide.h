@@ -23,4 +23,4 @@ struct dict_guide_el {
 
 void dict_guide_clear(void);
 struct dict_guide_el *dict_guide_add(int type, int highlight);
-void dict_guide_show(int include_second_line);
+void dict_guide_show(int width, int include_second_line);

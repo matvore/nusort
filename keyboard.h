@@ -10,4 +10,4 @@ void keyboard_update(struct key_mapping_array const *, char const *prefix);
  *
  * 使う場合は keyboard_update の後で呼び出す。
  */
-void keyboard_show_rsc_list(void);
+void keyboard_show_rsc_list(int width);

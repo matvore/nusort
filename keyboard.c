@@ -210,7 +210,7 @@ static unsigned rsc_sort_key_change(int rsc_i)
 	return curr != prev ? curr : 0;
 }
 
-void keyboard_show_rsc_list(void)
+void keyboard_show_rsc_list(int width)
 {
 	int i;
 
@@ -243,6 +243,6 @@ void keyboard_show_rsc_list(void)
 	}
 
 	start_window(WINDOW_RSC_LIST);
-	dict_guide_show(/*include_second_line=*/1);
+	dict_guide_show(width, /*include_second_line=*/1);
 	finish_window();
 }

@@ -32,7 +32,7 @@ static void handle_sigwinch(int signal)
 	require_clear_screen = 1;
 }
 
-void enable_windows(void)
+void init_windows(void)
 {
 #ifndef _MSC_VER
 	struct sigaction sigact = {0};
@@ -42,6 +42,8 @@ void enable_windows(void)
 	if (sigaction(SIGWINCH, &sigact, NULL) == -1)
 		DIE(1, "sigaction");
 #endif
+
+	memset(newline_records, 0, sizeof newline_records);
 }
 
 void to_top_of_screen(void)

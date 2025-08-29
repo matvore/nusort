@@ -44,21 +44,29 @@ void flagcat(struct flagset *fs, const char *catname)
 }
 
 void addflag(	struct flagset *fs,
-		const char *name, char type, unsigned char initialval,
+		const char *name, char type, unsigned char defval,
 		const char *doc)
 {
 	struct flag *nf;
 
 	if (!name) DIE(0, "null name?");
 
-	if (fs->doc_out		) fprintf(fs->doc_out, "%s:%s\n", name, doc);
+	if (fs->doc_out) {
+		fprintf(fs->doc_out, "%s:%s\n", name, doc);
+		if (defval) {
+			fputs("\t〔既定値:",	fs->doc_out);
+			if (type=='#') fprintf(	fs->doc_out, "%d", defval);
+			if (type=='c') fprintf(	fs->doc_out, "%c", defval);
+			fputs("〕\n",		fs->doc_out);
+		}
+	}
 	if (fs->not_collecting	) return;
 
 	GROW_ARRAY_BY(*fs, 1);
 	nf = fs->el + fs->cnt - 1;
 	nf->name = name;
 	nf->type = type;
-	nf->value = initialval;
+	nf->value = defval;
 }
 
 void setflag(struct flagset *fs, const char *name, unsigned char value)
@@ -76,6 +84,22 @@ static void shift(int *argc, char **argv)
 	if (*argc < 1) return;
 	memmove(argv, argv + 1, --(*argc) * sizeof(*argv));
 	argv[*argc] = 0;
+}
+
+static int parsedecimal(char *s, struct flag *f)
+{
+	char *numend = 0;
+	long v = strtol(s, &numend, 10);
+
+	if (!numend || *numend || !*s) return 0;
+
+	if (v < 0 || v > 0xff) {
+		fprintf(stderr, "%ld は範囲外 [0, 255]\n", v);
+		return 0;
+	}
+
+	f->value = v;
+	return 1;
 }
 
 void parsflag(struct flagset *fs, int *argc, char **argv)
@@ -98,6 +122,12 @@ void parsflag(struct flagset *fs, int *argc, char **argv)
 				DIE(0,	"%sの値として一文字を渡してください",
 					f->name);
 			f->value = **argv;
+			shift(argc, argv);
+			break;
+		case '#':
+			if (!*argc || !parsedecimal(*argv, f))
+				DIE(0,	"%sの後に数値を渡してください",
+					f->name);
 			shift(argc, argv);
 			break;
 		default: DIE(0,	"バグ: フラグの type が無効です: %c (%x)",

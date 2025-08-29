@@ -18,4 +18,5 @@
 "--romazi-optimize-keystrokes"
 "--rpc-mode"
 "--short-shifted-codes"
+"--term-width"
 "--tsv"

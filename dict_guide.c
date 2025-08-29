@@ -32,8 +32,6 @@ struct dict_guide_el *dict_guide_add(int type, int highlight)
 	return ne;
 }
 
-#define RSC_LIST_WRAP_WIDTH 60
-
 static void out_stroke_count(struct dict_guide_el *e)
 {
 	char dig[3];
@@ -128,12 +126,12 @@ static void do_el(int i, const char *flags, int *wid_)
 	if (reset) colorout("\x1b[" ANSI_RESET "m");
 }
 
-void dict_guide_show(int include_second_line)
+void dict_guide_show(int width, int include_second_line)
 {
 	int amount_printed = 0;
 
 	while (amount_printed < guide.cnt) {
-		int remaining_width = RSC_LIST_WRAP_WIDTH, last_fitting_padding;
+		int remaining_width = width, last_fitting_padding;
 		unsigned cursor = amount_printed, last_fitting_chunk = 0;
 		int i, thiswid;
 

@@ -6,6 +6,7 @@
 #include "streams.h"
 #include "test_util.h"
 #include "util.h"
+#include "windows.h"
 
 #include <errno.h>
 #include <string.h>
@@ -18,6 +19,7 @@ static void cleanup(void)
 	flush_packet();
 	destroy_mapping(&m);
 	destroy_flagset(&fs);
+	init_windows();
 }
 
 int main(void)
@@ -94,7 +96,7 @@ int main(void)
 		append_mapping(&m.arr, "x;", "方");
 		expect_ok(sort_and_validate_no_conflicts(&m.arr));
 		keyboard_update(&m.arr, "x");
-		keyboard_show_rsc_list();
+		keyboard_show_rsc_list(60);
 
 		cleanup();
 	}
@@ -107,7 +109,7 @@ int main(void)
 		append_mapping(&m.arr, "y;", "方");
 		expect_ok(sort_and_validate_no_conflicts(&m.arr));
 		keyboard_update(&m.arr, "y");
-		keyboard_show_rsc_list();
+		keyboard_show_rsc_list(60);
 
 		cleanup();
 	}
@@ -137,7 +139,22 @@ int main(void)
 		expect_ok(sort_and_validate_no_conflicts(&m.arr));
 
 		keyboard_update(&m.arr, "/");
-		keyboard_show_rsc_list();
+		keyboard_show_rsc_list(60);
+
+		cleanup();
+	}
+
+	while (run_test("rsc_guide_widths", NULL)) {
+		mapping_flags(&fs);
+
+		if (mapping_populate(&fs, &m))
+			DIE(0, "mapping_populate");
+
+		keyboard_update(&m.arr, "d");
+		keyboard_show_rsc_list(80);
+		keyboard_show_rsc_list(60);
+		keyboard_show_rsc_list(40);
+		keyboard_show_rsc_list(30);
 
 		cleanup();
 	}

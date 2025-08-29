@@ -77,6 +77,9 @@ int input(struct flagset *fs, char **argv, int argc)
 "\n\t"	"	ユーザに表示できる utf-8 テキスト"
 	);
 
+	addflag(fs, "--term-width", '#', 60,
+"\n\t"	"端末の幅を指定する。区切りガイドと部首画数リストの表示に影響する。");
+
 	romazi_flags(fs);
 	mapping_flags(fs);
 
@@ -103,7 +106,7 @@ int input(struct flagset *fs, char **argv, int argc)
 		check_term_op(tcgetattr(STDIN_FILENO, &orig_termios));
 		customize_term_attributes(orig_termios);
 #endif
-		enable_windows();
+		init_windows();
 		fputs("\x1b[?1049h" "\x1b[?25l", err);
 	}
 	res = input_impl(&mapping, fs);

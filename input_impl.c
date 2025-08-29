@@ -158,7 +158,8 @@ static void add_rsc_range_to_cutoff_guide(
 }
 
 static void show_cutoff_guide(
-	struct mapping *mapping, Orig so_far_input, char highlight)
+	struct flagset *fs, struct mapping *mapping, Orig so_far_input,
+	char highlight)
 {
 	int ki, highlighting = 0, so_far_len = strlen(so_far_input);
 	Orig key = {0};
@@ -201,7 +202,7 @@ static void show_cutoff_guide(
 	}
 
 	start_window(WINDOW_CUTOFF_GUIDE);
-	dict_guide_show(/*include_second_line=*/0);
+	dict_guide_show(flagval(fs, "--term-width"), /*include_second_line=*/0);
 
 	finish_window();
 }
@@ -251,7 +252,7 @@ int input_impl(struct mapping *mapping, struct flagset *fs)
 				orig1st = so_far_input[2];
 				so_far_input[2] = 0;
 			}
-			show_cutoff_guide(mapping, so_far_input, orig1st);
+			show_cutoff_guide(fs, mapping, so_far_input, orig1st);
 			so_far_input[strlen(so_far_input)] = orig1st;
 		}
 		start_window(WINDOW_INPUT_LINE);
@@ -269,7 +270,7 @@ int input_impl(struct mapping *mapping, struct flagset *fs)
 		}
 		finish_window();
 		if (!flagval(fs, "--no-show-rsc-list"))
-			keyboard_show_rsc_list();
+			keyboard_show_rsc_list(flagval(fs, "--term-width"));
 		if (!flagval(fs, "--no-show-keyboard")) keyboard_write();
 
 		did_delete_orig = 0;
