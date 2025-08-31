@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export LC_COLLATE=C
+export LC_ALL=C
 d=`dirname $0`/..
 wd=/tmp/`basename $0`/workdir.$$
 
@@ -12,9 +12,12 @@ mkfifo $wd/join-1
 
 ced=$d/third_party/cedict_1_0_ts_utf-8_mdbg.txt
 
-$d/u/missing |
-sed 's/,//; s/[{"]//g'		| sort			>> $wd/witkey &
-sed 's/ [^ ]*//'	$ced	| sort | uniq -w 3	>> $wd/wosimp &
+dedup() {
+	LC_ALL=C uniq -w 4
+}
+
+$d/u/missing |	sed 's/,//; s/[{"]//g'	| sort		>> $wd/witkey &
+<$ced		sed 's/ [^ ]*//'	| sort | dedup	>> $wd/wosimp &
 $d/u/preproc_unihan					>> $wd/unihan &
 join -j 1 $wd/witkey $wd/unihan				>> $wd/join-1 &
 
