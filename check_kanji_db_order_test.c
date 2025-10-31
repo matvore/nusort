@@ -13,7 +13,7 @@ int main(void)
 	set_test_source_file(__FILE__);
 
 	while (run_test("check_kanji_db_order_test_quiet",
-			"14135字の並べ替えキーを読み込み済み\n"
+			"14136字の並べ替えキーを読み込み済み\n"
 			"exit: 0\n")) {
 		char *argv[] = {"-q"};
 		memset(&fs, 0, sizeof fs);
