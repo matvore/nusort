@@ -16,9 +16,9 @@ dedup() {
 	LC_ALL=C uniq -w 4
 }
 
-$d/u/missing |	sed 's/,//; s/[{"]//g'	| sort		>> $wd/witkey &
-<$ced		sed 's/ [^ ]*//'	| sort | dedup	>> $wd/wosimp &
-$d/u/preproc_unihan					>> $wd/unihan &
-join -j 1 $wd/witkey $wd/unihan				>> $wd/join-1 &
+$d/u/missing		| sed 's/,//;s/[{"]//g'	| sort		>> $wd/witkey &
+<$ced tr -d ''	| sed 's/ [^ ]*//'	| sort | dedup	>> $wd/wosimp &
+$d/u/preproc_unihan						>> $wd/unihan &
+join -j 1 $wd/witkey $wd/unihan					>> $wd/join-1 &
 
 join -j1 -a1 $wd/join-1 $wd/wosimp
