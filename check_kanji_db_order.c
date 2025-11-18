@@ -848,6 +848,11 @@ static struct {
 	{"檇", 0x4c, 0x0d},
 	{"臇", 0x83, 0x0d},
 	{"鐫", 0xa8, 0x0d},
+	{"蜑", 0x8f, 0x08},
+	{"蜒", 0x8f, 0x08},
+	{"梦", 0x25, 0x08},
+	{"莚", 0x8d, 0x08},
+	{"蜓", 0x8f, 0x08},
 };
 
 #define SUPKEYCNT (sizeof(supplemental_keys) / sizeof(*supplemental_keys))
@@ -1047,6 +1052,7 @@ static int check_order(struct flagset *fs)
 				fprintf(out,	" %02x%02x",
 						radical_num(radin),
 						residual_stroke_count(ke));
+
 			fputc('\n', out);
 		}
 
@@ -1062,7 +1068,7 @@ static int check_order(struct flagset *fs)
 		struct kanji_entry const *k = kanji_db() + min_keys[i].ki;
 
 		if (min_keys[i].ki >= 0xffff)
-			DIE(0, "並べ替えキー %zu に該当する漢字がない?", i);
+			DIE(0, "並べ替えキー %zu に該当する漢字がない?", i+1);
 		if (i > 0)
 			adjust_consecutive_key_info(
 				&min_keys[i-1].key, &min_keys[i].key, k->c);
