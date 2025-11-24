@@ -14,6 +14,7 @@
 "--no-show-keyboard"
 "--no-show-pending-and-converted"
 "--no-show-rsc-list"
+"--pos"
 "--recurs-ksort"
 "--romazi-optimize-keystrokes"
 "--rpc-mode"
