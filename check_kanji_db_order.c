@@ -904,6 +904,8 @@ static struct {
 	{"蠾", 0x8f, 0x15},
 	{"蠽", 0x8f, 0x15},
 	{"豷", 0x99, 0x0c},
+	{"壿", 0x22, 0x0c},
+	{"巰", 0x31, 0x0a},
 };
 
 #define SUPKEYCNT (sizeof(supplemental_keys) / sizeof(*supplemental_keys))
