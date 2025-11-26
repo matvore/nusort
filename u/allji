@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# kanji_db.c で登録済みと未登録の漢字を一緒に出力します
+
+ud=`dirname $0`
+
+(
+	"$ud/missing_char_dict"
+
+	cd "$ud/.."
+
+	"./nusort" or | sed '
+		/^[	{]*"/!b
+		s///; s/",//
+	'
+) | LC_ALL=C sort -k 1,1 -s
