@@ -333,7 +333,7 @@ int main(void)
 			struct kanji_entry const *cutoff =
 				kd.line_stats[line].cutoff;
 			int i = kanji_db_rsc_index(cutoff);
-			if (i >= 5600) fprintf(out, "%s %d\n", cutoff->c, i);
+			if (i >= 5700) fprintf(out, "%s %d\n", cutoff->c, i);
 		}
 
 		cleanup();
