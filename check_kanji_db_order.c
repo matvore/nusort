@@ -917,6 +917,7 @@ static struct {
 	{"湋", 0x56, 0x0a},
 	{"渘", 0x56, 0x09},
 	{"圍", 0x20, 0x0a},
+	{"暹", 0x49, 0x0b},
 };
 
 #define SUPKEYCNT (sizeof(supplemental_keys) / sizeof(*supplemental_keys))
